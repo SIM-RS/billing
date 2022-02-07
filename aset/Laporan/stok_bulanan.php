@@ -1,0 +1,269 @@
+<?php
+session_start();
+include '../koneksi/konek.php';
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$unit_opener="par=idunit*kodeunit*namaunit*idlokasi*kodelokasi";
+//===========================================================================
+$date_now=gmdate('d-m-Y',mktime(date('H')+7));
+date_default_timezone_set("Asia/Jakarta");
+$tgl1=gmdate('d-m-Y',mktime(date('H')+7));
+$th=explode("-",$tgl1);
+ $bulan=$_REQUEST['bln'];
+if ($bulan=="") $bulan=(substr($th[1],0,1)=="0")?substr($th[1],1,1):$th[1]; 
+$ta=$_REQUEST['thn'];
+if ($ta=="") $ta=$th[2];
+//$bln = $_REQUEST['bln'];
+//$thn = $_REQUEST['thn'];
+$act = $_REQUEST['act'];
+$ttp = $_REQUEST['ttp'];
+if($act=='add'){
+$qw = mysql_query("select close_id from tutup_buku where bln = '$bulan' AND thn = '$ta' ");
+$dr = mysql_num_rows($qw);
+if($dr > 0 && $ttp==''){
+	echo "<script>
+	if(confirm('Pada Bulan ini sudah Dilakukan Tutup Buku. Apakah ingin tutup buku lagi ?')){
+		window.location = '?act=add&ttp=1&bln=$bulan&thn=$ta';
+	}</script>";
+}else{
+if($ttp==1){
+//echo ("delete from tutup_buku where bln='$bulan' and thn='$ta'");
+mysql_query("delete from tutup_buku where bln='$bulan' and thn='$ta'");
+}
+$sqlup = mysql_query("select * from as_ms_barang where islast = 1 order by kodebarang");
+while($rows = mysql_fetch_array($sqlup)){
+    $bln1 = $bln = $bulan;
+	$thn1 = $thn = $ta;
+	if(($bln-1)==0)
+	{
+	$bln = 12;
+	$thn = $thn-1;
+	}
+    $dr = "select sum(jml_sisa) AS awal_jml,sum(nilai_sisa) AS awal_nilai from as_kstok where YEAR(waktu)='$thn' AND MONTH(waktu)='$bln' AND barang_id = '".$rows['idbarang']."'";
+	$dr1 = mysql_query($dr);
+	$dr2 = mysql_fetch_array($dr1);
+	if($dr2['awal_jml']=='') $dr2['awal_jml']=0;
+	if($dr2['awal_nilai']=='') $dr2['awal_nilai']=0;
+	
+	$drt = "select sum(jml_masuk) AS masuk_jml,sum(jml_keluar) AS keluar_jml,sum(nilai_masuk) AS masuk_nilai,sum(nilai_keluar) AS keluar_nilai from as_kstok where YEAR(waktu)='$thn1' AND MONTH(waktu)='$bln1' AND barang_id = '".$rows['idbarang']."'";
+	$dr1t = mysql_query($drt);
+	$dr2t = mysql_fetch_array($dr1t);
+	if($dr2t['masuk_jml']=='') $dr2t['masuk_jml']=0;
+	if($dr2t['masuk_nilai']=='') $dr2t['masuk_nilai']=0;
+	if($dr2t['keluar_jml']=='') $dr2t['keluar_jml']=0;
+	if($dr2t['keluar_nilai']=='') $dr2t['keluar_nilai']=0;
+	
+	$jml_saldo = $dr2['awal_jml']+$dr2t['masuk_jml']-$dr2t['keluar_jml'];
+	$nilai_saldo = $dr2['awal_nilai']+$dr2t['masuk_nilai']-$dr2t['keluar_nilai'];
+ $sqlin = "insert into tutup_buku values('','$ta','$bulan','".$rows['idbarang']."','".$dr2['awal_jml']."','".$dr2['awal_nilai']."','".$dr2t['masuk_jml']."','".$dr2t['masuk_nilai']."','".$dr2t['keluar_jml']."','".$dr2t['keluar_nilai']."','$jml_saldo','$nilai_saldo',sysdate(),'$_SESSION[id_user]')";
+ //mysql_query($sqlin);
+}
+	echo "<script>alert('Proses Selesai.');window.location='stok_bulanan.php';</script>";
+}
+}
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <script type="text/javascript" language="JavaScript" src="../theme/js/dsgrid.js"></script>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <script type="text/javascript" language="JavaScript" src="../theme/js/ajax.js"></script>
+		 <link rel="stylesheet" type="text/css" href="../theme/popup.css" />
+        <script type="text/javascript" src="../theme/prototype.js"></script>
+        <script type="text/javascript" src="../theme/effects.js"></script>
+        <script type="text/javascript" src="../theme/popup.js"></script>
+        <title>.: Laporan Stok Bulanan :.</title>
+    </head>
+
+    <body>
+	
+        <div align="center" id="data">
+            <?php
+            include '../header.php';
+            ?>
+            <table width="1000" border="0" bgcolor="#FFFFFF" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-top: 10px;" align="center">
+                        <form id="form1" name="form1" action="laporan_stok_bulanan.php" method="post" target="Laporan Stok Bulanan">
+                            <table width="600" border="0" cellspacing="0" cellpadding="4">
+                                <tr align="center">
+                                    <td colspan="2" class="header">
+                                        <strong><font size="2">Laporan Stok Bulanan</font></strong>                                    </td>
+                                </tr>                               
+                                <tr>
+                                    <td class="label"><strong>Jenis Barang</strong></td>
+                                    <td class="content">
+                                        <select id="cmbJnsBrg" name="cmbJnsBrg" onChange="fill()">
+                                            <option value='1'>Tetap</option>
+                                            <option value='2'>Habis Pakai</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                 <tr>
+                                    <td class="label"><strong>Keadaan Stok Bulan : </strong></td>
+                                    <td class="content">
+                                        <select id="cmbBln" name="cmbBln" onChange="fill()">
+                                            <option value='1'>Januari</option>
+                                            <option value='2'>Februari</option>
+                                            <option value='3'>Maret</option>
+                                            <option value='4'>April</option>
+                                            <option value='5'>Mei</option>
+                                            <option value='6'>Juni</option>
+                                            <option value='7'>Juli</option>
+                                            <option value='8'>Agustus</option>
+                                            <option value='9'>September</option>
+                                            <option value='10'>Oktober</option>
+                                            <option value='11'>Nopember</option>
+                                            <option value='12'>Desember</option>
+                                        </select> &nbsp;&nbsp;Tahun:&nbsp;  
+										<select name="ta" id="ta" onChange="fill()">
+                                                    <?php for ($i=($th[2]-5);$i<($th[2]+1);$i++) { ?>
+                                                    <option  value="<?php echo $i; ?>"<?php if ($i==$ta) echo "selected";?>>
+                                                        <?php echo $i;?>
+                                                    </option>
+                                                    <?php } ?>
+                                                </select>
+                                    </td>
+									
+                                </tr>
+                                <tr>
+                                    <td class="label"><strong>Format Laporan </strong></td>
+                                    <td class="content"><select name="formatlap" class="txt" id="formatlap" tabindex="7">
+                                            <option value="HTML">HTML</option>
+                                            <option value="XLS">EXCEL</option>
+                                            <option value="WORD">WORD</option>
+                                        </select></td>
+                                </tr>
+                                <tr align="center">
+                                    <td colspan="2" class="header2">
+                                        
+										<input name="ttp" type="button" id="ttp" value="Tutup Buku" onClick="ttpbk('0')">
+                                    </td>
+                                </tr>
+							   </table>
+                        <input name="idunit" type="hidden" id="idunit" value="" />
+                            <input name="namaunit" type="hidden" id="namaunit" value="" />
+                            <input name="idlokasi" type="hidden" id="idlokasi" value="" />
+                            <input name="kodelokasi" type="hidden" id="kodelokasi" value="" />
+                        </form>
+                    </td>
+                </tr>
+				<tr>
+				<td align="center"><br><span id="loa"></span></td></tr>
+				<tr>
+				<td align="center">
+				<br>
+				
+                                    <div id="gridbox" style="width:825px; height:250px; background-color:white; "></div>
+<br><br><br>									
+									<input type="button" id="bc" name="bc" value="kembali" onclick="backD()" disabled="disabled"/>
+                                    <div id="paging" style="width:825px;"></div>
+									</td>
+							</tr>
+                <tr>
+                    <td>
+                        <?php
+                        include '../footer.php';
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <iframe height="193" width="168" name="gToday:normal:agenda.js"
+                id="gToday:normal:agenda.js"
+                src="../theme/popcjs.php" scrolling="no"
+                frameborder="1"
+                style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+        </iframe>
+    </body>
+    <script type="text/JavaScript" language="JavaScript">
+        var arrRange=depRange=[];
+		
+		function ttpbk(px){
+			//document.getElementById('al').style.display='block';
+			//document.getElementById('data').style.display='none';
+		var url="utils_in_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&ttp="+px+"&act=add&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value;
+		//alert(url);
+		Request(url , 'loa', '', 'GET',function(){
+			if(document.getElementById('loa').innerHTML > 0){
+				if(confirm("Apakah Anda ingin tutup buku lagi pada bulan ini ?")){
+					ttpbk(1);
+				}else if(document.getElementById('loa').innerHTML=='ok'){
+				alert('Proses Tutup Buku Berhasi!!');
+				document.getElementById('loa').innerHTML='';
+				}else{
+				document.getElementById('loa').innerHTML='';
+				}
+			}
+		});
+		}
+		
+		
+		function goFilterAndSort(abc){
+		if (abc=="gridbox"){
+		rek.loadURL("utils_tb.php?bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value+"&filter="+rek.getFilter()+"&sorting="+rek.getSorting()+"&page="+rek.getPage(),"","GET");
+		}
+		} 
+		
+		var kodeb;
+		var levelb;
+		function backD(){
+		levelb--;
+		kodeb=kodeb.substring(0,kodeb.length-3);
+		if(levelb==1){
+		document.getElementById('bc').disabled=true;
+		}
+		//alert(kodeb);
+		rek.loadURL("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&kode="+kodeb+"&level="+levelb+"&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value,'','GET');
+		}
+		function fill(){
+		//	alert("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&level=1&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value,'','GET');
+		
+		 rek.loadURL("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&level=1&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value,'','GET');
+		// cek();
+			//alert('a');       	
+		}
+		
+		function ping(){
+				document.getElementById('form1').submit();			
+			}
+		
+		function ambilData(){
+		var spl = rek.getRowId(rek.getSelRow()).split('|');
+		var level = parseInt(spl[1])+1;
+		var kode = spl[0];
+		var isl = spl[2];
+		kodeb=kode;
+		levelb=level;
+		if(level>1){
+		document.getElementById('bc').disabled=false;
+		}
+		if(isl==0){
+		rek.loadURL("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&kode="+kode+"&level="+level+"&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value,'','GET');
+		}
+		}
+		
+		 var rek=new DSGridObject("gridbox");
+        rek.setHeader("<table width='100%'><tr><td align='right'><input name='submit' onclick='ping()' type='button' id='submit' value='Tampilkan Laporan' > &nbsp;</td><tr></table>.: Data Pemakaian Barang :.");
+        rek.setColHeader("No,Kode,Nama Barang,Satuan,Awal Jumlah,Awal Nilai,Masuk Jumlah,Masuk Nilai,Keluar Jumlah,Keluar Nilai,Saldo Jumlah,Saldo Nilai");
+        //rek.setIDColHeader(",,nokirim,vendor_id,,");
+        rek.setColWidth("50,150,230,100,70,70,70,70,70,70,70,70");
+        rek.setCellAlign("center,center,left,center,center,right,center,right,center,right,center,right");
+        rek.setCellHeight(20);
+        rek.setImgPath("../icon");
+        rek.setIDPaging("paging");
+        rek.attachEvent("onRowClick","ambilData");
+        rek.baseURL("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&level=1&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value);
+		//alert("utils_tb.php?tipe="+document.getElementById('cmbJnsBrg').value+"&level=1&bln="+document.getElementById('cmbBln').value+"&thn="+document.getElementById('ta').value);
+        rek.Init();
+	//	cek();
+		//alert();
+		//if()
+
+    </script>
+</html>

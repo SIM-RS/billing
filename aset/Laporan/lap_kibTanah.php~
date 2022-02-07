@@ -1,0 +1,160 @@
+<?php 
+if(($_REQUEST['jenislap'])=='XLS'){
+    header("Cache-Control: must-revalidate, post-check=0,pre-check=0");
+    header('Content-type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment; filename="Laporan_kibTanah_'.$_POST['fname'].'.xls"');
+    header("Pragma: no-cache");    
+    header("Pragma: public");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate, post-check=0,pre-check=0");
+    header("Content-Transfer-Encoding: binary ");
+}else if(($_REQUEST['jenislap'])=='WORD'){
+    header("Cache-Control: must-revalidate, post-check=0,pre-check=0");
+    header('Content-type: application/msword');
+    header('Content-Disposition: attachment; filename="Laporan_kibTanah_'.$_POST['fname'].'.doc"');
+    
+}
+
+include("../koneksi/konek.php");
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>.: Laporan KIB TANAH :.</title>
+</head>
+<style>
+.judulheaderkiri{
+border-bottom:1px solid;
+border-left:1px solid;
+border-top:1px solid;
+border-right:1px solid;
+}
+.isiheader{
+border-bottom:1px solid;
+border-top:1px solid;
+border-right:1px solid;
+}
+.subisiheader{
+border-bottom:1px solid;
+border-right:1px solid;
+}
+.isikiri{
+border-bottom:1px solid;
+border-left:1px solid;
+border-right:1px solid;
+}
+.isi{
+border-bottom:1px solid;
+border-right:1px solid;
+}
+</style>
+<body>
+<table width="1300" align="center" cellpadding="0" cellspacing="0">
+<tr>
+	<td align="center" colspan="14">KARTU INVENTARIS BARANG (KIB)<br />
+	  A. TANAH </td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+</tr>
+<table>
+<tr>
+	<td>No. Kode Lokasi</td>
+    <td>:</td>
+	<td><?php echo $_REQUEST['kode']?></td>
+</tr>
+<tr>
+<td>Nama Unit</td>
+<td>:</td>
+<td>RSUD Sidoarjo</td>
+</tr>
+</table>
+<tr>
+	<td colspan="14">&nbsp;</td>
+</tr>
+<br />
+</table>
+<table width="1300" align="center" cellpadding="0" cellspacing="0">
+<tr>
+	<td width="31" rowspan="3" align="center" class="judulheaderkiri">No</td>
+	<td width="144" rowspan="3" align="center" class="isiheader">Jenis Barang/Nama Barang</td>
+	<td colspan="2" align="center" class="isiheader">Nomor</td>
+	<td width="53" rowspan="3" align="center" class="isiheader">Luas (M2)</td>
+	<td width="71" rowspan="3" align="center" class="isiheader">Tahun Pengadaan</td>
+	<td width="135" rowspan="3" align="center" class="isiheader">Letak / Alamat</td>
+	<td align="center" colspan="3" class="isiheader">Status Tanah</td>
+	<td width="107" rowspan="3" align="center" class="isiheader">Penggunaan</td>
+	<td width="85" rowspan="3" align="center" class="isiheader">Asal Usul</td>
+	<td width="79" rowspan="3" align="center" class="isiheader">Harga (ribuan Rp)</td>
+	<td width="176" rowspan="3" align="center" class="isiheader">Keterangan</td>
+</tr>
+<tr>
+	<td width="69" rowspan="2" align="center" class="subisiheader">Kode Barang</td>
+	<td width="76" rowspan="2" align="center" class="subisiheader">Register</td>
+	<td width="61" rowspan="2" align="center" class="subisiheader">Hak</td>
+	<td align="center" colspan="2" class="subisiheader">Sertifikat</td>
+</tr>
+<tr>
+	<td width="85" align="center" class="subisiheader">Tanggal</td>
+	<td width="98" align="center" class="subisiheader">Nomor</td>
+</tr>
+<tr>
+	<td align="center" class="isikiri">1</td>
+	<td align="center" class="isi">2</td>
+	<td align="center" class="isi">3</td>
+	<td align="center" class="isi">4</td>
+	<td align="center" class="isi">5</td>
+	<td align="center" class="isi">6</td>
+	<td align="center" class="isi">7</td>
+	<td align="center" class="isi">8</td>
+	<td align="center" class="isi">9</td>
+	<td align="center" class="isi">10</td>
+	<td align="center" class="isi">11</td>
+	<td align="center" class="isi">12</td>
+	<td align="center" class="isi">13</td>
+	<td align="center" class="isi">14</td>
+	
+</tr>
+<?php 
+$i=1;
+ $sql ="SELECT s.idseri,u.kodeunit,u.namaunit,s.ms_idunit,s.ms_idlokasi,s.asalusul,s.harga_perolehan,s.idbarang,b.kodebarang,b.namabarang,s.noseri,l.namalokasi,k.alamat,k.luas,k.hak_tanah,k.sertifikat_tgl,k.sertifikat_no,k.penggunaan,s.thn_pengadaan,k.ket
+		FROM as_seri2 s
+		  INNER JOIN as_ms_barang b
+			ON s.idbarang = b.idbarang
+		  INNER JOIN as_ms_unit u
+			ON s.ms_idunit = u.idunit
+		  LEFT JOIN as_lokasi l
+			ON s.ms_idlokasi = l.idlokasi
+		  INNER JOIN kib01 k
+			ON s.idseri = k.idseri
+		WHERE LEFT(b.kodebarang,2) = '01'
+			AND s.isaktif = 1
+";
+$rs=mysql_query($sql);
+while($row=mysql_fetch_array($rs)){ 
+$hak=array('HPK'=>'Hak Pakai', 'HPH'=>'Hak Pengelolahan');
+?>
+<tr>
+	<td align="center" class="isikiri"><?php echo $i ?></td>
+	<td class="isi"><?php echo $row['namabarang'] ?></td>
+	<td align="center" class="isi"><?php echo $row['kodebarang'] ?></td>
+	<td align="center" class="isi"><?php echo $row['noseri'] ?></td>
+	<td align="center" class="isi"><?php echo $row['luas'] ?></td>
+	<td align="center" class="isi"><?php echo $row['thn_pengadaan'] ?></td>
+	<td class="isi"><?php echo $row['alamat'] ?></td>
+	<td align="center" class="isi"><?php echo $hak[$row['hak_tanah']] ?></td>
+	<td align="center" class="isi"><?php echo $row['sertifikat_tgl'] ?></td>
+	<td align="center" class="isi"><?php echo $row['sertifikat_no'] ?></td>
+	<td align="center" class="isi"><?php echo $row['penggunaan'] ?></td>
+	<td align="center" class="isi"><?php echo $row['asalusul'] ?></td>
+	<td align="center" class="isi"><?php echo $row['harga_perolehan'] ?></td>
+	<td align="center" class="isi"><?php echo $row['ket'] ?></td>
+</tr>
+<?php 
+$i++;
+}
+?>
+</table>
+</body>
+</html>

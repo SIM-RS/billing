@@ -1,0 +1,4 @@
+select MA_KODE,jurnal.* from jurnal inner join ma_sak on jurnal.FK_SAK=ma_sak.MA_ID where MA_KODE like '51%';
+select JTRANS_KODE,JTRANS_NAMA,MA_KODE from jenis_transaksi left join detil_transaksi on JTRANS_ID=fk_jenis_trans left join ma_sak on fk_ma_sak=MA_ID where MA_KODE like '511%';
+select * from jenis_transaksi where JTRANS_NAMA like'%BEBAN%';
+select * from detil_transaksi where fk_jenis_trans='10075';

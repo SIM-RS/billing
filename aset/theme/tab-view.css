@@ -1,0 +1,15 @@
+div.TabView
+{
+	font-family: Verdana, Sans-Serif;
+	font-size:   12px;
+	margin-left: 30px;	
+}
+.TabOver {
+	background-color:#E2EAAC;
+	cursor: pointer;
+}
+
+.TabOut{
+	background-color:#D8FEF2;
+	cursor:default;
+}

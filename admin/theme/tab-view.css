@@ -1,0 +1,44 @@
+div.TabView
+{
+	font-family: Verdana, Sans-Serif;
+	font-size:   12px;
+	margin-left: 30px;
+	background-color:#C5F7E6; /*#D8FEF2;*/
+}
+.TabCaptionBorder {
+	border-bottom:none;
+	border-top:none;
+	border-left:none;
+	border-right:none;
+}
+.TabOver {
+	background-color:#E2EAAC;
+	cursor: pointer;
+	border-bottom:solid 1px;
+	border-top:solid 1px;
+	border-left:solid 1px;
+	border-right:solid 1px;
+}
+.TabOut{
+	background-color: #C5F7E6;/*#D8FEF2;*/
+	cursor:default;
+	border-top:solid 1px;
+	border-left:solid 1px;
+	border-right:solid 1px;
+	border-bottom:none;
+}
+.TabInvisible{
+	cursor:default;
+	border-right:none;
+	border-bottom:none;
+	border-right:none;
+	border-top:none;
+}
+.DivPage{
+	background-color: #C5F7E6;/*#D8FEF2;*/
+	cursor:default;
+	border-bottom:none;
+	border-top:none;
+	border-left:none;
+	border-right:none;
+}

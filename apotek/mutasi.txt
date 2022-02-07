@@ -1,0 +1,3 @@
+$sql="call gd_mutasi($idunit, unit_id_tujuan, 0, 'a_nokirim', a_obat_id, kp_id_asal, kp_id_tujuan, qty,1,$iduser, 1, '$tgl_kirim', '$tgl_act')";
+//echo $sql."<br>";
+$rs=mysqli_query($konek,$sql);

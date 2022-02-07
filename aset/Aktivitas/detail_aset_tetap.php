@@ -1,0 +1,682 @@
+<?php
+include '../sesi.php';
+$date_now=gmdate('d-m-Y',mktime(date('H')+7));
+date_default_timezone_set("Asia/Jakarta");
+$tgl1=gmdate('d-m-Y',mktime(date('H')+7));
+$th=explode("-",$tgl1);
+$bulan=$_REQUEST['bulan'];
+if ($bulan=="") $bulan=(substr($th[1],0,1)=="0")?substr($th[1],1,1):$th[1];
+$ta=$_REQUEST['ta'];
+if ($ta=="") $ta=$th[2];
+$tetap_opener = "idbarang*kodebarang*namabarang";
+//==========================================================
+include("../koneksi/konek.php");
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+        window.location='$def_loc';
+        </script>";
+}
+$id_kib_seri = explode('|',$_GET['id_kib']);
+if(isset($_POST['act']) && $_POST['act'] != '') {
+    $act = $_POST["act"];
+    $t_userid = $_SESSION["userid"];
+    $t_updatetime = date("Y-m-d H:i:s");
+    $t_ipaddress =  $_SERVER['REMOTE_ADDR'];
+    if ($act=="Save") {
+		$kodebarang = $_POST['kodebarang'];
+        switch (substr($kodebarang, 0, 5)) {
+            case "05.17" :
+                $judul = $_POST["judul"];
+                $spesifikasi = $_POST["spesifikasi"];
+				$pengarang = $_POST["pengarang"];
+               $part = " buku_judul = '$judul', buku_spek = '$spesifikasi',buku_pengarang = '$pengarang' ";
+                break;
+            case "05.18" :
+                $asaldaerah = $_POST["asaldaerah"];
+                $pencipta = $_POST["pencipta"];
+                $bahan = $_POST["bahan"];
+                $part = " seni_asal = '$asaldaerah', seni_pencipta = '$pencipta', seni_bahan = '$bahan' ";
+                break;
+            case "05.19" :
+                $jenisbarang = $_POST["jenisbarang"];
+                $ukuran = $_POST["ukuran"];
+                $ukuran_satuan = $_POST["ukuran_satuan"];
+                $part = " jenis = '$jenisbarang', ukuran = '$ukuran $ukuran_satuan' ";
+                break;
+        }
+
+        $caraperolehan = $_POST["asalusul"];
+        $tahunpengadaan= $_POST["thn"];
+        $harga = $_POST["harga"];
+        $idbrg = $_POST["idbarang"];
+        $tgldisetujui = tglSQL($_POST["tgldisetujui"]);
+        $namapetugas2 = $_POST["namapetugas2"];
+        $jabatanpetugas2 = $_POST["jabatanpetugas2"];
+        $tgldiisi = tglSQL($_POST["tgldiisi"]);
+        $noseri = $_POST["noseri"];
+		$idseri = $_POST["idseri"];
+		$kondisi = $_POST['kondisi'];
+		$idlokasi = $_POST['idlokasi'];
+		
+		$sqlIns="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update KIB Aset Tetap Lainnya','UPDATE as_seri2 set ms_idlokasi=$idlokasi,noseri=$noseri,idbarang =$idbrg,harga_perolehan=$harga,thn_pengadaan = $tahunpengadaan, asalusul =$caraperolehan,kondisi=$kondisi where idseri = $idseri','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns);
+					
+		$query = "UPDATE as_seri2 set ms_idlokasi='$idlokasi',noseri='$noseri',idbarang ='$idbrg',harga_perolehan='$harga',thn_pengadaan = '$tahunpengadaan', asalusul = '$caraperolehan',kondisi='$kondisi' where idseri = $idseri"; 
+		
+		$rs = mysql_query($query);
+		$res2 = mysql_affected_rows();
+		$sqlIns1="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update KIB Aset Tetap Lainnya','UPDATE kib05 SET $part where idseri = $idseri','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns1);
+		$query = "UPDATE kib05 SET $part where idseri = $idseri"; 
+
+$rs = mysql_query($query);
+        $res = mysql_affected_rows();
+        if($res2 >= 0) {
+            echo "<script>
+                alert('Data Berhasil Dirubah !!.');
+                window.location = 'aset.php';
+                </script>";
+        }
+        else {
+            echo "<script>
+                alert('Terdapat kesalahan. $res');
+                </script>";
+        }
+    }
+	  else if($act == 'Delete') {
+        $query = "delete from as_seri2 where idseri = ".$id_kib_seri[0];
+		$rs = mysql_query($query);
+        $query="delete from kib01 where idseri = ".$id_kib_seri[0];
+        $rs = mysql_query($query);
+        $res = mysql_affected_rows();
+        if($res >=0) {
+            echo "<script>
+                alert('Berhasil menghapus data.');
+                window.location = 'aset.php';
+                </script>";
+        }else {
+            echo "<script>
+                alert('Terdapat kesalahan. $res');
+                </script>";
+        }
+    }
+}
+
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+		<script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <title>KIB Aset Tetap Lainya</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <?php
+			//include('baranglist_tanah.php');
+            include("../header.php");
+            $act = $_GET['act'];
+            if($act == 'edit') {
+                $vis_view = 'none';
+                $vis_edit = '';
+            }
+            else {
+                $vis_view = '';
+                $vis_edit = 'none';
+            }
+            $par = "?act=$act";
+            if(isset($id_kib_seri[0]) && $id_kib_seri[0] != '') {
+                $par .= "&idkib=$id_kib_seri[0]|$id_kib_seri[1]";
+            }
+
+         $sqltnh = "SELECT
+					u.kodeunit,
+					u.namaunit,
+					s.ms_idunit,
+					s.ms_idlokasi,
+					s.idbarang,
+					b.kodebarang,
+					b.namabarang,
+					s.noseri,
+					s.asalusul,
+					l.namalokasi,
+					k.luas,
+					k.alamat,
+					k.hak_tanah,
+					k.sertifikat_tgl,
+					k.sertifikat_no,
+					k.penggunaan,
+					k.ket,
+					s.thn_pengadaan
+				  FROM as_seri2 s
+					INNER JOIN as_ms_barang b
+					  ON s.idbarang = b.idbarang
+					INNER JOIN as_ms_unit u
+					  ON s.ms_idunit = u.idunit
+					INNER JOIN as_lokasi l
+					  ON s.ms_idlokasi = l.idlokasi
+					INNER JOIN kib01 k
+					  ON s.idseri = k.idseri
+                    WHERE k.idseri = '".$id_kib_seri[0]."' and s.idseri = '".$id_kib_seri[0]."'";
+            $dttnh = mysql_query($sqltnh);
+            $rwtnh = mysql_fetch_array($dttnh);
+            ?>
+            <div>
+            <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>&nbsp;</td>
+
+  </tr>
+  <tr>
+<td align="center">
+ <div align="center">
+                            <?php
+                           // include("../header.php");
+                            $act = $_GET['act'];
+                            if($act == 'edit') {
+                                $vis_view = 'none';
+                                $vis_edit = '';
+                            }
+                            else {
+                                $vis_view = '';
+                                $vis_edit = 'none';
+                            }
+                            $par = "?act=$act";
+                            if(isset($id_kib_seri[1]) && $id_kib_seri[1] != '') {
+                                $par .= "&id_kib=$id_kib_seri[0]|$id_kib_seri[1]";
+                            }
+
+                           /*$query = "select kodeunit,namaunit,kodebarang,namabarang,idseri,noseri,catperlengkapan,keadaanalat,kondisiperolehan,k.*,keterangan
+                    from as_seri2 s inner join as_transaksi t on s.idtransaksi=t.idtransaksi
+                    inner join as_ms_unit u on u.idunit=t.idunit
+                    inner join as_ms_barang b on b.idbarang=t.idbarang
+                    inner join as_kib k on k.idtransaksi=t.idtransaksi
+                    left join as_ms_sumberdana ams on k.idsumberdana = ams.idsumberdana
+                    where k.id_kib = '".$id_kib_seri[0]."' and s.idseri = '".$id_kib_seri[1]."'";
+							*/
+						 $query = "select * from as_seri2 s 
+							inner join as_ms_barang b on b.idbarang=s.idbarang
+							inner join as_ms_unit u on u.idunit = s.ms_idunit
+							inner join as_lokasi l on l.idlokasi = s.ms_idlokasi
+							inner join kib05 k on k.idseri=s.idseri where s.idseri='".$id_kib_seri[1]."'";
+                            $rs = mysql_query($query);
+                            $rows = mysql_fetch_array($rs);
+							if(mysql_num_rows($rs)==0){
+							
+						 $query = "select * from as_seri2 s 
+							inner join as_ms_barang b on b.idbarang=s.idbarang
+							inner join as_ms_unit u on u.idunit = s.ms_idunit
+							inner join kib05 k on k.idseri=s.idseri where s.idseri='".$id_kib_seri[1]."'";
+                            $rs = mysql_query($query);
+                            $rows = mysql_fetch_array($rs);
+							}
+
+                            $div_buku = "none";
+                            $div_budaya = "none";
+                            $div_ternak = "none";
+							//echo 
+                            switch (substr($rows['kodebarang'], 0,5)) {
+                                case "05.17" :
+                                    $div_buku = "block";
+                                    break;
+                                case "05.18" :
+                                    $div_budaya = "block";
+                                    break;
+                                case "05.19" :
+                                    $div_ternak = "block";
+                                    break;
+                            }
+                            ?>
+                            <table width="625" border="0" cellspacing="0" cellpadding="2" align="center">
+                                <tr>
+                                    <td height="30" colspan="2" valign="bottom" align="right">
+                                        <button class="Enabledbutton" id="backbutton" onClick="backTo();" title="Back" style="cursor:pointer">
+                                            <img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Back to List
+                                        </button>
+                                        <button class="EnabledButton" id="editButton" name="editButton" onClick="action(this.title)" title="Edit" style="cursor:pointer"><!--location='editMesin.php?id_kib=<-?php echo $id_kib_seri[0];?>'-->
+                                            <img alt="edit" src="../images/editsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Edit Record
+                                        </button>
+                                        <button class="DisabledButton" id="saveButton" onClick="action(this.title)" title="Save" style="display: none;cursor:pointer">
+                                            <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Save Record
+                                        </button>
+                                        <button class="Disabledbutton" id="undobutton" disabled onClick="location='detail_aset_tetap.php<?php echo $par?>'" title="Cancel / Refresh" style="cursor:pointer">
+                                            <img alt="undo/refresh" src="../images/undosmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Undo/Refresh
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id="div_view" style="display: <?php echo $vis_view;?>">
+                                <table width="600" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                    <tr>
+                                        <td height="25" colspan="2" align="center" class="header">
+                                            .: Kartu Inventaris Barang : Aset Tetap Lainnya - Detail :.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Unit Kerja </td>
+                                        <td class="content">&nbsp;
+                                            <?php echo $rows["namaunit"]; ?>
+                                            (
+                                            <?php echo $rows["kodeunit"]; ?>
+                                            )
+                                        </td>
+                                    </tr>
+									<tr>
+                                        <td class="label">Unit lokasi </td>
+                                        <td class="content">&nbsp;
+                                            <?php echo $rows["namalokasi"]; ?>
+                                            (
+                                            <?php echo $rows["kodelokasi"]; ?>
+                                            )
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="148" class="label">Kode Barang - Seri</td>
+                                        <td width="442" class="content">&nbsp;
+                                            <?php echo $rows["kodebarang"].' - '.str_pad($rows["noseri"], 4, "0", STR_PAD_LEFT); ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label"> Nama Barang </td>
+                                        <td class="content">&nbsp;
+                                            <?php echo $rows["namabarang"]; ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="header2">I. UNIT BARANG </td>
+                                    </tr>
+                                </table>
+                                <div id="buku" style="display: <?php echo $div_buku;?>;">
+                                    <table width="600" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                        <tr>
+                                            <td width="148" class="label">Judul Buku / Pencipta</td>
+                                            <td width="442" class="content">&nbsp;
+                                                <?php echo $rows["buku_judul"]; ?>
+                                            </td>
+                                        </tr>
+										<tr>
+                                            <td class="label">Pengarang</td>
+                                            <td class="content">&nbsp;
+                                                <?php echo $rows["buku_pengarang"]; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Spesifikasi</td>
+                                            <td class="content">&nbsp;
+                                                <?php echo $rows["buku_spek"]; ?>
+                                            </td>
+                                        </tr>
+                                        <!--tr>
+                                            <td class="label" valign="top">Kondisi Barang </td>
+                                            <td class="content">&nbsp;
+                                                <-?php
+                                                switch ($rows["keadaanalat"]) {
+                                                    case 1 : echo "Baik";
+                                                        break;
+                                                    case 2 : echo "Rusak Ringan";
+                                                        break;
+                                                    case 3 : echo "Rusak Berat";
+                                                        break;
+                                                    case 4 : echo "Tidak Berfungsi";
+                                                        break;
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr-->
+                                    </table>
+                                </div>
+                                <div id="budaya" style="display: <?php echo $div_budaya;?>;">
+                                    <table width="600" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                        <tr>
+                                            <td width="148" class="label">Asal Daerah</td>
+                                            <td width="442" class="content">&nbsp;
+                                                <?php echo $rows["seni_asal"]; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Pencipta</td>
+                                            <td class="content">&nbsp;
+                                                <?php echo $rows["seni_pencipta"]; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Bahan</td>
+                                            <td class="content">&nbsp;
+                                                <?php echo $rows["seni_bahan"]; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div id="ternak" style="display: <?php echo $div_ternak;?>;">
+                                    <table width="600" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                        <tr>
+                                            <td width="148" class="label">Jenis</td>
+                                            <td width="442" class="content">&nbsp;
+                                                <?php echo $rows["jenis"]; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Ukuran</td>
+                                            <td class="content">&nbsp;
+                                                <?php echo $rows["ukuran"].' '.$rows["ukuran_satuan"]; ?>
+                                            </td>
+                                        </tr>
+                                        <!--tr>
+                                            <td class="label" valign="top">Kondisi Barang </td>
+                                            <td class="content">&nbsp;
+                                                <-?php
+                                                switch ($rows["keadaanalat"]) {
+                                                    case 1 : echo "Baik";
+                                                        break;
+                                                    case 2 : echo "Rusak Ringan";
+                                                        break;
+                                                    case 3 : echo "Rusak Berat";
+                                                        break;
+                                                    case 4 : echo "Tidak Berfungsi";
+                                                        break;
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr-->
+                                    </table>
+                                </div>
+                                <table width="600" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                    <tr>
+                                        <td class="label" valign="top">Kondisi Barang </td>
+                                        <td class="content">&nbsp;
+                                            <?php
+                                            switch ($rows["kondisi"]) {
+                                                case 'B' : echo "Baik";
+                                                    break;
+                                                case 'RR' : echo "Rusak Ringan";
+                                                    break;
+                                                case 'RB' : echo "Rusak Berat";
+                                                    break;
+                                                case 'TB' : echo "Tidak Berfungsi";
+                                                    break;
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="header2">II. PENGADAAN BARANG </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="148" class="label" valign="top">Cara Perolehan</td>
+                                        <td width="442" class="content">&nbsp;
+                                            <?php
+                                            echo $rows["asalusul"];                                           ?>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!--tr>
+                                        <td valign="top">Tahun Perolehan </td>
+                                        <td class="content"><-?php echo $rows["tahunperolehan"]; ?>
+                                        </td>
+                                    </tr-->
+                                    <tr>
+                                        <td valign="top" class="label">Harga</td>
+                                        <td class="content">&nbsp;
+                                            <?php echo number_format($rows["harga_perolehan"],2); ?>
+                                        </td>
+                                    </tr>
+									<tr>
+                                        <td valign="top" class="label">Tahun Pengadaan</td>
+                                        <td class="content">&nbsp;
+                                            <?php echo $rows["thn_pengadaan"]; ?>
+                                        </td>
+                                    </tr>
+                                    
+                                    
+                                    
+                                    <tr>
+                                        <td height="25" colspan="2" class="footer">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="div_edit" style="display: <?php echo $vis_edit;?>;">
+                                <form id="form1" name="form1" action="" method="post">
+                                    <table width="650" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                        <tr>
+                                            <td height="25" colspan="3" align="center" class="header">
+                                                .: Kartu Inventaris Barang : Aset tetap Lainya - Detail :.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Unit Kerja </td>
+											
+                                            <td width="504" colspan="2" class="content">
+                                                <input type="hidden" name="idseri" id="idseri" value="<?echo $id_kib_seri[1];?>" />
+												<input name="kodeunit" type="text" class="txtunedited" id="kodeunit" value="<?php echo $rows["kodeunit"]; ?>" size="20" maxlength="15" readonly />
+												&nbsp;<input name="namaunit" type="text" class="txtunedited" id="namaunit" value="<?php echo $rows["namaunit"]; ?>" size="20" maxlength="15" readonly />
+                                            </td>
+                                        </tr>
+										<tr>
+                                            <td class="label">Unit Lokasi </td>
+											
+                                            <td width="504" colspan="2" class="content">
+                                             <input type="hidden" name="idlokasi" id="idlokasi" />
+                                               <input name="kodelokasi" type="text" class="txtunedited" id="kodelokasi" value="<?php echo $rows["kodelokasi"]; ?>" size="20" maxlength="15" readonly />
+											   <input name="namalokasi" type="text" class="txtunedited" id="namalokasi" value="<?php echo $rows["namalokasi"]; ?>" size="20" maxlength="15" readonly />
+                                			&nbsp;   
+												<img alt="tree" title='Struktur tree kode Lokasi' style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('tree_lokasi.php?&par=idlokasi*kodelokasi*namalokasi',800,500,'msma',true)"> 
+											       </td>
+                                        </tr>
+                                        <tr>
+                                            <td width="138" class="label">Kode Barang </td>
+                                            <td colspan="2" class="content">
+                                                <input name="kodebarang" type="text" class="txtunedited" id="kodebarang" value="<?php echo $rows["kodebarang"]; ?>" size="20" maxlength="15" readonly />
+                                                <input name="noseri" type="text" class="txtunedited" id="noseri" value="<?php echo $rows["noseri"]; ?>" size="10" maxlength="5" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label"> Nama Barang </td>
+                                            <td class="content">
+											<input type="hidden" name="idbarang" id="idbarang" value="<?=$rows['idbarang'];?>" />
+                                                <input name="namabarang" type="text" class="txtunedited" id="namabarang" value="<?php echo $rows["namabarang"]; ?>" size="50" maxlength="50" readonly />
+												<img alt="tree" title='Struktur tree kode barang' style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('tree_kib_aset_tetap.php?kdbrg=<?php echo $rows["kodebarang"]."&par=".$tetap_opener; ?>',800,500,'msma',true)"> 
+											</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="header2">I. UNIT BARANG </td>
+                                        </tr>
+                                    </table>
+                                    <div id="bukuForm" style="display: <?php echo $div_buku;?>">
+                                        <table width="650" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                            <tr>
+                                                <td width="138" class="label" valign="top">Judul Buku / Pencipta</td>
+                                                <td class="content">
+                                                    <textarea class="txt" name="judul" cols="50" rows="3" id="judul"><?php echo $rows["buku_judul"]; ?></textarea>
+                                                </td>
+                                            </tr>
+											<tr>
+                                                <td valign="top" class="label">Pengarang</td>
+                                                <td class="content">
+                                                    <textarea class="txt" name="pengarang" cols="50" rows="3" id="pengarang"><?php echo $rows["buku_pengarang"]; ?></textarea>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td valign="top" class="label">Spesifikasi</td>
+                                                <td class="content">
+                                                    <textarea class="txt" name="spesifikasi" cols="50" rows="3" id="spesifikasi"><?php echo $rows["buku_spek"]; ?></textarea>
+                                                </td>
+                                            </tr>
+                                            
+                                        </table>
+                                    </div>
+                                    <div id="budayaForm" style="display: <?php echo $div_budaya;?>">
+                                        <table width="650" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                            <tr>
+                                                <td width="138" class="label">Asal Daerah</td>
+                                                <td class="content">
+                                                    <input name="asaldaerah" type="text" class="txt" id="asaldaerah" value="<?php echo $rows["seni_asal"]; ?>" size="50" maxlength="100" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">Pencipta</td>
+                                                <td class="content">
+                                                    <input name="pencipta" type="text" class="txt" id="pencipta" value="<?php echo $rows["seni_pencipta"]; ?>" size="50" maxlength="50" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td valign="top" class="label">Bahan</td>
+                                                <td class="content">
+                                                    <textarea class="txt" name="bahan" cols="50" rows="3" id="bahan"><?php echo $rows["seni_bahan"]; ?></textarea>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div id="ternakForm" style="display: <?php echo $div_ternak;?>">
+                                        <table width="650" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                            <tr>
+                                                <td width="138" class="label">Jenis</td>
+                                                <td class="content">
+                                                    <input name="jenisbarang" type="text" class="txt" id="jenisbarang" value="<?php echo $rows["jenis"]; ?>" size="50" maxlength="50" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="label">Ukuran</td>
+                                                <td class="content">
+												<?
+												$r = explode(" ",$rows["ukuran"]);
+												?>
+                                                    <input name="ukuran" type="text" class="txt" id="ukuran" value="<?php echo $r[0]; ?>" size="10" maxlength="6" />
+                                                    <select name="ukuran_satuan" id="ukuran_satuan">
+                                                        <option value=""></option>
+                                                        <?php
+                                                        $query = "SELECT idsatuan from as_ms_satuan order by nourut";
+                                                        $rs = mysql_query($query);
+                                                        while($row = mysql_fetch_array($rs)) {
+                                                            echo "<option value='".$row['idsatuan']."' ";
+                                                            if($row['idsatuan'] == $r[1]) {
+                                                                echo 'selected';
+                                                            }
+                                                            echo ">".$row['idsatuan']."</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <table width="650" border=0 cellspacing=0 cellpadding="4" bgcolor="#EDF1FE">
+                                        <tr>
+                                            <td width="138" valign="top" class="label">Kondisi barang </td>
+                                            <td class="content">
+                                                <select name="kondisi" class="txt" id="kondisi">
+                                                 <option value=''>Pilih Kondisi Barang</option>
+                                                    <option value="B" <?php if ($rows["kondisi"]=='B') echo "selected" ?>>1 - Baik</option>
+                                                    <option value="RR" <?php if ($rows["kondisi"]=='RR') echo "selected" ?>>2 - Rusak Ringan</option>
+                                                    <option value="RB" <?php if ($rows["kondisi"]=='RB') echo "selected" ?>>3 - Rusak Berat</option>
+                                                    <option value="TB" <?php if ($rows["kondisi"]=='TB') echo "selected" ?>>4 - Tidak Berfungsi</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="header2">II. PENGADAAN </td>
+                                        </tr>
+                                        <tr>
+                                            <td valign="top" class="label">Cara Perolehan</td>
+                                            <td class="content">
+                                                <select name="asalusul" class="txt" id="asalusul">
+                                                 <option value=''>Pilih Cara Perolehan</option>
+												 <?
+												 $q = mysql_query("select * from as_ms_jenistransaksi");
+												 while($d = mysql_fetch_array($q)){?>
+												 <option value="<?=$d["keterangan"];?>" <? if($d["keterangan"]==$rows["asalusul"]) echo "selected";?>><?=$d["keterangan"];?></option>
+												 <?
+												 }
+												 ?>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <!--tr>
+                                            <td valign="top" class="label">Tahun Perolehan </td>
+                                            <td class="content">
+                                                <input name="tahunperolehan" type="text" class="txt" id="tahunperolehan" value="<-?php echo $rows["tahunperolehan"]; ?>" size="10" maxlength="4" />
+                                                <font color="#666666"><em>(yyyy)</em></font>
+                                            </td>
+                                        </tr-->
+                                        <tr>
+                                            <td valign="top" class="label">Harga</td>
+                                            <td class="content">
+                                                <input name="harga" type="text" class="txt" id="harga" value="<?php echo $rows["harga_perolehan"]; ?>" size="20" maxlength="15" />
+                                            </td>
+                                        </tr>
+										<tr>
+                                            <td valign="top" class="label">Tahun Pengadaan</td>
+                                            <td class="content">
+                                                <input name="thn" type="text" class="txt" id="thn" value="<?php echo $rows["thn_pengadaan"]; ?>" size="20" maxlength="15" />
+                                            </td>
+                                        </tr>
+                                                             
+
+                                        
+                                        
+                                        <tr>
+										<input type="hidden" id="act" name="act" />
+                                            <td height="25" colspan="3" class="footer">&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </form>
+                            </div>
+                        </div>
+            <table><tr><td height="10"></td></tr></table>
+            <div><img src="../images/foot.gif" width="1000" height="45"></div>
+            </td>
+
+  </tr>
+</table>
+            </div>
+        </div>
+    </body>
+    <iframe height="193" width="168" name="gToday:normal:agenda.js"
+            id="gToday:normal:agenda.js"
+            src="../theme/popcjs.php" scrolling="no"
+            frameborder="1"
+            style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+    </iframe>
+    <script type="text/javascript" language="javascript">
+	function resettgl(){
+	document.getElementById('tglsert').value='';
+	//alert('aaa');
+	}
+        var arrRange=depRange=[];
+        function action(choose){
+            switch(choose){
+                case 'Edit':
+                    document.getElementById('undobutton').disabled = false;
+                    //document.getElementById('deleteButton').disabled = true;
+                    document.getElementById('div_view').style.display = 'none';
+                    document.getElementById('div_edit').style.display = '';
+                    document.getElementById('saveButton').style.display = '';
+                    document.getElementById('editButton').style.display = 'none';
+                    break;
+                case 'Delete':
+                    if(confirm("Yakin akan menghapus data ini?")){
+                        document.getElementById('act').value = choose;
+                        document.getElementById('form1').submit();
+                    }
+                    break;
+                case 'Save':
+                    document.getElementById('act').value = choose;
+                    document.getElementById('form1').submit();
+                    break;
+            }
+        }
+        function backTo(){
+            if('<?php echo $_REQUEST['from']?>' == '')
+            {
+                location='aset.php';
+            }else{
+                location='<?php echo $_REQUEST['from']."?unit=".$_REQUEST['unit']."&lokasi=".$_REQUEST['lokasi']."&namaunit=".$_REQUEST['namaunit']."&namalokasi=".$_REQUEST['namalokasi']."&baris=".$_REQUEST['baris'];?>';
+            }
+        }
+    </script>
+</html>

@@ -1,0 +1,53 @@
+SELECT
+  id,
+  kso_id,
+  pasien,
+  tgl,
+  nama,
+  SUM(qty*biaya+qty_hari*tarip_k) AS biaya,
+  SUM(qty*biaya_kso+qty_hari*beban_kso_k) AS biaya_kso,
+  SUM(qty*biaya_pasien+qty_hari*beban_pasien_k) AS biaya_pasien,
+  SUM(bayar_kso+bayar_kso_k) AS bayar_kso,
+  SUM(bayar_pasien+bayar_pasien) AS bayar_pasien
+FROM (SELECT
+        k.id,
+        k.kso_id,
+        ps.nama        AS pasien,
+        DATE_FORMAT(k.tgl,'%d-%m-%Y') AS tgl,
+        u.nama,
+        t.qty,
+        t.biaya,
+        t.biaya_kso,
+        t.biaya_pasien,
+        t.bayar_kso,
+        t.bayar_pasien,
+        IFNULL(tk.tarip,0) AS tarip_k,
+        IFNULL(tk.beban_kso,0) AS beban_kso_k,
+        IFNULL(tk.beban_pasien,0) AS beban_pasien_k,
+        IFNULL(tk.bayar,0) AS bayar_k,
+        IFNULL(tk.bayar_kso,0) AS bayar_kso_k,
+        IFNULL(tk.bayar_pasien,0) AS bayar_pasien_k,
+        IF(tk.tgl_out IS NULL,1,IF(tk.tgl_in<='2010-12-01',1,0)) AS qty_hari
+        
+      FROM $dbbilling.b_kunjungan k
+        INNER JOIN $dbbilling.b_pelayanan p
+          ON k.id = p.kunjungan_id
+        INNER JOIN $dbbilling.b_tindakan t
+          ON p.id = t.pelayanan_id
+        INNER JOIN $dbbilling.b_ms_pasien ps
+          ON k.pasien_id = ps.id
+        INNER JOIN $dbbilling.b_ms_unit u
+          ON u.id = p.unit_id
+        LEFT JOIN $dbbilling.b_tindakan_kamar tk
+          ON p.id = tk.pelayanan_id
+      WHERE p.id >= (SELECT
+                       pl.id
+                     FROM $dbbilling.b_pelayanan pl
+                       INNER JOIN $dbbilling.b_ms_unit u
+                         ON pl.unit_id = u.id
+                     WHERE u.inap = 1
+                         AND pl.kunjungan_id = k.id
+                     ORDER BY pl.id
+                     LIMIT 1)
+          AND k.kso_id = '1'
+          AND t.tgl = '2010-12-01') t1 GROUP BY id

@@ -1,0 +1,58 @@
+body{
+	/*background:url(../images/body.jpg);*/
+	background:#000000;
+}
+#wrapper{
+ width:1024px;
+ margin:10px auto;
+ padding:0;
+}
+#header{
+ height: 150px;
+ background-image:url(../images/header.png); 
+ background-position:center;
+ margin:0 auto;
+ padding:0;
+ border-radius:10px 10px 0 0;
+}
+#topmenu{
+ background-color:#f4f4f4;
+ border:1px solid #C2DAFF;
+}
+#content{
+ margin:0 auto;
+ min-height:400px;
+ border:1px solid #C2DAFF;
+ background-color:#f4f4f4;
+}
+#footer{
+ margin:0 auto;
+ height: 40px;
+ background-position:center;
+ background-color: #336699;
+ padding:10px 5px 0 5px;
+ color:#FFF;
+ font:Arial;
+ font-size:15px;
+ font-weight:bold;
+ border-radius:0 0 10px 10px;
+}
+
+#login{
+ background-image:url(../images/login.gif); 
+ background-position:center; 
+ background-repeat:repeat-x; 
+ font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif;
+ font-size:12px;
+}
+	
+#sidelogin{
+ background-image:url(../images/side.gif); 
+ background-position:center; 
+ background-repeat:repeat-x; 
+ font-family:"Lucida Sans Unicode", "Lucida Grande", sans-serif;
+ font-size:12px;
+}
+.tbllogin {
+ background: #D6E5D2;
+}

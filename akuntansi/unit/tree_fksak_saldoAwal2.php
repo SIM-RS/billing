@@ -1,0 +1,238 @@
+<?php 
+session_start();
+include("../koneksi/konek.php");
+//if (isset($_SESSION["PATH_MS_MA"]))
+//	$PATH_INFO=$_SESSION["PATH_MS_MA"];
+//else{
+	$PATH_INFO="?".$_SERVER['QUERY_STRING'];
+	$_SESSION["PATH_MS_MA"]=$PATH_INFO;
+//}
+$par=$_REQUEST['par'];
+$par=explode("*",$par);
+
+?>
+<html>
+<title>Tree Rekening</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<script language="JavaScript" src="../theme/js/mod.js"></script>
+<link rel="stylesheet" href="../theme/simkeu.css" type="text/css" />
+<style>
+BODY, TD {font-family:Verdana; font-size:7pt}
+.NormalBG 
+{
+	background-color : #FFFFFF;
+}
+
+.AlternateBG { 
+	background-color : #FFFFFF;
+}
+
+</style>
+<body style="border-width:0px;" bgcolor="#CCCCCC" topmargin="0" leftmargin="0" onLoad="javascript:if (window.focus) window.focus();">
+<div align="center">
+<table border=1 cellspacing=0 width="98%">
+<tr><td class=GreenBG align=center><font size=1><b>
+.: Data Rekening :.
+</b></font></td></tr>
+<tr bgcolor="whitesmoke"><td nowrap>
+<?php	
+  // Detail Data Parameters
+  if (isset($_REQUEST["p"])) {
+  	  $_SESSION['itemtree.filter'] = $_REQUEST["p"];
+	  $p = $_SESSION['itemtree.filter'];	
+  }
+  else
+  {
+	  if ($_SESSION['itemtree.filter'])
+	  $p = $_SESSION['itemtree.filter'];
+  }
+  /*********************************************/
+  /*  Read text file with tree structure       */
+  /*********************************************/
+  
+  /*********************************************/
+  /* read file to $tree array                  */
+  /* tree[x][0] -> tree level                  */
+  /* tree[x][1] -> item text                   */
+  /* tree[x][2] -> item link                   */
+  /* tree[x][3] -> link target                 */
+  /* tree[x][4] -> last item in subtree        */
+  /*********************************************/
+  //$tree=array();
+  $canRead = true;
+  $maxlevel=0;
+  $cnt=0;
+  $strSQL = "select * from ak_ms_beban_jenis where aktif=1 order by kode";
+  //echo $strSQL;
+  $rs = mysql_query($strSQL);
+  while ($rows=mysql_fetch_array($rs)){
+		 $c_level = $rows["level"];
+		 $c_islast = $rows["islast"];
+		 
+		// $cc_rv_kso_pbf_umum = $rows["CC_RV_KSO_PBF_UMUM"];
+		 
+		 $tree[$cnt][0]= $c_level;
+		 $tree[$cnt][1]= $rows["kode"]." - ".$rows["nama"];
+		 
+		 /*
+		 switch ($cc_rv_kso_pbf_umum){
+			case 1:
+				$tree[$cnt][2] = null;
+			 	$tree[$cnt][3]= "";
+			 	$tree[$cnt][4]= 0;
+			 	if ($tree[$cnt][0] > $maxlevel) 
+					$maxlevel=$tree[$cnt][0];    
+			 	$cnt++;
+
+				//$sql="SELECT * FROM ak_ms_unit ORDER BY kode";
+				$sql="SELECT * FROM ak_ms_beban_jenis ORDER BY kode";
+				$rs1=mysql_query($sql);
+				while ($rw1=mysql_fetch_array($rs1)){
+					$ak_level = $rw1["level"];
+					$ak_islast=$rw1["islast"];
+					$mpkode=$rows["MA_KODE"].trim($rw1['kode']);
+					$tree[$cnt][0]= $c_level+$ak_level;
+					$tree[$cnt][1]= $mpkode." - ".$rw1["nama"];
+					if ($ak_islast==1){
+						$tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['MA_ID']."*|*".$par[1]."*-*".$mpkode."*|*".$par[2]."*-*".$rw1['nama']."*|*".$par[3]."*-*".$rw1["id"]."');window.close();";
+					}else{
+						$tree[$cnt][2] = null;
+					}
+					$tree[$cnt][3]= "";
+					$tree[$cnt][4]= 0;
+					if ($tree[$cnt][0] > $maxlevel) 
+						$maxlevel=$tree[$cnt][0];    
+					$cnt++;
+				}
+				break;
+			case 2:
+				$tree[$cnt][2] = null;
+			 	$tree[$cnt][3]= "";
+			 	$tree[$cnt][4]= 0;
+			 	if ($tree[$cnt][0] > $maxlevel) 
+					$maxlevel=$tree[$cnt][0];    
+			 	$cnt++;
+
+				$sql="SELECT * FROM $dbbilling.b_ms_kso WHERE id>1 ORDER BY kode_ak";
+				//echo $sql."<br>";
+				$rs1=mysql_query($sql);
+				while ($rw1=mysql_fetch_array($rs1)){
+					$ak_level = 1;
+					$ak_islast=1;
+					$mpkode=$rows["MA_KODE"].trim($rw1['kode_ak']);
+					$tree[$cnt][0]= $c_level+$ak_level;
+					$tree[$cnt][1]= $mpkode." - ".$rw1["nama"];
+					if ($ak_islast==1){
+						$tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['MA_ID']."*|*".$par[1]."*-*".$mpkode."*|*".$par[2]."*-*".$rw1['nama']."*|*".$par[3]."*-*".$rw1["id"]."');window.close();";
+					}else{
+						$tree[$cnt][2] = null;
+					}
+					$tree[$cnt][3]= "";
+					$tree[$cnt][4]= 0;
+					if ($tree[$cnt][0] > $maxlevel) 
+						$maxlevel=$tree[$cnt][0];    
+					$cnt++;
+				}
+				break;
+			case 3:
+				$tree[$cnt][2] = null;
+			 	$tree[$cnt][3]= "";
+			 	$tree[$cnt][4]= 0;
+			 	if ($tree[$cnt][0] > $maxlevel) 
+					$maxlevel=$tree[$cnt][0];    
+			 	$cnt++;
+
+				$sql="SELECT * FROM $dbapotek.a_pbf ORDER BY PBF_KODE_AK";
+				//echo $sql."<br>";
+				$rs1=mysql_query($sql);
+				while ($rw1=mysql_fetch_array($rs1)){
+					$ak_level = 1;
+					$ak_islast=1;
+					$mpkode=$rows["MA_KODE"].trim($rw1['PBF_KODE_AK']);
+					$tree[$cnt][0]= $c_level+$ak_level;
+					$tree[$cnt][1]= $mpkode." - ".$rw1["PBF_NAMA"];
+					if ($ak_islast==1){
+						$tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['MA_ID']."*|*".$par[1]."*-*".$mpkode."*|*".$par[2]."*-*".$rw1['PBF_NAMA']."*|*".$par[3]."*-*".$rw1["PBF_ID"]."');window.close();";
+					}else{
+						$tree[$cnt][2] = null;
+					}
+					$tree[$cnt][3]= "";
+					$tree[$cnt][4]= 0;
+					if ($tree[$cnt][0] > $maxlevel) 
+						$maxlevel=$tree[$cnt][0];    
+					$cnt++;
+				}
+				break;
+			case 4:
+				$tree[$cnt][2] = null;
+			 	$tree[$cnt][3]= "";
+			 	$tree[$cnt][4]= 0;
+			 	if ($tree[$cnt][0] > $maxlevel) 
+					$maxlevel=$tree[$cnt][0];    
+			 	$cnt++;
+
+				$sql="SELECT * FROM $dbaset.as_ms_rekanan ORDER BY koderekanan";
+				//echo $sql."<br>";
+				$rs1=mysql_query($sql);
+				while ($rw1=mysql_fetch_array($rs1)){
+					$ak_level = 1;
+					$ak_islast=1;
+					$mpkode=$rows["MA_KODE"].trim($rw1['koderekanan']);
+					$tree[$cnt][0]= $c_level+$ak_level;
+					$tree[$cnt][1]= $mpkode." - ".$rw1["namarekanan"];
+					if ($ak_islast==1){
+						$tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['MA_ID']."*|*".$par[1]."*-*".$mpkode."*|*".$par[2]."*-*".$rw1['namarekanan']."*|*".$par[3]."*-*".$rw1["idrekanan"]."');window.close();";
+					}else{
+						$tree[$cnt][2] = null;
+					}
+					$tree[$cnt][3]= "";
+					$tree[$cnt][4]= 0;
+					if ($tree[$cnt][0] > $maxlevel) 
+						$maxlevel=$tree[$cnt][0];    
+					$cnt++;
+				}
+				break;
+			default:*/
+			
+			
+			
+				//$tree[$cnt][2] = null;
+			 	$tree[$cnt][3]= "";
+			 	$tree[$cnt][4]= 0;
+			 	if ($tree[$cnt][0] > $maxlevel) 
+					$maxlevel=$tree[$cnt][0];    
+			 	
+			
+					
+			
+				if (($c_islast==1)){
+					$tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['id']."*|*".$par[1]."*-*".$rows['kode']."*|*".$par[2]."*-*".$rows['nama']."*|*".$par[3]."*-*0');window.close();";
+				}else{
+					$tree[$cnt][2] = null;
+				}
+				$cnt++;
+		 } 
+	//}
+	mysql_free_result($rs);
+include("../theme/treemenu.inc.php");
+
+?>
+</td></tr>
+</table>
+</div>
+</body>
+<script language="javascript">
+function goEdit(pid,pkode,pnama,plvl) {
+  window.opener.document.form1.idbarang.value = pid;
+  window.opener.document.form1.namabarang.value = pnamabarang;
+  window.opener.document.form1.idbarang.value = pidbarang;
+  window.opener.document.form1.namabarang.value = pnamabarang;
+  window.close();
+}
+
+
+</script>
+</html>
+<?php 
+mysql_close($konek);
+?>

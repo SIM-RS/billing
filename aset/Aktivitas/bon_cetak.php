@@ -1,0 +1,317 @@
+<?php
+include '../sesi.php';
+// is valid users
+include '../koneksi/konek.php';
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$r_formatlap = $_POST["formatlap"];
+
+switch ($r_formatlap) {
+    case "XLS" :
+        Header("Content-Type: application/vnd.ms-excel");
+        break;
+    case "WORD" :
+        Header("Content-Type: application/msword");
+        break;
+    default :
+        Header("Content-Type: text/html");
+        break;
+}
+
+if (isset($_POST["submit"])) {
+    $r_cmbperolehan = $_POST["cmbperolehan"];
+	$idbarang = $_POST["idbarang"];
+	$kodebarang = $_POST["kodebarang"];
+	$namabarang = $_POST["namabarang"];
+    if ($r_cmbperolehan=="1") {
+        $strTGL="select min(tgltransaksi) as awal,max(tgltransaksi) as akhir from as_transaksi";
+        $rs = mysql_query($strTGL);
+        $rowTgl = mysql_fetch_array($rs);
+        $r_tglawal=$rowTgl["awal"];
+        $r_tglakhir=$rowTgl["akhir"];
+    }else {
+        $r_tglawal = tglSQL($_POST["tglawal"]);
+        $r_tglakhir = tglSQL($_POST["tglakhir"]);
+    }
+   // $r_idunit = $_POST["idunit"];
+}
+
+if(($_GET['no_bon'] != '' && isset($_GET['no_bon']))&&($_GET['tgl_bon'] != '' && isset($_GET['tgl_bon']))) {
+    $no_bon=$_GET['no_bon'];
+    $tgl_bon=$_GET['tgl_bon'];
+    $sql = "select tgl_transaksi,petugas_rtp,petugas_unit,petugas_gudang,date_format(tgl_transaksi,'%d-%m-%Y') as tgl_transaksi,kode_transaksi,lokasi_id,unit_id
+                from as_keluar k inner join as_ms_barang ab on k.barang_id = ab.idbarang
+                where kode_transaksi = '".$no_bon."' and tgl_transaksi = '".$tgl_bon."'
+            order by klr_id asc";
+    $rs1 = mysql_query($sql);
+    $res = mysql_affected_rows();
+    if($res > 0) {        
+        $rows1 = mysql_fetch_array($rs1);
+        $tgl = $rows1['tgl_transaksi'];
+        $petugas_rtp = $rows1['petugas_rtp'];
+        $petugas_unit = $rows1['petugas_unit'];
+	$petugas_gudang = $row1['petugas_gudang'];
+        $lokasi_id = $rows1['lokasi_id'];
+	$unit_id = $rows1['unit_id']; 
+        mysql_free_result($rs1);
+    }
+}
+//generate barcode
+require("php-barcode.php");
+
+function getvar($name){
+    global $_GET, $_POST;
+    if (isset($_GET[$name])) return $_GET[$name];
+    else if (isset($_POST[$name])) return $_POST[$name];
+    else return false;
+}
+
+if (get_magic_quotes_gpc()){
+    $code=stripslashes(getvar('code'));
+} else {
+    $code=getvar('code');
+}
+/* if (!$code) $code=$_REQUEST['code'];
+
+barcode_print($code,getvar('encoding'),getvar('scale'),getvar('mode')); */
+
+/*
+ * cara memanggil
+ * http://........./barcode.php?code=012345678901
+ *   or
+ * http://........./barcode.php?code=012345678901&encoding=EAN&scale=4&mode=png
+ *
+ */
+
+
+?>
+<style>
+
+@font-face {
+
+font-family: asdf;
+
+src: url(code128.ttf);
+
+font-style:normal; font-weight:200;
+
+}
+</style>
+<html>
+    <head>
+        <title>BPB/BBK</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link href="../theme/report.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+	<table>
+	    <tr id="trCetak">
+		<td>
+		    <input type="button" value="CETAK" onClick="cetak()"/>
+		    <input type="button" value="TUTUP" onClick="window.close()"/>
+		</td>
+	    </tr>
+	    <tr><td align="center">
+		<strong><font size="4" face="Times New Roman, Times, serif">
+	Bukti Pemindahan Barang / Bukti Barang Keluar (BPB/BBK)</font><br />
+                <font size="3" face="Times New Roman, Times, serif"><?php //echo $_POST['kategori_kib']; ?></font></strong>
+            <?php
+            if ($r_cmbperolehan=="2") {
+                ?>
+            <br />
+            <font size="3" face="Times New Roman, Times, serif">
+                (<?php echo date("d M Y",strtotime($r_tglawal));  ?> - <?php echo date("d M Y",strtotime($r_tglakhir));  ?>)
+            </font>
+                <?php
+            }
+            ?>
+	    </td>
+	    </tr>
+	    <tr>
+		<td>
+        
+        <table width="100%" border="0" cellpadding="1" cellspacing="0">
+          <tr>
+            <td width="15%" class="tdlabel">Tanggal&nbsp; </td>
+            <td width="60%">: <?php if(isset($tgl_bon) && $tgl_bon != '') echo tglSQL($tgl_bon);else echo date('d-m-Y'); ?></td>
+			<td width="25%" rowspan="3" >
+			<!--img src="barcode/barcode.php?code=<?php// echo $_REQUEST['code']?>" width="111" height="47" -->
+		    <img src="barcodeCreator.php?txt=<?php echo $no_bon; ?>"></td>
+          </tr>
+          <tr>
+            <td class="tdlabel">Nomor</td>
+            <td>:
+              <?php echo $no_bon;?>            </td>
+          </tr>
+          <tr>
+		  <?php
+		   $query = "select kodeunit,namaunit from as_ms_unit where idunit='$unit_id'";
+		    $rs = mysql_query($query);
+		    $row = mysql_fetch_array($rs);
+?>
+            <td class="tdlabel">
+			Unit</td>
+            <td>:
+              <?
+                  		    echo $row['kodeunit']." - ".$row['namaunit'];					
+		?>            
+		</td>
+			<td>&nbsp;</td>
+          </tr>          
+        </table>
+        <br />
+                                 
+<table border=1 cellspacing="0" cellpadding="4" class="GridStyle" width="700">
+            <tr align="center" valign="top" bgcolor="#CCCCCC" class="HeaderBW">
+                <td width="30">
+                    <font size="-2"><br />
+                        No</font>                </td>
+                <td width="100">
+                    <font size="-2"><br />
+                    Kode Barang</font></td>
+                <td width="300"><font size="-2"><br />
+                  Nama Barang</font> </td>
+		<td width="60"><font size="-2"><br />
+                  Jumlah Bon</font> </td>
+                <td width="70">
+                    <font size="-2"><br />
+                        Satuan</font></td>
+		<td width="80"><font size="-2"><br />
+                  Kategori</font> </td>
+				  <td width="300"><font size="-2"><br />
+                  Peruntukan (Lokasi)</font> </td>
+            </tr>
+            
+            <tr align="center" valign="top" bgcolor="#FFFFCC" class="SubHeaderBW">
+                <td height="10"><font size="-2">1</font></td>
+                <td height="10"><font size="-2">2</font></td>
+                <td height="10"><font size="-2">3</font></td>
+                <td height="10"><font size="-2">4</font></td>
+                <td height="10"><font size="-2">5</font></td>
+              <td height="10"><font size="-2">6</font></td>
+	      <td height="10"><font size="-2">7</font></td>
+            </tr>
+			    <?php
+                    /*    $strSQL="select kodeunit,namapanjang,namabarang,kodebarang,noseri,luastanah,tgltransaksi,substring(tglperolehan,1,4) as thn_pengadaan,alamat,";
+                        $strSQL .="statushukum,suratsertifikat,sertifikattgl,macampemanfaatan as penggunaan,caraperolehan as asalusul,hargasatuan,catpengisi as ket ";
+                        $strSQL .="from as_ms_unit u inner join as_transaksi t on u.idunit=t.idunit ";
+                        $strSQL .="inner join as_kib k on t.idtransaksi=k.idtransaksi inner join as_ms_barang b on t.idbarang=b.idbarang ";
+                        $strSQL .="inner join as_seri s on t.idtransaksi=s.idtransaksi where substring(kodebarang,1,3)='01.' and $flt and t.idunit=$r_idunit and b.tipe=1 order by id_kib,noseri";
+                        // echo $strSQL."<br />";
+						*/
+						$strSQL ="SELECT k.klr_id, k.tgl_transaksi,k.kode_transaksi,b.kodebarang,b.namabarang,k.jml_klr,k.satuan,l.namalokasi,u.namaunit,
+					IF(b.tipe=1,'INV','BPH') AS kategori 
+					FROM as_keluar k INNER JOIN as_ms_barang b ON k.barang_id=b.idbarang
+					LEFT JOIN as_ms_unit u ON k.unit_id=u.idunit 
+					LEFT JOIN as_lokasi l ON k.lokasi_id=l.idlokasi 
+					where k.tgl_transaksi='$tgl_bon' and k.kode_transaksi='$no_bon'
+					ORDER BY k.tgl_transaksi,k.kode_transaksi,b.namabarang,tipe";
+                        $rs = mysql_query($strSQL);
+                        if (mysql_affected_rows() > 0) { // Iterating through record
+			   
+                                $j = 0;
+                               // $totalharga=0;
+                                while ($rows = mysql_fetch_array($rs)) {
+                                 //   if ($j % 2) $rowStyle = "NormalBG";  else $rowStyle = "AlternateBG";
+                                    $j++;
+                                   // $totalharga +=$rows["hargasatuan"];
+                                    ?>
+            <tr class="<?php //echo $rowStyle ?>" valign="top">
+                <td align="center">
+                                            <?php
+                                            echo $j;
+                                            ?>                </td>
+                <td align="left">
+                                            <div align="center">
+                                              <?php
+                                            echo $rows["kodebarang"];
+                                            ?>
+              </div></td>
+                <td align="center">
+                <?php
+                                            echo $rows["namabarang"];
+                                            ?></td>
+				
+                <td align="center">
+                <?php
+                                            echo $rows["jml_klr"];
+                                            ?></td>
+              <td align="left" class="<?php echo $cellStyle ?>"><div align="center">
+                   <?php
+                                            echo $rows["satuan"];
+                                            ?></div></td>
+	    
+	      <td align="center">
+                   <?php
+                                            echo $rows["kategori"];
+                                            ?></td>
+		  <td align="center">
+                <?php
+                                            echo $rows["namalokasi"];
+                                            ?></td>
+            </tr>
+                                    <?php
+                                } // end while
+                                ?>
+    </table>
+<tr></tr>
+        
+	<tr>
+	    <td align="center">
+<table border="0" width="650" cellspacing="0" cellpadding="0">
+    <tr>
+	<td colspan="3" align="center" style="height:20px;">&nbsp;</td>
+    </tr>
+    <tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center"><?=$kotaRS;?>, <?php echo date("d M Y");  ?></td>
+    </tr>
+    <tr>
+	<td colspan="3" align="center" style="height:5px;">&nbsp;</td>
+    </tr>
+    
+    <tr>
+	<td align="center"><strong>YANG MENERIMA</strong></td>
+	<td align="center"><strong>PETUGAS RTP</strong></td>
+	<td align="center"><strong>PETUGAS GUDANG</strong></td>
+    </tr>
+    <tr>
+	<td colspan="3" align="center" style="height:50px;">&nbsp;</td>
+    </tr>
+    <tr>
+	<td align="center"><strong><?php echo strtoupper($petugas_unit);?></td>
+	<td align="center"><strong><?php echo strtoupper($petugas_rtp);?></td>
+	<td align="center"><strong><?php echo strtoupper($petugas_gudang);?></td>
+    </tr>
+    <tr>
+	<td align="center" ><hr style="width:120px;"/></td>
+	<td align="center" ><hr style="width:120px;"/></td>
+	<td align="center" ><hr style="width:120px;"/></td>
+    </tr>
+    <tr>        
+	<td align="center"><strong>NIP. .......................</td>
+	<td align="center"><strong>NIP. .......................</td>
+	<td align="center"><strong>NIP. .......................</td>	    
+    </tr>
+</table>
+	    </td>
+	</tr>
+	</td>
+	</tr>
+	</table>
+                            <?php
+        } 
+        ?>
+	<script>
+	    function cetak(){		
+		document.getElementById('trCetak').style.visibility='hidden';
+		window.print();
+		window.close();				
+	    }
+	</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+simrs-tangerang/billing/report_rm/pindah_ruang/action.php
+simrs-tangerang/billing/report_rm/pindah_ruang/form.php
+simrs-tangerang/billing/report_rm/pindah_ruang/index.php
+simrs-tangerang/billing/report_rm/pindah_ruang/javascript.js
+simrs-tangerang/billing/report_rm/pindah_ruang/style.css
+simrs-tangerang/billing/report_rm/Form_RSU/9.formserahtrmpasienpindahruang.php
+
+tabel b_obat_pindah_ruang(alter)obat_id dirubah menjadi PK, Notnull, Auto Incr.

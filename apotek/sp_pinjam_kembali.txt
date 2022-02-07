@@ -1,0 +1,30 @@
+DELIMITER $$;
+
+DROP PROCEDURE IF EXISTS `dbapotik`.`pinjam_kembali`$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `pinjam_kembali`(a_unit_id bigint, a_unit_id_tujuan bigint, a_obat_id bigint, kp_id int, kp_id_asal int, qty double)
+BEGIN
+  DECLARE done,selesai INT DEFAULT 0;
+  DECLARE jml,selisih,qty1,qty2 double;
+  DECLARE p_id bigint;
+  DECLARE cur1 CURSOR FOR select peminjaman_id,qty_terima,qty_kembali from a_pinjam_obat where obat_id=a_obat_id and unit_id=a_unit_id and unit_tujuan=a_unit_id_tujuan and kepemilikan_id=kp_id and kepemilikan_id_asal=kp_id_asal and (qty_terima>qty_kembali) and status=2 order by tgl,peminjaman_id;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  set jml=qty;
+  OPEN cur1;
+  WHILE ((NOT done) and (selesai<>1)) do
+    FETCH cur1 INTO p_id,qty1,qty2;
+    IF NOT done THEN
+	set selisih=qty1-qty2;
+	IF selisih >= jml THEN
+	  set selesai=1;
+	  update a_pinjam_obat set qty_kembali=qty_kembali+jml where peminjaman_id=p_id;
+	ELSE
+	  set jml=jml-selisih;
+	  update a_pinjam_obat set qty_kembali=qty_kembali+selisih where peminjaman_id=p_id;
+	END IF;
+    END IF;
+  END WHILE;
+  CLOSE cur1;
+END$$
+
+DELIMITER ;$$

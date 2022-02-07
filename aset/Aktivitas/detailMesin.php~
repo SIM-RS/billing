@@ -1,0 +1,529 @@
+<?php
+session_start();
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+include("../koneksi/konek.php");
+$idkib = $_GET['id_kib'];
+//$namaunit = $_POST["kodeunit"];
+//echo $namaunit;
+$barang_opener="par=idbarang*kodebarang*namabarang";
+//$id_kib_seri = explode('|',$_GET['id_kib']);
+if(isset($_POST['act']) && $_POST['act'] != '') {
+    $act = $_POST['act'];
+    $t_userid = $_SESSION["userid"];
+    $t_updatetime = date("Y-m-d H:i:s");
+    $t_ipaddress =   $_SERVER['REMOTE_ADDR'];
+
+    switch($act) {
+        case 'Save':
+            /*$jenisbarang =  $_POST["jenisbarang"];
+            $merk =  $_POST["merk"];
+            $tipe =  $_POST["tipe"];
+            $spesifikasi =  $_POST["spesifikasi"];
+            $tahunalat = $_POST["tahunalat"];
+            $caraperolehan = $_POST["caraperolehan"];
+            $diperolehdari =  $_POST["diperolehdari"];
+            $dasarpengadaan = $_POST["dasarpengadaan"];
+            $noreferensi =  $_POST["noreferensi"];
+            $hargasatuan = $_POST["hargasatuan"];
+            //$tahunperolehan = $_POST["tahunperolehan"];
+            $dasarharga = $_POST["dasarharga"];
+            $idsumberdana = $_POST["idsumberdana"];
+            $bano =  $_POST["bano"];
+            $batgl = tglSQL($_POST["batgl"]);
+            $surat1 =  $_POST["surat1"];
+            $surat2 =  $_POST["surat2"];
+            $namapengurus =  $_POST["namapengurus"];
+            $alamatpengurus =  $_POST["alamatpengurus"];
+            $catpengisi =  $_POST["catpengisi"];
+            $namapetugas =  $_POST["namapetugas"];
+            $jabatanpetugas =  $_POST["jabatanpetugas"];
+            $tgldisetujui = tglSQL($_POST["tgldisetujui"]);
+            $namapetugas2 =  $_POST["namapetugas2"];
+            $jabatanpetugas2 =  $_POST["jabatanpetugas2"];
+            $tgldiisi = tglSQL($_POST["tgldiisi"]);
+            */
+            
+            $namaunit           = $_POST["namaunit"];
+            $kodeunit           = $_POST["kodeunit"];
+            $kodebarang         = $_POST["kodebarang"]; 
+            $idbarangambil      = $_POST["idbarang"];
+            $namabarang         = $_POST["namabarang"];
+            $merkambil          = $_POST["merk"];
+            $tipebarang         = $_POST["tipebarang"];    
+            $kondisi            = $_POST["kondisi"];    
+            $no_pabrik          = $_POST["no_pabrik"];
+            $no_rangka          = $_POST["no_rangka"];
+            $no_mesin           = $_POST["no_mesin"];
+            $no_polisi          = $_POST["no_polisi"];
+            $no_bpkb            = $_POST["no_bpkb"];
+            $ket                = $_POST["ket"];
+            $asalusul           = $_POST["asalusul"];
+            $harga_perolehan    = $_POST["harga_perolehan"];
+            $namalokasi         = $_POST["namalokasi"];
+            $idlokasi           = $_POST["idlokasi"];
+			$seri				= $_POST["noseri"];
+            
+            /*
+            $query = "update as_kib set jenisbarang = '$jenisbarang', merk = '$merk', tipe = '$tipe', spesifikasi = '$spesifikasi', tahunalat = '$tahunalat'
+            , caraperolehan = '$caraperolehan', diperolehdari = '$diperolehdari', dasarpengadaan = '$dasarpengadaan', noreferensi = '$noreferensi'
+            , hargasatuan = '$hargasatuan', dasarharga = '$dasarharga', idsumberdana = '$idsumberdana', bano = '$bano', batgl = '$batgl', surat1 = '$surat1'
+            , surat2 = '$surat2', namapengurus = '$namapengurus', alamatpengurus = '$alamatpengurus', catpengisi = '$catpengisi', namapetugas = '$namapetugas'
+            , jabatanpetugas = '$jabatanpetugas', tgldisetujui = '$tgldisetujui', namapetugas2 = '$namapetugas2', jabatanpetugas2 = '$jabatanpetugas2'
+            , tgldiisi = '$tgldiisi', t_userid = '$t_userid', t_updatetime = '$t_updatetime', t_ipaddress = '$t_ipaddress'
+            where id_kib = ".$id_kib_seri[0];
+            $rs = mysql_query($query);
+            $res = mysql_affected_rows();
+            */
+            
+            $query =    "update as_seri2 set idbarang='$idbarangambil', noseri='$seri', asalusul='$asalusul', ms_idlokasi='$idlokasi', 
+                        kondisi='$kondisi', harga_perolehan='$harga_perolehan'where idseri='$idkib'";
+            $rs = mysql_query($query);
+            $res = mysql_affected_rows();
+            
+            if($res >= 0) {
+                
+                
+                                
+                $query = "update kib02 set merk='$merkambil', no_pabrik='$no_pabrik',
+                            no_rangka='$no_rangka',no_mesin='$no_mesin',
+                            no_polisi='$no_polisi',no_bpkb='$no_bpkb',ket='$ket'
+                            where idseri ='$idkib' ";
+                $rs = mysql_query($query);
+                $res = mysql_affected_rows()+$res;
+                if($res > 0) {
+                    $hasil = 'Data berhasil diubah.';
+                }
+                else if($res == 0){
+                    $hasil = 'Data tidak ada yang berubah.';
+                }
+                else{
+                    $hasil = 'Data gagal diubah, periksa kembali input anda.';
+                }
+                echo "<script>alert('$hasil');</script>";
+            }
+            break;
+        case 'Delete':
+            $query = "delete from as_seri where idseri = ".$id_kib_seri[1];
+            /*"update as_seri set void = 1, tglhapus = date_format(now(),'%Y-%m-%d'), t_userid = '$t_userid'
+                        , t_updatetime = '$t_updatetime', t_ipaddress = '$t_ipaddress'
+                        where idseri = ".$id_kib_seri[1];*/
+        
+            $rs = mysql_query($query);
+            $res = mysql_affected_rows();
+            if($res > 0) {
+                echo "<script>alert('Data berhasil dihapus.');
+                        window.location='mesin.php';
+                </script>";
+            }
+            else {
+                echo "<script>alert('Data gagal dihapus, coba periksa ulang data anda$res.');
+                </script>";
+            }
+            break;
+    }
+}
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <title>KIB Alat/Mesin</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <?php
+            include("../header.php");
+            $act = $_GET['act'];
+            if($act == 'edit') {
+                $vis_view = 'none';
+                $vis_edit = '';
+            }
+            else {
+                $vis_view = '';
+                $vis_edit = 'none';
+            }
+            $par = "?act=$act";
+            if(isset($id_kib_seri[0]) && $id_kib_seri[0] != '') {
+                $par .= "&id_kib=$id_kib_seri[0]|$id_kib_seri[1]";
+            }
+/*
+            $sqlmsn = "SELECT b.kodebarang,b.namabarang,u.namaunit,u.kodeunit,k.id_kib,
+                    k.jenisbarang,k.merk,k.tipe,k.spesifikasi,k.tahunalat,k.caraperolehan,k.diperolehdari,
+                    k.dasarpengadaan,k.hargasatuan,k.dasarharga,s.keterangan AS sumberdana,k.bano, date_format(k.batgl,'%d-%m-%Y') as batgl,
+                    k.surat1,k.surat2,k.namapengurus,k.alamatpengurus,k.catpengisi,k.namapetugas,
+                    k.jabatanpetugas,date_format(k.tgldisetujui,'%d-%m-%Y') as tgldisetujui,k.namapetugas2,k.jabatanpetugas2,date_format(k.tgldiisi,'%d-%m-%Y') as tgldiisi
+                    ,keadaanalat,nopabrik,norangka,nomesin,nopol,nobpkb,noreferensi,kondisiperolehan,catperlengkapan,noseri
+                    FROM as_kib k
+                    INNER JOIN as_transaksi t ON t.idtransaksi = k.idtransaksi
+                    INNER JOIN as_ms_barang b ON b.idbarang = t.idbarang
+                    INNER JOIN as_ms_unit u ON u.idunit = t.idunit
+                    LEFT JOIN as_ms_sumberdana s ON s.idsumberdana = k.idsumberdana
+                    inner join as_seri se on se.idtransaksi = t.idtransaksi
+                    WHERE LEFT(b.kodebarang,2) = 02 AND k.id_kib = '".$id_kib_seri[0]."' AND idseri = '".$id_kib_seri[1]."'";
+            $dtmsn = mysql_query($sqlmsn);
+            $rwmsn = mysql_fetch_array($dtmsn);
+            */
+            
+            $sqlmsn = "SELECT asunit.namaunit ,asunit.kodeunit, asbrg.idbarang, asbrg.kodebarang, 
+                        seri.noseri, asbrg.namabarang, seri.jenis_kib, kib.merk, asbrg.tipebarang, 
+                        seri.kondisi, kib.no_pabrik, kib.no_rangka, kib.no_mesin, kib.no_polisi, 
+                        kib.no_bpkb,kib.ket, seri.asalusul, seri.harga_perolehan, lks.namalokasi,
+                         lks.idlokasi,lks.kodelokasi 
+                        FROM as_seri2 seri
+                        LEFT JOIN as_ms_unit asunit ON seri.ms_idunit = asunit.idunit
+                        LEFT JOIN as_ms_barang asbrg ON seri.idbarang = asbrg.idbarang
+                        LEFT JOIN kib02 kib ON seri.idseri = kib.idseri
+                        LEFT JOIN as_lokasi lks ON seri.ms_idlokasi = lks.idlokasi
+                        WHERE seri.idseri =$idkib";
+            $dtmsn = mysql_query($sqlmsn);
+            $rwmsn = mysql_fetch_array($dtmsn);
+            ?>
+            
+            <div>
+            <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>&nbsp;</td>
+
+  </tr>
+  <tr>
+<td align="center">
+            <table width="625" border="0" cellspacing="0" cellpadding="2" align="center">
+                <tr>
+                    <td height="30" colspan="2" valign="bottom" align="right">
+                        <button class="Enabledbutton" id="backbutton" onClick="backTo();" title="Back" style="cursor:pointer">
+                            <img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                            Back to List
+                        </button>
+                        <button class="EnabledButton" id="editButton" name="editButton" onClick="action(this.title)" title="Edit" style="cursor:pointer"><!--location='editMesin.php?id_kib=<-?php echo $id_kib_seri[0];?>'-->
+                            <img alt="edit" src="../images/editsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                            Edit Record
+                        </button>
+                        <button class="DisabledButton" id="saveButton" onClick="action(this.title)" title="Save" style="display: none;cursor:pointer">
+                            <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                            Save Record
+                        </button>
+                        <button class="Disabledbutton" id="undobutton" disabled onClick="location='detailMesin.php<?php echo $par?>&id_kib=<?php echo $idkib ?>'" title="Cancel / Refresh" style="cursor:pointer">
+                            <img alt="undo/refresh" src="../images/undosmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                            Undo/Refresh
+                        </button>
+                        <!--button class="EnabledButton" id="deleteButton" onClick="action(this.title)" title="Hapus Data" style="cursor:pointer">
+                            <img alt="void" src="../images/deletesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                            Void
+                        </button-->
+                    </td>
+                </tr>
+            </table>
+            <div id="div_view" align="center" style="display: <?php echo $vis_view;?>">
+                <table width="625" id="table_view" border="0" cellspacing="0" cellpadding="2" align="center">
+                    <tr>
+                        <td colspan="2" class="header">.: Kartu Inventaris Barang : Peralatan Dan Mesin - Detail :.</td>
+                    </tr>
+                    <tr>
+                        <td width="40%" class="label">&nbsp;Unit Kerja</td>
+                        <td width="60%" class="content">&nbsp;
+                            <?php echo $rwmsn['namaunit'];?>&nbsp;(<?php echo $rwmsn['kodeunit']; ?>)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="40%" class="label">&nbsp;Lokasi</td>
+                        <td width="60%" class="content">&nbsp;
+                            <?php echo $rwmsn['namalokasi'];?>&nbsp;(<?php echo $rwmsn['kodelokasi']; ?>)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Kode Barang&nbsp;- &nbsp;No Seri</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['kodebarang'];?>&nbsp;&nbsp;- &nbsp;<?php echo str_pad($rwmsn['noseri'],4,'0',STR_PAD_LEFT); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Nama Barang</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['namabarang'];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="header2">&nbsp;I. UNIT BARANG</td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Merk</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['merk'];?>
+                        </td>
+                    </tr>
+                    <!--tr>
+                        <td class="label">&nbsp;Tipe Alat/Kendaraan</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['tipebarang'];?>
+                        </td>
+                    </tr-->
+                    <tr>
+                        <td class="label">&nbsp;Kondisi Alat/Kendaraan</td>
+                        <td class="content">&nbsp;
+                            <?php
+                            switch ($rwmsn["kondisi"]) {
+                                case B : echo "Baik";
+                                    break;
+                                case KB : echo "Kurang Baik";
+                                    break;
+                                case RB : echo "Rusak Berat";
+                                    break;
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;No. Pabrik</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["no_pabrik"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;No. Seri Rangka</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["no_rangka"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;No. Seri Mesin</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["no_mesin"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;No. Polisi</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["no_polisi"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;No. BPKB</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["no_bpkb"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Keterangan</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn["ket"];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="header2">&nbsp;II. PENGADAAN</td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Cara Perolehan</td>
+                        <td class="content">&nbsp;
+                            <?php 
+                            switch ($rwmsn["asalusul"]) {
+                                case Pembelian : echo "Pembelian";
+                                    break;
+                                case Hibah : echo "Hibah";
+                                    break;
+                                case Pembangunan : echo "Pembangunan";
+                                    break;
+                                case Opname : echo "Opname";
+                                    break;                                  
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Harga Perolehan</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['harga_perolehan'];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label">&nbsp;Lokasi/Alamat</td>
+                        <td class="content">&nbsp;
+                            <?php echo $rwmsn['namalokasi'];?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="header2">&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="div_edit" align="center" style="display: <?php echo $vis_edit;?>">
+                <form name="form1" id="form1" action="" method="post">
+                    <input name="act" id="act" type="hidden" />
+                    <table width="625" border="0" cellspacing="0" cellpadding="2" align="center">
+                        <tr>
+                            <td colspan="2" class="header">.: Kartu Inventaris Barang : Peralatan Dan Mesin - Detail :. (Edit Mode)</td>
+                        </tr>
+                        <tr>
+                            <td width="40%" class="label">&nbsp;Unit Kerja</td>
+                            <td width="60%" class="content">
+                                &nbsp;&nbsp;<input id="kodeunit" name="kodeunit" value="<?php echo $rwmsn['kodeunit']; ?>" class="txtunedited" readonly  size="24"/>
+                            </td>
+                        </tr>
+                         <tr>
+              			<td class="label">Lokasi/Alamat</td>
+              			<td class="contright" colspan="2">
+          					<input name="idlokasi" type="hidden" id="idlokasi"  value="<?php echo $rwmsn["idlokasi"];?>">
+                			<input type="hidden" id="kodelokasi" name="kodelokasi" value="<?php echo $rwmsn["kodelokasi"];?>">
+                			&nbsp;&nbsp;<input name="namalokasi" type="text" class="txtunedited" readonly id="namalokasi" tabindex="3"  size="45" maxlength="50" value="<?php echo $rwmsn['namalokasi'];?>">
+                			&nbsp;<img alt="search" title='Tree lokasi' style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('tree_lokasi.php?par=idlokasi*kodelokasi*namalokasi',600,600,'msma',true)">              
+              			</td>
+            		</tr>
+                        <tr>
+                            <td class="label">&nbsp;Kode Barang</td>
+                            <td class="content">
+                                &nbsp;&nbsp;<input id="kodebarang" name="kodebarang" class="txtunedited" readonly value="<?php echo $rwmsn['kodebarang'];?>" size="24" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;Nama Barang</td>
+                            <td class="contright" width="493">
+                            <input name="idbarang" type="hidden" id="idbarang" value="<?php echo $rwmsn["idbarang"];?>">                            
+                        	&nbsp;&nbsp;<input name="namabarang" type="text" class="txtunedited" readonly id="namabarang" value="<?php echo  $rwmsn["namabarang"]; ?>" size="45" maxlength="50" >
+                			<img alt="tree" title='Struktur tree kode barang'  style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('thing_tree_mesin.php?<?php echo $barang_opener; ?>',800,500,'msma',true)"> 
+                            </td>
+                        </tr>
+						<tr>
+							<td class="label">&nbsp;No Seri</td>
+							<td class="content">&nbsp; <input type="text" id="noseri" name="noseri" class="txtunedited" size="20" maxlength="4" value="<?php echo $rwmsn['noseri']; ?>"></td>
+						</tr>
+                        <tr>
+                            <td colspan="2" class="header2">&nbsp;I. UNIT BARANG</td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;Merk</td>
+                            <td class="content">
+                                <input id="merk" name="merk" size="50" class="txt" value="<?php echo $rwmsn['merk'];?>" />
+                            </td>
+                        </tr>
+                        <!--tr>
+                            <td class="label">&nbsp;Tipe Alat/Kendaraan</td>
+                            <td class="content">
+                                <input id="tipebarang" name="tipebarang" size="50" readonly="" class="contenc" value="<?php echo $rwmsn['tipebarang'];?>" />
+                            </td>
+                        </tr-->
+                        <tr>
+                            <td class="label">&nbsp;Kondisi Alat/Kendaraan</td>
+                            <td class="content">
+                                <select name="kondisi" class="txt" id="kondisi">
+                                 <option value=""></option>
+                                    <option value="B" <?php if ($rwmsn["kondisi"]==B) echo "selected"; ?>>Baik</option>
+                                    <option value="KB" <?php if ($rwmsn["kondisi"]==KB) echo "selected"; ?>>Kurang Baik</option>
+                                    <option value="RB" <?php if ($rwmsn["kondisi"]==RB) echo "selected"; ?>>Rusak Berat</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;No. Pabrik</td>
+                            <td class="content">
+                                <input name="no_pabrik" type="text" class="txt" id="no_pabrik" value="<?php echo $rwmsn['no_pabrik']; ?>" size="50" maxlength="50" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;No. Seri Rangka</td>
+                            <td class="content">
+                                <input name="no_rangka" type="text" class="txt" id="no_rangka" value="<?php echo $rwmsn['no_rangka']; ?>" size="50" maxlength="50" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;No. Seri Mesin</td>
+                            <td class="content">
+                                <input name="no_mesin" type="text" class="txt" id="no_mesin" value="<?php echo $rwmsn['no_mesin']; ?>" size="50" maxlength="50" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;No. Polisi</td>
+                            <td class="content">
+                                <input name="no_polisi" type="text" class="txt" id="no_polisi" value="<?php echo $rwmsn['no_polisi']; ?>" size="50" maxlength="30" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;No. BPKB</td>
+                            <td class="content">
+                                <input name="no_bpkb" type="text" class="txt" id="no_bpkb" value="<?php echo $rwmsn['no_bpkb']; ?>" size="50" maxlength="30" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;Keterangan</td>
+                            <td class="content">
+                                <input name="ket" type="text" class="txt" id="ket" value="<?php echo $rwmsn['ket']; ?>" size="50" maxlength="30" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="header2">&nbsp;II. PENGADAAN</td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;Cara Perolehan</td>
+                            <td class="content">
+                                <select id="asalusul" name="asalusul" class="txt">
+                                 <option value=""></option>
+                                    <option <?php if($rwmsn['asalusul'] == Pembelian)   echo 'selected'; ?> value="Pembelian">Pembelian</option>
+                                    <option <?php if($rwmsn['asalusul'] == Hibah)       echo 'selected'; ?> value="Hibah">Hibah</option>
+                                    <option <?php if($rwmsn['asalusul'] == Pembangunan) echo 'selected'; ?> value="Pembangunan">Pembangunan</option>
+                                    <option <?php if($rwmsn['asalusul'] == Opname)      echo 'selected'; ?> value="Opname">Opname</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">&nbsp;Harga Perolehan</td>
+                            <td class="content">
+                                <input id="harga_perolehan" name="harga_perolehan" class="txt" value="<?php echo $rwmsn['harga_perolehan'];?>" size="24" />
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="2" class="header2">&nbsp;</td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+                        <table><tr><td height="10"></td></tr></table>
+            <div><img src="../images/foot.gif" width="1000" height="45"></div>
+            </td>
+
+  </tr>
+</table>
+	
+          		<input type="hidden" name="act" value="<?php echo $act;?>">
+            </div>
+        </div>
+    </body>
+    <iframe height="193" width="168" name="gToday:normal:agenda.js"
+            id="gToday:normal:agenda.js"
+            src="../theme/popcjs.php" scrolling="no"
+            frameborder="1"
+            style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+    </iframe>
+    <script type="text/javascript" language="javascript">
+        var arrRange=depRange=[];
+        function action(choose){
+            switch(choose){
+                case 'Edit':
+                    document.getElementById('undobutton').disabled = false;
+                    document.getElementById('div_view').style.display = 'none';
+                    document.getElementById('div_edit').style.display = '';
+                    document.getElementById('saveButton').style.display = '';
+                    document.getElementById('editButton').style.display = 'none';
+                    break;
+            
+                case 'Save':
+                    document.getElementById('act').value = choose;
+                    document.getElementById('form1').submit();
+                    break;
+            }
+        }
+        function backTo(){
+            if('<?php echo $_REQUEST['from']?>' == '')
+            {
+                location='mesin.php';
+            }else{
+                location='<?php echo $_REQUEST['from']."?unit=".$_REQUEST['unit']."&lokasi=".$_REQUEST['lokasi']."&namaunit=".$_REQUEST['namaunit']."&namalokasi=".$_REQUEST['namalokasi']."&baris=".$_REQUEST['baris'];?>';
+            }
+        }
+    </script>
+</html>

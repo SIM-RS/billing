@@ -1,0 +1,14 @@
+Lap Arus Kas SAK/SAP
+tabel : lap_arus_kas (SAK), lap_lak_sap (SAP)
+kode			--> kode_urutan Laporan
+uraian			--> nama uraian Laporan
+level			--> level urutan uraian Laporan
+kelompok		--> kelompok / group transaksi
+kategori		--> 1 = transaksi
+					2 = formula / summary
+formula			--> formula dari kelompok/group transaksi
+kode_ma_sak		--> kode ma sak yg masuk dlm transaksi
+kode_sak_ex		--> kode ma sak terkecuali yg masuk dlm transaksi (exception)
+d_k				--> base transaksi-nya Debet / Kredit
+type			--> 0 = Sum(D-K) --> jika d_k = D / Sum(K-D) --> jika d_k = K
+					1 = Sum(D) --> jika d_k = D / Sum(K) --> jika d_k = K

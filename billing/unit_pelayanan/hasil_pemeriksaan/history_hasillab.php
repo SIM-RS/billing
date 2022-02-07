@@ -1,0 +1,318 @@
+<?php
+session_start();
+include '../../koneksi/konek.php';
+$idPel=$_REQUEST['idPel'];
+$idKunj=$_REQUEST['idKunj'];
+if($_REQUEST['excel']=="yes"){
+header("Content-type: application/vnd.ms-excel");
+header("Content--Disposition:attachment; filename='hasilLab.xls'");
+}
+
+$sqlPas="SELECT no_rm,mp.nama nmPas,mp.alamat, mp.rt,mp.rw,mp.sex,mk.nama kelas,md.nama as diag,peg.nama as dokter,
+kso.nama nmKso,CONCAT(DATE_FORMAT(p.tgl,'%d-%m-%Y'),' ',DATE_FORMAT(p.tgl_act,'%H:%i')) tgljam, 
+DATE_FORMAT(IFNULL(p.tgl_krs,NOW()),'%d-%m-%Y %H:%i') tglP, mp.desa_id,mp.kec_id, 
+(SELECT nama FROM b_ms_wilayah WHERE id=mp.kec_id) nmKec, 
+(SELECT nama FROM b_ms_wilayah WHERE id=mp.desa_id) nmDesa, k.kso_id,k.kso_kelas_id,p.no_lab,p.kelas_id,un.nama nmUnit
+FROM b_kunjungan k 
+INNER JOIN b_ms_pasien mp ON k.pasien_id=mp.id 
+INNER JOIN b_pelayanan p ON k.id=p.kunjungan_id
+LEFT JOIN b_ms_kelas mk ON k.kso_kelas_id=mk.id 
+INNER JOIN b_ms_kso kso ON k.kso_id=kso.id
+left join b_ms_unit un on un.id=p.unit_id_asal
+left join b_diagnosa diag on diag.kunjungan_id=k.id
+left join b_ms_diagnosa md on md.id = diag.ms_diagnosa_id
+left join b_ms_pegawai peg on peg.id = diag.user_id
+WHERE k.id='$idKunj' /* AND p.id='$idPel' */
+ORDER BY p.tgl_act DESC
+LIMIT 1";
+//echo $sqlPas."<br>";
+$rs1 = mysql_query($sqlPas);
+//echo mysql_error();
+$jmlTot = mysql_num_rows($rs1);
+$rw = mysql_fetch_array($rs1);
+
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <link type="text/css" rel="stylesheet" href="../theme/print.css" />
+        <title>.: Rincian Hasil Laboratorium :.</title>
+		<style type="text/css">
+			#isianHasil {
+				border-collapse: collapse;
+			}
+			#isianHasil td{
+				padding:3px;
+				border-bottom:1px solid #000;
+			}
+			.border {
+				border:1px solid #000;
+			}
+			.f14{
+				font-size:14px;
+			}
+		</style>
+    </head>
+    <body style="margin-top:0px">
+     <?
+		if($jmlTot > 0)
+		{
+	?>
+        <table border="0" cellspacing="0" cellpadding="0" align="left" class="kwi" style="margin-left:10px; min-width:98%; margin-right:10px;">
+          <!--DWLayoutTable-->
+            <tr>
+                <td height="85" colspan="3" style="font-size:14px">
+                    <b>PEMERINTAH KABUPATEN SIDOARJO<br />
+					Rumah Sakit Umum Daerah Kabupaten Sidoarjo<br />
+					Instalasi Laboratorium Klinik<br />
+					Jl. Mojopahit No 667 Sidoarjo Telepon (031) 8961649<br/></b>&nbsp;                
+				</td>
+            </tr>
+            <tr>
+                <td width="732" height="5" colspan="3" style="border-bottom:#000000 double 2px; border-top:#000000 solid 2px"></td>
+            </tr>
+            <tr>
+              <td height="30" colspan="3" align="center" valign="top" style="font-weight:bold;font-size:13px">
+				<u>&nbsp;History Hasil Laboratorium Pasien&nbsp;</u>
+			  </td>
+			</tr>
+            <tr class="kwi">
+                <td height="108" colspan="3" valign="top">
+                    <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                      <!--DWLayoutTable-->
+                        <tr>
+                            <td width="112" height="18" style="font-size:12px">No RM (No Lab)</td>
+                            <td width="20" align="center" style="font-weight:bold;font-size:12px">:</td>
+                            <td width="619" valign="top" style="font-size:12px">&nbsp;<?php echo $rw['no_rm']." (".$rw['no_lab'].")";?></td>
+                          <td width="102" valign="top" style="font-size:12px">Tgl Periksa</td>
+                      <td width="22" align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td width="151" valign="top" style="font-size:12px">&nbsp;<?php echo $rw['tgljam'];?></td>
+                        </tr>
+                        
+                        <tr>
+                            <td height="18" style="font-size:12px">Nama Pasien </td>
+                            <td align="center" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['nmPas']);?></td>
+                            <td valign="top" style="font-size:12px">Unit </td>
+                            <td align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo $rw['nmUnit'];?></td>
+                        </tr>
+                        <tr>
+                            <td height="18" style="font-size:12px">Alamat</td>
+                            <td align="center" style="font-weight:bold;font-size:12px;">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['alamat']);?></td>
+                            <td valign="top" style="font-size:12px">Diagnosa</td>
+                            <td align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['diag']);?></td>
+                        </tr>
+                        <tr>
+                            <td height="18" style="font-size:12px">Kel. / Desa</td>
+                          <td align="center" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['nmDesa']);?></td>
+                          <td valign="top" style="font-size:12px">Dokter</td>
+                            <td align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['dokter']);?></td>
+                        </tr>
+                        <tr>
+                            <td height="18"><span style="font-size:12px">RT / RW</span></td>
+                          <td align="center" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['rt']." / ".$rw['rw']);?></td>
+                          <td valign="top" style="font-size:12px">Status Pasien</td>
+                            <td align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['nmKso'])?></td>
+                        </tr>
+                        <tr>
+                            <td height="18" style="font-size:12px">Jenis Kelamin </td>
+                            <td align="center" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo strtolower($rw['sex']);?></td>
+                            <td valign="top" style="font-size:12px">Hak Kelas</td>
+                            <td align="center" valign="top" style="font-weight:bold;font-size:12px">:</td>
+                            <td valign="top" style="font-size:12px">&nbsp;<?php echo $rw['kelas'];?></td>
+                        </tr>
+                        <tr>
+                          <td height="0" colspan="6"></td>
+                        </tr>
+                    </table>
+				</td>
+            </tr>
+			<tr class="kwi">
+                <td height="74" colspan="3" valign="top">
+					<table id="isianHasil" width="100%" border="0" cellpadding="0" cellspacing="0">
+                      <!--DWLayoutTable-->
+                        <tr>
+							<td align="center" width="20" rowspan="2" class="border f14">No</td>
+							<td align="center" rowspan="2" class="border f14">Jenis Pemeriksaan</td>
+                            <td align="center" rowspan="2" width="150" class="border f14">Metode</td>
+                            <!--td align="center" width="100" style="border:#000000 solid 1px; border-left:none; font-weight:bold;font-size:12px">Tanggal</td-->
+							<td align="center" width="150" rowspan="2" class="border f14">Normal</td>
+							<?php
+								$stgl = "SELECT 
+											DISTINCT DATE_FORMAT(a.tgl_act, '%d-%m-%Y') tglHasil, COUNT(a.id) jml
+										  FROM b_hasil_lab a
+										  INNER JOIN b_ms_normal_lab b ON a.id_normal = b.id 
+										  INNER JOIN b_ms_pemeriksaan_lab c ON b.id_pemeriksaan_lab = c.id 
+										  INNER JOIN b_ms_kelompok_lab d ON c.kelompok_lab_id = d.id 
+										  INNER JOIN b_ms_satuan_lab msl ON b.id_satuan = msl.id 
+										  WHERE a.id_kunjungan = '$idKunj' /*AND a.verifikasi = 1*/
+										  GROUP BY DATE(a.tgl_act);";
+								//echo $stgl."<br>";
+								$qtgl = mysql_query($stgl);
+								$ktgl = array();
+								$jml = mysql_num_rows($qtgl);
+								$colspan = 4+$jml;
+								if($jml > 0){
+									echo "<td class='border f14' align='center' colspan='{$jml}'>Hasil</td>";
+								}
+							?>
+                            <!--td align="center" width="150" rowspan="2" class="border f14">Keterangan</td-->
+                        </tr>
+						<tr>
+							<?php 
+								while($dtgl = mysql_fetch_array($qtgl)){
+									$ktgl[] = $dtgl['tglHasil'];
+									echo "<td class='border f14' align='center'>".$dtgl['tglHasil']."</td>";
+								}
+							?>
+						</tr>
+						<?php
+							$sqlc="SELECT d.id,d.nama_kelompok, c.nama, b.metode, 
+									IF(b.normal2='', b.normal1, CONCAT(b.normal1,' - ',b.normal2)) AS normal,
+									a.id_pelayanan, DATE_FORMAT(a.tgl_act, '%d-%m-%Y') tglHasil, msl.nama_satuan,a.hasil,a.ket, IFNULL((SELECT nama_kelompok FROM b_ms_kelompok_lab WHERE id = d.`parent_id`),d.nama_kelompok) AS parent 
+									, IFNULL((SELECT id FROM b_ms_kelompok_lab WHERE id = d.`parent_id`),d.id) AS parentId 
+									FROM (SELECT * FROM b_hasil_lab WHERE id_kunjungan='{$idKunj}' /*AND verifikasi=1  AND id_pelayanan='".$_REQUEST['idPel']."' */) AS a 
+									INNER JOIN b_ms_normal_lab b ON a.id_normal=b.id 
+									INNER JOIN b_ms_pemeriksaan_lab c ON b.id_pemeriksaan_lab=c.id 
+									INNER JOIN b_ms_kelompok_lab d ON c.kelompok_lab_id=d.id 
+									INNER JOIN b_ms_satuan_lab msl ON b.id_satuan=msl.id 
+									ORDER BY d.nama_kelompok, c.nama, c.kode_urut, a.id_pelayanan";
+							//echo $sqlc."<br>";
+							$rs1=mysql_query($sqlc);
+							//echo mysql_error();
+							$spasi="";
+							$induk="";
+							$kelompok="";
+							$kelompokId="";
+							$parentId=0;
+							$hasilArr = array();
+							$now = $tmpn = '';
+							while($dt1 = mysql_fetch_array($rs1)){
+								$normal=$dt1['normal'];
+								if ($dt1['nama_satuan']!="" && $dt1['nama_satuan']!="-") $normal.=" ".$dt1['nama_satuan'];
+								if ($parentId!=$dt1['parentId']){
+									$parentId=$dt1['parentId'];
+									$kelompokId=$dt1['id'];
+									$kelompok=$dt1['nama_kelompok'];
+									if (($kelompokId!=$parentId)){
+										$induk=$dt1['parent'];
+										$spasi="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+									} else {
+										$induk=$dt1['parent'];
+									}
+								}
+								
+								$now = $induk."|".$kelompok."|".$dt1['nama'];
+								if($now != $tmpn){
+									$hasilArr[$now] = array(
+															'nama' 		=> $dt1['nama'],
+															'metode' 	=> $dt1['metode'],
+															'normal'	=> $normal,
+															'hasil'		=> array(
+																				$dt1['tglHasil'] => $dt1['hasil']
+																			)
+														);
+								} else {
+									$hasilArr[$now]['hasil'][$dt1['tglHasil']] = $dt1['hasil'];
+								}
+								$tmpn = $now;
+							}
+							
+							//print_r($hasilArr);
+							$tmpinduk = $tmpkel = '';
+							$no = 1;
+							foreach($hasilArr as $key => $val){
+								$nama = explode('|',$key);
+								if($tmpinduk != $nama[0]){
+							?>
+						<tr height="25">
+								<td align="left" colspan="<?=$colspan?>" style="padding-left:10px;font-size:12px;border-bottom:1px solid;border-top:1px solid" >&nbsp;<i><b><?php echo strtoupper($nama[0]); ?></b></i></td>
+						</tr>
+							<?php
+									if($nama[0] != $nama[1]){
+							?>
+						<tr height="25">
+								<td align="left" colspan="<?=$colspan?>" style="padding-left:10px;font-size:12px;border-bottom:1px solid;border-top:1px solid" >&nbsp;<i><b><?php echo $spasi.strtoupper($nama[1]); ?></b></i></td>
+						</tr>	
+							<?php
+									}
+								}
+							?>
+						<tr>
+							<td align="center" style="font-size:12px;" ><?=$no++;?></td>
+							<td align="left" style="padding-left:35px;font-size:12px" >&nbsp;<?php echo $spasi.$val['nama']; ?></td>
+							<td align="center" style="font-size:12px"><?php echo $val['metode']?></td>
+							<td align="center" style="font-size:12px"><?php echo $val['normal'];?>&nbsp;</td>
+							<?php
+								foreach($ktgl as $key => $tglH){
+									if(isset($val['hasil'][$tglH])){
+										echo "<td align='center' class='border-bawah' style='font-size:12px'>".$val['hasil'][$tglH]."</td>";
+									} else {
+										echo "<td class='border-bawah'>&nbsp;</td>";
+									}
+								}
+							?>
+						</tr>
+							<?php
+								$tmpinduk = $nama[0];
+							}
+							?>
+					</table>
+				</td>
+			</tr>
+			<tr class="kwi">
+              <td height="28">&nbsp;</td>
+              <td>&nbsp;</td>
+              <td></td>
+            </tr>
+			 
+            <tr class="kwi">
+			<?php
+			$sqlPet = "select nama from b_ms_pegawai where id = $_SESSION[userId]";
+			$dt = mysql_query($sqlPet);
+			$rt = mysql_fetch_array($dt);
+			?>
+                <td height="92" colspan="2" valign="top" style="font-weight:bold;font-size:12px"><br/></td>
+                <td align="right" valign="top" style="font-weight:bold;font-size:12px">Sidoarjo, <?php echo gmdate('d F Y',mktime(date('H')+7));?><br/>
+				  <!--Penanggungjawab
+                    <br/>&nbsp;<br/>&nbsp;<br/>&nbsp;<br/>( <?php echo $pegawai;?> )-->
+				  Petugas
+                    <br/>
+                    &nbsp;<br/>
+                    &nbsp;<br/>
+                    &nbsp;<br/>
+                ( <?php echo $rt[0];?> )</td>
+            </tr>
+            <tr id="trTombol">
+                <td height="24" colspan="3" align="center" valign="top" class="noline">
+                    <input id="btnPrint" type="button" value="Print/Cetak" onClick="cetak(document.getElementById('trTombol'));"/>
+                    <!--input id="btnExpExcl" type="button" value="Export Excell" onClick="window.location = '?idKunj=<?php echo $idKunj; ?>&idPel=<?php echo $idPel; ?>&excel=<?php echo "yes"; ?>';"/-->
+                <input id="btnTutup" type="button" value="Tutup" onClick="window.close();"/>                </td>
+            </tr>
+        </table>
+        <?
+				}else{
+					echo "Masih dilakukan pemeriksaan....";
+				}
+			?>
+<script type="text/JavaScript">
+	function cetak(tombol){
+		tombol.style.visibility='collapse';
+		if(tombol.style.visibility=='collapse'){
+			if(confirm('Anda Yakin Mau Mencetak History Hasil Laboratorium ?')){
+				setTimeout('window.print()','1000');
+				setTimeout('window.close()','2000');
+			} else{
+				tombol.style.visibility='visible';
+			}
+		}
+	}
+</script>

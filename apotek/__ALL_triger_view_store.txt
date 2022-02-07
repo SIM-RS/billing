@@ -1,0 +1,238 @@
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penerimaanreturAU`$$
+
+create trigger `penerimaanreturAU` AFTER UPDATE on `a_penerimaan_retur` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;  
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=(select KEPEMILIKAN_ID from a_penerimaan where ID=new.PENERIMAAN_ID) and UNIT_ID=0 order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF  (NEW.STATUS=1) and (OLD.STATUS=0) then
+update a_penerimaan set qty_stok=qty_stok - new.QTY where ID=new.PENERIMAAN_ID;
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	 END WHILE;
+	CLOSE Cur;
+INSERT INTO A_KARTUSTOK(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID) VALUES (NEW.OBAT_ID,(select KEPEMILIKAN_ID from a_penerimaan where ID=new.PENERIMAAN_ID),0,NEW.TGL,now(),NEW.NO_RETUR,vstok,-1*NEW.QTY,0,vstok-NEW.QTY,concat('retur',NEW.NO_RETUR),NEW.USER_ID);
+end if;
+END;
+$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penjualanAI`$$
+
+create trigger `penjualanAI` AFTER INSERT on `a_penjualan` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok 
+where OBAT_ID=(SELECT OBAT_ID from a_penerimaan where ID=NEW.PENERIMAAN_ID) and KEPEMILIKAN_ID=NEW.JENIS_PASIEN_ID and UNIT_ID=NEW.UNIT_ID order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF (NEW.STATUS=1)  then
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	      /*IF NOT done THEN         
+		set vstok= vstok;
+	      END IF;*/
+	END WHILE;
+	CLOSE Cur;
+	  INSERT INTO A_KARTUSTOK
+	(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID) VALUES ((SELECT OBAT_ID from a_penerimaan where ID=NEW.PENERIMAAN_ID),NEW.JENIS_PASIEN_ID,NEW.UNIT_ID,NEW.TGL,now(),NEW.NO_PENJUALAN,vstok,0,NEW.QTY,vstok-NEW.QTY,concat('Jual: ',NEW.NO_PENJUALAN,'-',NEW.NO_PASIEN,'-',NEW.NO_KUNJUNGAN),NEW.USER_ID);
+end if;
+END;
+$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penjualanreturAI`$$
+
+create trigger `penjualanreturAI` AFTER INSERT on `a_penjualan_retur` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;  
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok where 
+OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=(select KEPEMILIKAN_ID from a_penerimaan,a_penjualan,a_penjualan_retur
+where a_penjualan_retur.PENJUALAN_ID=a_penjualan.ID and a_penjualan.PENERIMAAN_ID=a_penerimaan.ID and
+RETUR_PENJUALAN_ID=new.RETUR_PENJUALAN_ID) and UNIT_ID=new.unit_id order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF  (NEW.STATUS=1)  then
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	 END WHILE;
+	CLOSE Cur;
+INSERT INTO A_KARTUSTOK(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET) VALUES (NEW.OBAT_ID,(select KEPEMILIKAN_ID from a_penerimaan,a_penjualan,a_penjualan_retur
+where a_penjualan_retur.PENJUALAN_ID=a_penjualan.ID and a_penjualan.PENERIMAAN_ID=a_penerimaan.ID and
+RETUR_PENJUALAN_ID=new.RETUR_PENJUALAN_ID)
+,new.UNIT_ID,NEW.TGL,now(),NEW.NO_RETUR,vstok,-1*NEW.QTY,0,vstok-NEW.QTY,concat('retur ',NEW.NO_RETUR));
+end if;
+END;
+$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP VIEW IF EXISTS `dbapotik`.`vjualall`$$
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vjualall` AS (select `a_penjualan`.`JENIS_PASIEN_ID` AS `KEPEMILIKAN_ID`,sum(if((`a_penjualan`.`UNIT_ID` = 1),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit1`,sum(if((`a_penjualan`.`UNIT_ID` = 2),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit2`,sum(if((`a_penjualan`.`UNIT_ID` = 3),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit3`,sum(if((`a_penjualan`.`UNIT_ID` = 4),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit4`,sum(if((`a_penjualan`.`UNIT_ID` = 5),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit5`,sum(if((`a_penjualan`.`UNIT_ID` = 6),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit6`,sum(if((`a_penjualan`.`UNIT_ID` = 7),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit7`,sum(if((`a_penjualan`.`UNIT_ID` = 8),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit8`,sum(if((`a_penjualan`.`UNIT_ID` = 9),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit9`,sum(if((`a_penjualan`.`UNIT_ID` = 10),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit10`,sum(if((`a_penjualan`.`UNIT_ID` = 11),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit11`,sum(if((`a_penjualan`.`UNIT_ID` = 12),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit12` from `a_penjualan` where (`a_penjualan`.`STATUS` = 1) group by `a_penjualan`.`JENIS_PASIEN_ID`)$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP VIEW IF EXISTS `dbapotik`.`vstokall`$$
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vstokall` AS (select `a_penerimaan`.`OBAT_ID` AS `obat_id`,`a_penerimaan`.`KEPEMILIKAN_ID` AS `KEPEMILIKAN_ID`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 1),`a_penerimaan`.`QTY_STOK`,0)) AS `unit1`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 2),`a_penerimaan`.`QTY_STOK`,0)) AS `unit2`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 3),`a_penerimaan`.`QTY_STOK`,0)) AS `unit3`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 4),`a_penerimaan`.`QTY_STOK`,0)) AS `unit4`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 5),`a_penerimaan`.`QTY_STOK`,0)) AS `unit5`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 6),`a_penerimaan`.`QTY_STOK`,0)) AS `unit6`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 7),`a_penerimaan`.`QTY_STOK`,0)) AS `unit7`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 8),`a_penerimaan`.`QTY_STOK`,0)) AS `unit8`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 9),`a_penerimaan`.`QTY_STOK`,0)) AS `unit9`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 10),`a_penerimaan`.`QTY_STOK`,0)) AS `unit10`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 11),`a_penerimaan`.`QTY_STOK`,0)) AS `unit11`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 12),`a_penerimaan`.`QTY_STOK`,0)) AS `unit12`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 17),`a_penerimaan`.`QTY_STOK`,0)) AS `unit17`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 20),`a_penerimaan`.`QTY_STOK`,0)) AS `unit20`,sum((`a_penerimaan`.`QTY_STOK` * `a_penerimaan`.`HARGA_BELI_SATUAN`)) AS `ntotal` from `a_penerimaan` where ((`a_penerimaan`.`QTY_STOK` > 0) and (`a_penerimaan`.`STATUS` = 1)) group by `a_penerimaan`.`OBAT_ID`,`a_penerimaan`.`KEPEMILIKAN_ID`)$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP PROCEDURE IF EXISTS `dbapotik`.`gd_mutasi`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `gd_mutasi`(unit_id_asal bigint, unit_id_tujuan bigint, a_fk_minta_id bigint, a_nokirim varchar(30), a_obat_id bigint, kp_id_asal int, kp_id_tujuan int, qty double, a_tipe_trans int, user_id bigint, a_status int, tgl varchar(10), tgl_act varchar(19))
+BEGIN
+  DECLARE done,selesai INT DEFAULT 0;
+  DECLARE jml double;
+  DECLARE ID,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,HARI_J_TEMPO bigint;
+  DECLARE NOKIRIM,NOTERIMA,NOBUKTI varchar(30);
+  DECLARE TANGGAL_ACT datetime;
+  DECLARE TANGGAL,TGL_J_TEMPO,EXPIRED date;
+  DECLARE BATCH,KEMASAN varchar(50);
+  DECLARE QTY_KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,NILAI_PAJAK double;
+  DECLARE DISKON,EXTRA_DISKON,DISKON_TOTAL double;
+  DECLARE JENIS,TIPE_TRANS,cSTATUS tinyint(1);
+  DECLARE KET text;
+  DECLARE cur1 CURSOR FOR select ap.ID,ap.OBAT_ID,ap.ID_LAMA,ap.PBF_ID,ap.UNIT_ID_KIRIM,ap.UNIT_ID_TERIMA,ap.KEPEMILIKAN_ID,ap.USER_ID_KIRIM,ap.USER_ID_TERIMA,ap.NOKIRIM,ap.NOTERIMA,ap.NOBUKTI,ap.TANGGAL_ACT,ap.TANGGAL,ap.TGL_J_TEMPO,ap.HARI_J_TEMPO,ap.BATCH,ap.EXPIRED,ap.QTY_KEMASAN,ap.KEMASAN,ap.QTY_PER_KEMASAN,ap.QTY_SATUAN,ap.QTY_SATUAN_LAMA,ap.QTY_STOK,ap.QTY_RETUR,ap.HARGA_BELI_TOTAL,ap.HARGA_BELI_SATUAN,ap.DISKON,ap.EXTRA_DISKON,ap.DISKON_TOTAL,ap.KET,ap.NILAI_PAJAK,ap.JENIS,ap.TIPE_TRANS,ap.STATUS from a_penerimaan ap where ap.UNIT_ID_TERIMA=unit_id_asal and ap.KEPEMILIKAN_ID=kp_id_asal and ap.OBAT_ID=a_obat_id and ap.QTY_STOK>0 and ap.STATUS=1 order by ap.TANGGAL,ap.ID;
+  DECLARE cur2 CURSOR FOR select ap.ID,ap.OBAT_ID,ap.ID_LAMA,ap.PBF_ID,ap.UNIT_ID_KIRIM,ap.UNIT_ID_TERIMA,ap.KEPEMILIKAN_ID,ap.USER_ID_KIRIM,ap.USER_ID_TERIMA,ap.NOKIRIM,ap.NOTERIMA,ap.NOBUKTI,ap.TANGGAL_ACT,ap.TANGGAL,ap.TGL_J_TEMPO,ap.HARI_J_TEMPO,ap.BATCH,ap.EXPIRED,ap.QTY_KEMASAN,ap.KEMASAN,ap.QTY_PER_KEMASAN,ap.QTY_SATUAN,ap.QTY_SATUAN_LAMA,ap.QTY_STOK,ap.QTY_RETUR,ap.HARGA_BELI_TOTAL,ap.HARGA_BELI_SATUAN,ap.DISKON,ap.EXTRA_DISKON,ap.DISKON_TOTAL,ap.KET,ap.NILAI_PAJAK,ap.JENIS,ap.TIPE_TRANS,ap.STATUS from a_penerimaan ap where ap.UNIT_ID_TERIMA=unit_id_asal and ap.OBAT_ID=a_obat_id and ap.QTY_STOK>0 and ap.STATUS=1 order by ap.TANGGAL,ap.ID;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  set jml=qty;
+  IF (kp_id_asal<>0) THEN
+	OPEN cur1;
+  ELSE
+	OPEN cur2;
+  END IF;
+  WHILE ((NOT done) and (selesai<>1)) do
+  IF (kp_id_asal<>0) THEN
+    FETCH cur1 INTO ID,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,cSTATUS;
+  ELSE
+    FETCH cur2 INTO ID,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,cSTATUS;
+  END IF;
+    IF NOT done THEN
+       IF QTY_STOK >= jml THEN
+	  set selesai=1;
+	  update a_penerimaan ap set ap.QTY_STOK=ap.QTY_STOK-jml where ap.ID=ID;
+          INSERT INTO a_penerimaan(OBAT_ID,ID_LAMA,FK_MINTA_ID,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,STATUS) VALUES (OBAT_ID,ID,a_fk_minta_id,PBF_ID,unit_id_asal,unit_id_tujuan,kp_id_tujuan,user_id,0,a_nokirim,'',NOBUKTI,tgl_act,tgl,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,jml,'',jml,0,jml*HARGA_BELI_SATUAN,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,'',NILAI_PAJAK,JENIS,a_tipe_trans,a_status);
+       ELSE
+	  set jml=jml-QTY_STOK;
+	  update a_penerimaan ap set ap.QTY_STOK=0 where ap.ID=ID;
+          INSERT INTO a_penerimaan(OBAT_ID,ID_LAMA,FK_MINTA_ID,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,STATUS) VALUES (OBAT_ID,ID,a_fk_minta_id,PBF_ID,unit_id_asal,unit_id_tujuan,kp_id_tujuan,user_id,0,a_nokirim,'',NOBUKTI,tgl_act,tgl,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_STOK,'',QTY_STOK,0,QTY_STOK*HARGA_BELI_SATUAN,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,'',NILAI_PAJAK,JENIS,a_tipe_trans,a_status);
+       END IF;
+    END IF;
+  END WHILE;
+  IF (kp_id_asal<>0) THEN
+	CLOSE cur1;
+  ELSE
+	CLOSE cur2;
+  END IF;
+END$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP PROCEDURE IF EXISTS `dbapotik`.`pinjam_kembali`$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `pinjam_kembali`(a_unit_id bigint, a_unit_id_tujuan bigint, a_obat_id bigint, kp_id int, kp_id_asal int, qty double)
+BEGIN
+  DECLARE done,selesai INT DEFAULT 0;
+  DECLARE jml,selisih,qty1,qty2 double;
+  DECLARE p_id bigint;
+  DECLARE cur1 CURSOR FOR select peminjaman_id,qty_terima,qty_kembali from a_pinjam_obat where obat_id=a_obat_id and unit_id=a_unit_id and unit_tujuan=a_unit_id_tujuan and kepemilikan_id=kp_id and kepemilikan_id_asal=kp_id_asal and (qty_terima>qty_kembali) and status=2 order by tgl,peminjaman_id;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  set jml=qty;
+  OPEN cur1;
+  WHILE ((NOT done) and (selesai<>1)) do
+    FETCH cur1 INTO p_id,qty1,qty2;
+    IF NOT done THEN
+	set selisih=qty1-qty2;
+	IF selisih >= jml THEN
+	  set selesai=1;
+	  update a_pinjam_obat set qty_kembali=qty_kembali+jml where peminjaman_id=p_id;
+	ELSE
+	  set jml=jml-selisih;
+	  update a_pinjam_obat set qty_kembali=qty_kembali+selisih where peminjaman_id=p_id;
+	END IF;
+    END IF;
+  END WHILE;
+  CLOSE cur1;
+END$$
+
+DELIMITER ;$$
+/*===================================================*/
+DELIMITER $$;
+
+DROP PROCEDURE IF EXISTS `dbapotik`.`sp_produksi`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_produksi`(unit_id bigint, idbaru bigint, a_nokirim varchar(30), obat_id_asal bigint, kp_id int, qty_asal double, obat_id_baru bigint, qty_baru double, harga_satuan_baru double, user_id bigint, tgl varchar(10), tgl_act varchar(19))
+BEGIN
+  DECLARE done,selesai INT DEFAULT 0;
+  DECLARE jml double;
+  DECLARE ID,ID1,ID2,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,HARI_J_TEMPO bigint;
+  DECLARE NOKIRIM,NOTERIMA,NOBUKTI varchar(30);
+  DECLARE TANGGAL_ACT datetime;
+  DECLARE TANGGAL,TGL_J_TEMPO,EXPIRED date;
+  DECLARE BATCH,KEMASAN varchar(50);
+  DECLARE QTY_KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,NILAI_PAJAK double;
+  DECLARE DISKON,EXTRA_DISKON,DISKON_TOTAL double;
+  DECLARE JENIS,TIPE_TRANS,cSTATUS tinyint(1);
+  DECLARE KET text;
+  DECLARE cur1 CURSOR FOR select ap.ID,ap.OBAT_ID,ap.ID_LAMA,ap.PBF_ID,ap.UNIT_ID_KIRIM,ap.UNIT_ID_TERIMA,ap.KEPEMILIKAN_ID,ap.USER_ID_KIRIM,ap.USER_ID_TERIMA,ap.NOKIRIM,ap.NOTERIMA,ap.NOBUKTI,ap.TANGGAL_ACT,ap.TANGGAL,ap.TGL_J_TEMPO,ap.HARI_J_TEMPO,ap.BATCH,ap.EXPIRED,ap.QTY_KEMASAN,ap.KEMASAN,ap.QTY_PER_KEMASAN,ap.QTY_SATUAN,ap.QTY_STOK,ap.HARGA_BELI_TOTAL,ap.HARGA_BELI_SATUAN,ap.DISKON,ap.EXTRA_DISKON,ap.DISKON_TOTAL,ap.KET,ap.NILAI_PAJAK,ap.JENIS,ap.TIPE_TRANS,ap.STATUS from a_penerimaan ap where ap.UNIT_ID_TERIMA=unit_id and ap.KEPEMILIKAN_ID=kp_id and ap.OBAT_ID=obat_id_asal and ap.QTY_STOK>0 and ap.STATUS=1 order by ap.TANGGAL,ap.ID;
+/*
+  DECLARE cur2 CURSOR FOR select ID from a_penerimaan where UNIT_ID_KIRIM=unit_id and UNIT_ID_TERIMA=unit_id and NOKIRIM=a_nokirim and NOTERIMA=a_nokirim order by ID desc limit 1;
+*/
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+/*  
+  OPEN cur2;
+  WHILE (NOT done) do
+    FETCH cur2 INTO ID2;
+    IF NOT done THEN
+	SET ID1=ID2;
+    END IF;
+  END WHILE;
+ */ 
+  set jml=qty_asal;
+  OPEN cur1;
+/*
+  set done=0;
+  set selesai=0;
+*/
+  WHILE ((NOT done) and (selesai<>1)) do
+    FETCH cur1 INTO ID,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_STOK,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,cSTATUS;
+    IF NOT done THEN
+       IF QTY_STOK >= jml THEN
+	  set selesai=1;
+	  update a_penerimaan ap set ap.QTY_STOK=ap.QTY_STOK-jml where ap.ID=ID;
+          INSERT INTO a_produksi(id_lama,id_baru,qty_lama,tgl,tgl_act) values(ID,idbaru,jml,tgl,tgl_act);
+       ELSE
+	  set jml=jml-QTY_STOK;
+	  update a_penerimaan ap set ap.QTY_STOK=0 where ap.ID=ID;
+          INSERT INTO a_produksi(id_lama,id_baru,qty_lama,tgl,tgl_act) values(ID,idbaru,QTY_STOK,tgl,tgl_act);
+       END IF;
+    END IF;
+  END WHILE;
+  CLOSE cur1;
+/*  CLOSE cur2;*/
+ END$$
+
+DELIMITER ;$$
+/*===================================================*/

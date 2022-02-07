@@ -1,0 +1,132 @@
+<?php
+include '../sesi.php';
+include '../koneksi/konek.php'; 
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='/simrs-tangerang/aset/';
+                        </script>";
+}
+?>
+<?php include("../header.php");?>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+		<script type="text/javascript" language="JavaScript" src="../theme/js/dsgrid.js"></script>
+		<link type="text/css" rel="stylesheet" href="../default.css"/>
+		<link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <title>.: KIB Alat/Mesin :.</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <iframe height="72" width="130" name="sort"
+                    id="sort"
+                    src="../theme/dsgrid_sort.php" scrolling="no"
+                    frameborder="0"
+                    style="border: medium ridge; position: absolute; z-index: 65535; left: 100px; top: 250px; visibility: hidden">
+            </iframe>
+            <?php include ('popup_mutasi_mesin.php');?>
+	<div align="center" id="tutup" style="display:block">
+                <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <table width="766" border="0" cellspacing="0" cellpadding="0" align="center" class="tabel">
+                                <tr>
+                                    <td height="30" valign="bottom" align="right">
+									<button type="button" id="ctkxls" name="ctkxls" onClick="ctkKIB_Tnhxls()" style="cursor:pointer"><img src="../icon/excel_logo.png" width="23" height="23" style="vertical-align:middle">&nbsp;Export Ke Excel</button>&nbsp;
+                                        <input type="hidden" id="txtId" name="txtId" />
+                                        <input type="button" value="Cetak Label" alt="Cetak Label" stype="cursor:pointer" title="Cetak Label" onClick="goLabel();"/>&nbsp;&nbsp;
+										<input type="button" value="Cetak KIB Mesin" alt="Cetak Laporan" stype="cursor:pointer" title="Cetak Laporan" onClick="goCetak();"/>&nbsp;&nbsp;
+                                        <img alt="edit" style="cursor:pointer" title="Edit Data Barang" src="../images/edit.gif" onClick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){alert('Pilih barang terlebih dahulu.');return;}location='detailMesin.php?act=view&id_kib='+document.getElementById('txtId').value" />&nbsp;&nbsp;
+                                        <img alt="Mutasi Barang" style="cursor:pointer" title="Mutasi Barang" src="../icon/mutasi.gif" id="btnHapusTanah" name="btnHapus" onClick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){alert('Pilih barang terlebih dahulu.');return;}mutasi()" />&nbsp;
+                                        <img alt="Penghapusan Barang" style="cursor:pointer" title="Penghapusan Barang" src="../images/hapus.gif" id="btnHapusMesin" name="btnHapus" onClick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){alert('Pilih barang terlebih dahulu.');return;}OpenWnd('hapus_mesin.php?id='+document.getElementById('txtId').value,670,250,'txt',true);" />&nbsp;
+                                        <!--img alt="edit" src="../images/edit.gif" onclick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){alert('Pilih barang terlebih dahulu.');return;}location='detailMesin.php?act=view&id_kib='+document.getElementById('txtId').value" />&nbsp;&nbsp;
+                                        <img alt="Penghapusan Barang" title="Penghapusan Barang" src="../images/hapus.gif" id="btnHapusMesin" name="btnHapus" onclick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){alert('Pilih barang terlebih dahulu.');return;}hapus();" />&nbsp;-->
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <div id="gridbox" style="width:900px; height:340px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging" style="width:764px;"></div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <?php
+                            include '../footer.php';
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript" language="javascript">
+        var tmp;
+        function ambilData()
+        {
+            tmp = grid.getRowId(grid.getSelRow()).split("|");
+            var p = "txtId*-*"+(tmp[0]);
+            fSetValue(window,p);
+            /*var p="txtId*-*"+(grid.getRowId(grid.getSelRow()));
+            fSetValue(window,p);*/
+        }
+
+		function goLabel(){
+			if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null){
+				alert('Pilih data terlebih dahulu.');
+				return;
+				}
+			
+				OpenWnd('mesin_label.php?id='+document.getElementById('txtId').value,750,275,'txt',true);			
+			}
+		function mutasi(){
+		document.getElementById('idmutasi').style.display='block';
+		document.getElementById('tutup').style.display='none';
+		grid.Init();
+			var sisipan =grid.getRowId(grid.getSelRow()).split("|");
+			document.getElementById('idUnit').value=sisipan[2]
+			document.getElementById('kodeunitlama').value=grid.cellsGetValue(grid.getSelRow(),2)
+			document.getElementById('idUnit_lama').value=sisipan[3];
+			//alert(sisipan[3]);
+		}
+      
+        function goFilterAndSort(mesin)
+        {
+            //alert(grd);
+            if (mesin=="gridbox"){
+                //alert("utils_seri.php?pilihan=mesin&filter="+grid.getFilter()+"&sorting="+grid.getSorting()+"&page="+grid.getPage());
+                grid.loadURL("utils_seri.php?pilihan=mesin&filter="+grid.getFilter()+"&sorting="+grid.getSorting()+"&page="+grid.getPage(),"","GET");
+                //alert("utils_seri.php?pilihan=mesin&filter="+grid.getFilter()+"&sorting="+grid.getSorting()+"&page="+grid.getPage());
+            }
+        }
+		
+		function goCetak(){
+			var a = grid.cellsGetValue(grid.getSelRow(),2);
+			window.open('laporan_mesin.php?kdunit='+a);
+				
+		}
+		
+			function ctkKIB_Tnhxls(){
+			window.open('laporan_mesin.php?jenislap=XLS');
+		}
+		
+        var grid=new DSGridObject("gridbox");
+        grid.setHeader(".: Kartu Inventaris Barang - Peralatan Dan Mesin :.");
+        grid.setColHeader("No,Kode Unit,Kode Brg,No Seri,Nama Barang,Merk,Tahun,Asal Usul");
+        grid.setIDColHeader(",kodeunit,kodebarang,,namabarang,,,");
+        grid.setColWidth("40,150,120,50,250,130,50,100");
+        grid.setCellAlign("center,left,left,center,left,center,center,center");
+        grid.setCellHeight(20);
+        grid.setImgPath("../icon");
+        grid.setIDPaging("paging");
+        grid.attachEvent("onRowClick","ambilData");
+        grid.baseURL("utils_seri.php?pilihan=mesin");
+        grid.Init();
+    </script>
+</html>

@@ -1,0 +1,64 @@
+SELECT DISTINCT
+  id,
+  no_billing,
+  pasien_id,
+  asal_kunjungan,
+  ket,
+  jenis_layanan,
+  unit_id,
+  loket_id,
+  retribusi,
+  tgl,
+  umur_thn,
+  umur_bln,
+  kel_umur,
+  kelas_id,
+  kamar_id,
+  kso_id,
+  kso_kelas_id,
+  tgl_sjp,
+  no_sjp,
+  no_anggota,
+  status_penj,
+  kelas_id,
+  pendidikan_id,
+  pekerjaan_id,
+  alamat,
+  rt,
+  rw,
+  desa_id,
+  kec_id,
+  kab_id,
+  prop_id,
+  pulang,
+  tgl_pulang,
+  isbaru,
+  tgl_act,
+  user_act,
+  idkamar,
+  ret
+FROM (SELECT
+        k.*,
+        IFNULL(tk.kamar_id,0)    idkamar,
+        0                  ret,
+        p.id               idpel
+      FROM b_kunjungan k
+        INNER JOIN b_pelayanan p
+          ON k.id = p.kunjungan_id
+        INNER JOIN b_tindakan_kamar tk
+          ON p.id = tk.pelayanan_id
+      WHERE k.pasien_id = '461582'
+          AND k.pulang = 0 UNION SELECT
+                                   k.*,
+                                   0                   idkamar,
+                                   k.retribusi         ret,
+                                   p.id                idpel
+                                 FROM b_kunjungan k
+                                   INNER JOIN b_pelayanan p
+                                     ON k.id = p.kunjungan_id
+                                   INNER JOIN b_ms_unit mu
+                                     ON p.unit_id = mu.id
+                                 WHERE k.pasien_id = '461582'
+                                     AND p.tgl = '2010-12-23'
+                                     AND mu.inap = 0) t1
+ORDER BY t1.idpel

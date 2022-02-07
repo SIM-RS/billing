@@ -1,0 +1,337 @@
+body{
+margin:0;
+/*background-color: #80ABB5;*/
+background:#000000;
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:14px;
+}
+#navigation td {
+	border-bottom: 2px solid #C0DFFD;
+	}
+#navigation a {
+	color: #003366;
+	line-height:16px;
+	letter-spacing:.1em;
+	text-decoration: none;
+	display:block;
+	padding:6px 3px 6px 10px;
+	background: url("../images/mm_arrow.gif") 14px 45% no-repeat;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	}
+	
+#navigation a:hover {
+	background: #ffffff url("../images/mm_arrow.gif") 14px 45% no-repeat;
+	color:#FF6600;
+	}
+.navText {
+	color: #CCFF99;
+	line-height:16px;
+	letter-spacing:normal;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+}
+a:visited{
+	color: #0000FF;
+}
+#links a {
+display: block;
+background-image:  url(icon/link.gif);
+background-repeat: no-repeat;
+background-position: 8px 10px;
+padding-left: 25px;
+padding-top:7px;
+width: 140px;
+height: 25px;
+}
+#links a:hover, #menupubsandclubs a:active {
+background-image:  url(icon/over_link.gif);
+background-repeat: no-repeat;
+background-position: 8px 10px;
+padding-left: 25px;
+padding-top:7px;
+}
+.butt {
+font-family:Verdana, Arial, Helvetica, sans-serif;
+font-size:12px;
+font-weight:bold;
+background-color: #6AB9BE;
+background-image:  url(icon/link.gif);
+background-repeat: no-repeat;
+background-position: 4px center;
+padding-left: 32px;
+padding-top:7px;
+padding-bottom:7px;
+}
+.font{font-family:Verdana, Arial, Helvetica, sans-serif; 
+font-weight:bold; 
+color:#000; 
+font-size:12px
+}
+.trInit { background-color: #DDDDDD; text-align: center;}
+.trNormal { background-color: #CCCCCC; }
+.trMover { background-color: #8888FF; text-align: center; cursor:hand;}
+.tblheaderkiri {
+	border: 1px solid #003520;
+}
+.tblheader {
+	border-top: 1px solid #003520;
+	border-right: 1px solid #003520;
+	border-bottom: 1px solid #003520;
+	border-left: none;
+}
+.tdisi {
+	border-top: none;
+	border-right: 1px solid #203C42;
+	border-bottom: 1px solid #203C42;
+	border-left: none;
+	/*font-size: 10px;
+	/*text-align: left;*/
+}
+.tdisikiri {
+	border-top: none;
+	border-right: 1px solid #203C42;
+	border-bottom: 1px solid #203C42;
+	border-left: 1px solid #203C42;
+}
+.headtable {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	color: #FFFFCC;
+	background-color: #669999;
+	text-align: center;
+	vertical-align:middle;
+	cursor: pointer;
+	height:30px;
+	background-image: url(../images/bgh.gif);
+}
+.headtable td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.itemtable {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;
+	background-color: #D5FED9;
+}
+.itemtableMOver {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;
+	background-color: #58e425;
+	font-weight: normal;
+	text-decoration: blink;
+}
+.jdltable {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	text-transform: capitalize;
+	border: none;
+	text-align: center;
+	vertical-align: bottom;
+	padding-bottom: 10px;
+}
+.jdltableinput {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	text-transform: capitalize;
+	border: none;
+	text-align: left;
+	vertical-align: middle;
+	padding-bottom: 10px;
+}
+.filter {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	vertical-align: middle;
+}
+.txtcenter {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	text-align: center;
+	vertical-align: middle;
+}
+.txtright {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	text-align: right;
+	vertical-align: middle;
+}
+.txtinput {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: left;
+	vertical-align: middle;
+}
+
+.proses {
+	cursor:pointer;
+}
+.tblbody {
+	/*background-color: #D7E4EE;*/
+	background:#EFEFEF;
+}
+.bodykiri {
+	background-color: #FFCC66;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+.login {
+	background-color: #CCCCCC;
+	border: thin solid #999999;
+}
+.tdlogin {
+	border-bottom-width: medium;
+	border-bottom-style: double;
+	border-bottom-color: #999999;
+}
+.pageName{
+	font: 18px Verdana, Arial, Helvetica, sans-serif;
+	color: #3366CC;
+	line-height:24px;
+	letter-spacing:.2em;
+}
+.bodyText {
+	font:11px Verdana, Arial, Helvetica, sans-serif;
+	color:#003366;
+	line-height:20px;
+	margin-top:0px;
+}
+.bodyText12 {
+	font:12px Verdana, Arial, Helvetica, sans-serif;
+	color:#003366;
+	line-height:20px;
+	margin-top:0px;
+}
+.subHeader {
+	font:bold 14px Verdana, Arial, Helvetica, sans-serif;
+	color: #3366CC;
+	line-height:16px;
+	letter-spacing:0.2em;
+}
+.msg {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	font-weight: bold;
+	text-transform: capitalize;
+}
+.NormalBG 
+{
+	background-color : #FFFFFF;
+}
+.AlternateBG { 
+	background-color : #FFFFFF;
+}
+.NonAktifBG { 
+	background-color : #999999;
+}
+.MoverBG 
+{
+	background-color : #FFCC66;
+}
+.textpaging {
+	ffont-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;n
+	color: #000066;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+.H {
+	ffont-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: #000066;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	background-color: #FFFFBF;
+}	
+.tree_ma {font-family:Verdana; font-size:10pt; font-weight:bold; text-align:left;}
+.tree_ma a {color:darkblue; text-decoration:none;}
+.tree_ma a:hover {color:#000000}
+.tree_ma1 {font-family:Verdana; font-size:8pt; color:#333333;text-align:left;}
+.bodyPopUp{background-color: #FFFFCC;}
+.tblRight{
+	width:35px;
+	height:35px;
+	border:none;
+	background-color:transparent;
+	background-repeat:no-repeat;
+	background-image:url(../icon/next.gif);
+}
+.tblLeft{
+	width:35px;
+	height:35px;
+	border:none;
+	background-color:transparent;
+	background-repeat:no-repeat;
+	background-image:url(../icon/prev.gif);
+}
+.GridSubTotal {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	/*font-weight: bold;*/
+	color:#000066; /*#FFFFCC;*/
+	background-color:#D7E4EE; /*#899198; #a6cd3e; #699937; #2b561c;*/
+	vertical-align:middle;
+}
+.GridSubTotal td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.GridItemSelected {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;	
+	color:#000000; /*#9999FF;*/
+	/*background-color: #CEF9CA;/*#313131;*/
+	font-weight: normal;
+	cursor:pointer;
+	background-color:#F9FF99;/*#23E078;/*#23e078*/
+}
+.GridItemSelected td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.GridItemOdd {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;	
+	/*background-color: #EDF1FE;*/
+	background-color:#9BD0FF;/*#DDFFF1;*/
+}
+.GridItemOdd td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.GridItemEven {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;	
+	background-color: #FFFFFF;
+}
+.GridItemEven td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.GridItemMOver {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	text-align: center;	
+	/*background-color: #F9F3A7; /*#8888FF;*/
+	font-weight: normal;
+	cursor:pointer;
+	background-color:#A9FF96;/*#FFFF75;*/
+}
+.GridItemMOver td{
+	padding-left:2px;
+	padding-right:2px;
+}
+.GridTable {
+	table-layout:fixed;
+	border-collapse:collapse;
+}

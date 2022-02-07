@@ -1,0 +1,122 @@
+<?php
+include("../koneksi/konek.php");
+$grdtab5=$_REQUEST['grdtab5'];
+//$id=$_REQUEST['id'];
+
+//====================================================================
+//Paging,Sorting dan Filter======
+$page=$_REQUEST["page"];
+$defaultsort="kode";
+$sorting=$_REQUEST["sorting"];
+$filter=$_REQUEST["filter"];
+$userId = $_REQUEST['userId'];
+$tglact=gmdate('Y-m-d H:i:s',mktime(date('H')+7));
+$tgl = tglSQL($_REQUEST['tgl_lahir']); 
+$aktif = 1;
+//===============================
+
+//$id = explode(",",$_REQUEST['id']);
+if($grdtab5 == "false"){
+   switch(strtolower($_REQUEST['act']))
+   {
+      case 'tambah':
+      //for($i=0;$i<(sizeof($id)-1);$i++)
+      //{
+	    //$sqlCek = "select * from b_ms_pegawai_unit where unit_id='".$id[$i]."' and ms_pegawai_id='".$_REQUEST['idPeg']."'";
+	    $sqlCek = "select * from b_ms_pegawai_unit where unit_id='".$_REQUEST['id']."' and ms_pegawai_id='".$_REQUEST['idPeg']."'";
+	    $rsCek = mysql_query($sqlCek);
+	    if(mysql_num_rows($rsCek)==0)
+	    {
+		  $sqlTambah = "INSERT INTO b_ms_pegawai_unit (ms_pegawai_id,unit_id) values('".$_REQUEST['idPeg']."','".$_REQUEST['id']."')";
+		  $rs=mysql_query($sqlTambah);
+		  $res = mysql_affected_rows();
+	    }
+      //}
+      break;
+		   
+      case 'hapus':
+      //$sqlHapus="delete from b_ms_pegawai_unit where id='".$_REQUEST['rowid']."'";
+      $sqlHapus="delete from b_ms_pegawai_unit where ms_pegawai_id='".$_REQUEST['idPeg']."' and unit_id = '".$_REQUEST['id']."'";
+      $rs=mysql_query($sqlHapus);
+      $res = mysql_affected_rows();
+      break;   
+   }
+   /**/if($res > 0){
+      $res = "Update berhasil.";
+   }
+   else if($res == 0){
+      //$res = "Data tidak berubah.";
+   }
+   else{
+      $res = "Update gagal.";
+   }
+   echo $res;
+}
+else{
+   if ($filter!=""){
+	   $filter=explode("|",$filter);
+	   $filter=" WHERE ".$filter[0]." like '%".$filter[1]."%'";
+   }
+   
+   if ($sorting==""){
+	   $sorting=$defaultsort;
+   }
+   
+   if($grdtab5 == "true")
+   {
+	   /*$sql="select * from
+	   (SELECT u.id
+	   ,if((select id from b_ms_pegawai_unit where unit_id=u.id and ms_pegawai_id='".$_REQUEST['idPeg']."') is null,false,true) as pil
+	   ,u.kode,u.nama FROM b_ms_unit u where u.islast=1) as t1 ".$filter." order by ".$sorting;*/
+	   $sql = "select * from (SELECT u.id, u.nama, if( t1.id IS NULL , 0, 1 ) AS pil, u.kode
+		  FROM b_ms_unit u
+		  LEFT JOIN (
+		  SELECT *
+		  FROM b_ms_pegawai_unit pu
+		  WHERE ms_pegawai_id ='".$_REQUEST['idPeg']."'
+		  ) AS t1 ON u.id = t1.unit_id
+		  WHERE aktif =1) as t2 $filter order by $sorting";
+   }
+   
+   
+   //echo $sql."<br>";
+   $rs=mysql_query($sql);
+   $jmldata=mysql_num_rows($rs);
+   if ($page=="" || $page=="0") $page=1;
+   $tpage=($page-1)*$perpage;
+   if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+   if ($page>1) $bpage=$page-1; else $bpage=1;
+   if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+   $sql=$sql." limit $tpage,$perpage";
+   //echo $sql;
+   
+   $rs=mysql_query($sql);
+   $i=($page-1)*$perpage;
+   $dt=$totpage.chr(5);
+   
+   if($grdtab5 == "true")
+   {
+	   while ($rows=mysql_fetch_array($rs))
+	   {
+		   $i++;
+		   $dt.=$rows["id"].'|'.$rows["pil"].chr(3).number_format($i,0,",","").chr(3).$rows["pil"].chr(3).$rows["kode"].chr(3).$rows["nama"].chr(6);
+	   }
+   }
+   
+   if ($dt!=$totpage.chr(5)){
+		   $dt=substr($dt,0,strlen($dt)-1).chr(5).strtolower($_REQUEST['act']);
+		   $dt=str_replace('"','\"',$dt);
+	   }
+   
+   mysql_free_result($rs);
+   mysql_close($konek);
+   header("Cache-Control: no-cache, must-revalidate" );
+   header("Pragma: no-cache" );
+   if (stristr($_SERVER["HTTP_ACCEPT"],"application/xhtml+xml")){
+	   header("Content-type: application/xhtml+xml");
+   }else{
+	   header("Content-type: text/xml");
+   }
+   echo $dt;
+}
+?>

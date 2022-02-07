@@ -1,0 +1,56 @@
+DELIMITER $$;
+
+DROP PROCEDURE IF EXISTS `dbapotik`.`sp_produksi`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_produksi`(unit_id bigint, idbaru bigint, a_nokirim varchar(30), obat_id_asal bigint, kp_id int, qty_asal double, obat_id_baru bigint, qty_baru double, harga_satuan_baru double, user_id bigint, tgl varchar(10), tgl_act varchar(19))
+BEGIN
+  DECLARE done,selesai INT DEFAULT 0;
+  DECLARE jml double;
+  DECLARE ID,ID1,ID2,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,HARI_J_TEMPO bigint;
+  DECLARE NOKIRIM,NOTERIMA,NOBUKTI varchar(30);
+  DECLARE TANGGAL_ACT datetime;
+  DECLARE TANGGAL,TGL_J_TEMPO,EXPIRED date;
+  DECLARE BATCH,KEMASAN varchar(50);
+  DECLARE QTY_KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_SATUAN_LAMA,QTY_STOK,QTY_RETUR,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,NILAI_PAJAK double;
+  DECLARE DISKON,EXTRA_DISKON,DISKON_TOTAL double;
+  DECLARE JENIS,TIPE_TRANS,cSTATUS tinyint(1);
+  DECLARE KET text;
+  DECLARE cur1 CURSOR FOR select ap.ID,ap.OBAT_ID,ap.ID_LAMA,ap.PBF_ID,ap.UNIT_ID_KIRIM,ap.UNIT_ID_TERIMA,ap.KEPEMILIKAN_ID,ap.USER_ID_KIRIM,ap.USER_ID_TERIMA,ap.NOKIRIM,ap.NOTERIMA,ap.NOBUKTI,ap.TANGGAL_ACT,ap.TANGGAL,ap.TGL_J_TEMPO,ap.HARI_J_TEMPO,ap.BATCH,ap.EXPIRED,ap.QTY_KEMASAN,ap.KEMASAN,ap.QTY_PER_KEMASAN,ap.QTY_SATUAN,ap.QTY_STOK,ap.HARGA_BELI_TOTAL,ap.HARGA_BELI_SATUAN,ap.DISKON,ap.EXTRA_DISKON,ap.DISKON_TOTAL,ap.KET,ap.NILAI_PAJAK,ap.JENIS,ap.TIPE_TRANS,ap.STATUS from a_penerimaan ap where ap.UNIT_ID_TERIMA=unit_id and ap.KEPEMILIKAN_ID=kp_id and ap.OBAT_ID=obat_id_asal and ap.QTY_STOK>0 and ap.STATUS=1 order by ap.TANGGAL,ap.ID;
+/*
+  DECLARE cur2 CURSOR FOR select ID from a_penerimaan where UNIT_ID_KIRIM=unit_id and UNIT_ID_TERIMA=unit_id and NOKIRIM=a_nokirim and NOTERIMA=a_nokirim order by ID desc limit 1;
+*/
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+/*  
+  OPEN cur2;
+  WHILE (NOT done) do
+    FETCH cur2 INTO ID2;
+    IF NOT done THEN
+	SET ID1=ID2;
+    END IF;
+  END WHILE;
+ */ 
+  set jml=qty_asal;
+  OPEN cur1;
+/*
+  set done=0;
+  set selesai=0;
+*/
+  WHILE ((NOT done) and (selesai<>1)) do
+    FETCH cur1 INTO ID,OBAT_ID,ID_LAMA,PBF_ID,UNIT_ID_KIRIM,UNIT_ID_TERIMA,KEPEMILIKAN_ID,USER_ID_KIRIM,USER_ID_TERIMA,NOKIRIM,NOTERIMA,NOBUKTI,TANGGAL_ACT,TANGGAL,TGL_J_TEMPO,HARI_J_TEMPO,BATCH,EXPIRED,QTY_KEMASAN,KEMASAN,QTY_PER_KEMASAN,QTY_SATUAN,QTY_STOK,HARGA_BELI_TOTAL,HARGA_BELI_SATUAN,DISKON,EXTRA_DISKON,DISKON_TOTAL,KET,NILAI_PAJAK,JENIS,TIPE_TRANS,cSTATUS;
+    IF NOT done THEN
+       IF QTY_STOK >= jml THEN
+	  set selesai=1;
+          INSERT INTO a_produksi(id_lama,id_baru,qty_lama,tgl,tgl_act) values(ID,idbaru,jml,tgl,tgl_act);
+	  update a_penerimaan ap set QTY_STOK=QTY_STOK-jml where ap.ID=ID;
+       ELSE
+	  set jml=jml-QTY_STOK;
+          INSERT INTO a_produksi(id_lama,id_baru,qty_lama,tgl,tgl_act) values(ID,idbaru,QTY_STOK,tgl,tgl_act);
+	  update a_penerimaan ap set QTY_STOK=0 where ap.ID=ID;
+       END IF;
+    END IF;
+  END WHILE;
+  CLOSE cur1;
+/*  CLOSE cur2;*/
+ END$$
+
+DELIMITER ;$$

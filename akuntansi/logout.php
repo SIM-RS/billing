@@ -1,0 +1,9 @@
+<?php
+session_start();
+unset($_SESSION['akun_username']);
+unset($_SESSION['akun_password']);
+unset($_SESSION['akun_iduser']);
+unset($_SESSION['akun_kategori']);
+unset($_SESSION['akun_ses_idunit']);
+header("location:../index.php");
+?>

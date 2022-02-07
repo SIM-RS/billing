@@ -1,0 +1,13 @@
+===========================================05-03-2013==================================
+unit_pelayanan/PelayananKunjungan.php
+
+===========================================14-03-2013==================================
+isi data unit_id (IPIT+ROI IGD+ICU IGD+HCU) --> b_ms_reference --> stref=32
+isi data kamar_id (kamarId_HCU u/ Tulip,Mawar Kuning dll) --> b_ms_reference --> stref=33
+
+koneksi/konek.php
+
+unit_pelayanan/RincianTindakan.php
+unit_pelayanan/RincianTindakanExcell.php
+unit_pelayanan/RincianTindakanKSO.php
+unit_pelayanan/RincianTindakanKSOExcell.php

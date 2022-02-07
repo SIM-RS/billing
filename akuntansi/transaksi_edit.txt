@@ -1,0 +1,2 @@
+SELECT * FROM jenis_transaksi WHERE JTRANS_ID=5;
+SELECT * FROM detil_transaksi a INNER JOIN ma_sak b ON a.fk_ma_sak=b.MA_ID WHERE fk_jenis_trans=5;

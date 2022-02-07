@@ -1,0 +1,134 @@
+<?php
+session_start();
+include("../koneksi/konek.php");
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+//if (isset($_SESSION["PATH_MS_MA"]))
+//	$PATH_INFO=$_SESSION["PATH_MS_MA"];
+//else{
+$PATH_INFO="?".$_SERVER['QUERY_STRING'];
+$_SESSION["PATH_MS_MA"]=$PATH_INFO;
+//}
+?>
+<html>
+    <title>Tree Lokasi</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+    <link rel="stylesheet" href="../theme/mod.css" type="text/css" />
+    <link rel="stylesheet" href="../default.css" type="text/css" />
+   
+    <body style="border-width:0px;" bgcolor="#CCCCCC" onLoad="javascript:if (window.focus) window.focus();">
+        <div align="center">
+            <?php
+            include '../header.php';
+            ?>
+            <table width="850" border="0" cellspacing="0" cellpadding="0" align="center" class="tabel">
+                <tr>
+                    <td class="header">
+                        <font size="3"><b>
+                                .: Data Lokasi :. 
+                            </b></font>
+                    </td>
+                    
+                </tr>
+                <tr>
+<td align="right" bgcolor="#FFFFFF"><span style="align:right"><button value="Tambah data" onClick="location='lokasi_detail.php?origin=pindah&act=add'"> Tambah Data<img alt="tambah" style="cursor: pointer" src="../images/tambah.png" />&nbsp;
+                   </button></span>&nbsp;&nbsp;</td>                
+                </tr>
+                <form action="detailUnit.php" method="get" id="form1" name="form1">
+                    <tr bgcolor="whitesmoke">
+                        <td nowrap colspan="">
+                            <input type="hidden" name="act" id="act" value="edit" />
+                            <input type="hidden" name="idunit" id="idunit" />
+                            <input type="hidden" name="origin" id="origin" value="treeUnit" />
+                            <?php
+                            // Detail Data Parameters
+                            if (isset($_REQUEST["p"])) {
+                                $_SESSION['itemtree.filter'] = $_REQUEST["p"];
+                                $p = $_SESSION['itemtree.filter'];
+                            }
+                            else {
+                                if (isset($_SESSION['itemtree.filter']))
+                                    $p = $_SESSION['itemtree.filter'];
+                            }
+
+                            /*********************************************/
+                            /*  Read text file with tree structure       */
+                            /*********************************************/
+
+                            /*********************************************/
+                            /* read file to $tree array                  */
+                            /* tree[x][0] -> tree level                  */
+                            /* tree[x][1] -> item text                   */
+                            /* tree[x][2] -> item link                   */
+                            /* tree[x][3] -> link target                 */
+                            /* tree[x][4] -> last item in subtree        */
+                            /*********************************************/
+                            //$tree=array();
+                            $canRead = true;
+                            $maxlevel=0;
+                            $cnt=0;
+                           $strSQL = "select * from as_lokasi order by kodelokasi";
+                            $rs = mysql_query($strSQL);
+                            while ($rows=mysql_fetch_array($rs)) {
+                                $mpkode=trim($rows['kodelokasi']);
+                                $level = explode('.',$rows['kodelokasi']);
+                                $lvl = count($level);
+                                $tree[$cnt][0]= $lvl;
+                                $islast = $rows["islast"];
+                 
+                                $tree[$cnt][1]= $rows["kodelokasi"]." - ".$rows["namalokasi"];
+											                              
+                                if ($lvl > 0)
+                                    $tree[$cnt][2]= "lokasi_detail.php?origin=pindah&act=edit&idlokasi=".$rows['idlokasi'];
+                               
+                                else
+                                    $tree[$cnt][2] = null;
+
+                                $tree[$cnt][3]= "";
+                                $tree[$cnt][4]= 0;
+                                if ($tree[$cnt][0] > $maxlevel)
+                                    $maxlevel=$tree[$cnt][0];
+												$cnt++;                                			
+                            }
+                            mysql_free_result($rs);
+
+                            $tree_img_path="../images";
+                            include("../theme/treemenu.inc.php");
+
+                            ?>
+                        </td>
+                    </tr>
+                </form>
+				<tr>
+					<td align="center"><button class="Enabledbutton" id="backbutton" onClick="location='lokasi.php'" title="Back" style="cursor:pointer">
+                                        <img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Back to List
+                                    </button></td>
+				</tr>
+                <tr>
+                    <td class="footer">
+                        <?php
+                        include '../footer.php';
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script type="text/javascript" language="javascript">
+        function setValue36(par){
+            if(par != '' && par != null){
+                var send = par.split('-|-');
+                document.getElementById(send[0]).value = send[1];
+                document.getElementById('form1').submit();
+            }
+        }
+    </script>
+</html>
+<?php
+mysql_close($konek);
+?>

@@ -1,0 +1,363 @@
+<?php
+session_start();
+include '../koneksi/konek.php';
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+date_default_timezone_set("Asia/Jakarta");
+$tgl = gmdate('d-m-Y',mktime(date('H')+7));
+$th = explode('-', $tgl);
+$tgl_sql = gmdate('Y-m-d',mktime(date('H')+7));
+$parobt = "";
+$id = $_REQUEST['kirim'];
+$t = explode('|', $id);
+$idok='';
+for($ro=0;$ro<(count($t)-1);$ro++){
+	if(((count($t)-1)-$ro)==1){
+	$idok .=  $t[$ro].'';
+	}else{
+	$idok .=  $t[$ro].',';
+		}
+	}
+//else {
+$act = $_POST['act'];
+if(isset($act) && $act!=''){
+		$fdata = $_REQUEST['fdata'];
+		$no_po = $_REQUEST['no_po'];
+		$tgl_po = tglSQL($_REQUEST['tgl']);
+		$jdl = $_REQUEST['judul'];
+		$data = explode('**', $fdata);
+		for($ro=0;$ro<(count($data));$ro++){
+				$ri = explode('|', $data[$ro]);	
+				$id = $ri[0];
+				$utk=$ri[1];
+				
+				$sqlup = "update as_po set no_po = '$no_po',judul='$jdl',tgl_po='$tgl_po',peruntukan='$utk',status=1 where id='$id'";	
+				mysql_query($sqlup);
+				$err .= mysql_error();//echo "<script>";			
+			}
+			if($err==''){
+					 echo "<script> alert('Data berhasil disimpan');window.location='brg_langsungPO.php'; </script>";				
+				}		
+	}
+	
+   $sql="select no_po from as_po s where month(s.tgl_po)=$th[1] and year(s.tgl_po)=$th[2] order by no_po desc limit 1";
+    $rs1=mysql_query($sql);
+    if ($rows1=mysql_fetch_array($rs1)) {
+        $no_po=$rows1["no_po"];
+        $ctmp=explode("/",$no_po);
+        $dtmp=($ctmp[1]+1);
+        $ctmp=$dtmp;
+        $ctmp=sprintf("%04d",$ctmp);
+        //for ($i=0; $i<(4-strlen($dtmp)); $i++)
+        //    $ctmp = "0".$ctmp;
+         $no_po = "PO.027/".$ctmp."/404.6.8/".$th[2];
+    }
+    else {
+    	
+        $no_po = "PO.027/0001/404.6.8/".$th[2];
+    }
+
+//}
+$qry="select * from as_ms_satuan order by nourut";
+$exe=mysql_query($qry);
+$sel="";
+$i=0;
+while($show=mysql_fetch_array($exe)) {
+    $sel .="sel.options[$i] = new Option('".$show['idsatuan']."', '".$show['idsatuan']."');";
+    $i++;
+}
+
+?>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <script type="text/javascript" language="JavaScript" src="../theme/js/ajax.js"></script>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <title>.: PO :.</title>
+    </head>
+    <body onload="HitungTot();">
+        <?php
+        include '../header.php';
+        $act = $_GET['act'];
+        if($act == '') {
+            $act = 'add';
+        }
+        ?>
+        <div align="center">
+            <div id="divbarang" align="left" style="position:absolute; z-index:1; left: 200px; top: 25px; height: 230px; overflow: scroll; border:1px solid; display:none; background-color: #CCCCCC; layer-background-color: #CCCCCC;"></div>
+            <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <form name="form1" id="form1" method="post" action="" onSubmit="save()">
+                            <input name="act" id="act" type="hidden" value="<?php echo $act;?>">
+                            <input name="fdata" id="fdata" type="hidden" value="">
+                            <table width="98%" border="0">
+                                <tr>
+                                    <td>
+                                        <div id="input" style="display:block" align="center">
+                                            <table width="100%" border="0" cellpadding="1" cellspacing="0" align="center">
+                                                <tr>
+                                                    <td class="tdlabel">Nomor</td>
+                                                    <td colspan="2">:
+                                                        <input name="no_po" id="no_po" class="txt" size="25" value="<?php echo $no_po;?>" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td width="239" class="tdlabel">Tanggal&nbsp; </td>
+                                                    <td colspan="2">:
+                                                        <input name="tgl" type="text" class="txtunedited" id="tgl" tabindex="4" value="<?php if(isset($tgl) && $tgl != '') echo $tgl;else echo date('d-m-Y'); ?>" size="15" maxlength="15" readonly>
+                                                        <img alt="calender" style="cursor:pointer" border=0 src="../images/cal.gif" align="absbottom" onClick="gfPop.fPopCalendar(document.getElementById('tgl'),depRange);">
+                                                  </td>
+                                                </tr>
+                                                
+                                                
+                                                <tr>
+                                                    <td class="tdlabel">
+							Judul PO
+                                                    </td>
+                                                    <td width="503">
+							: 
+							  <input type="text" style="text-align:left" name="judul" id="judul" value="<?php echo $judul;?>" class="txt" size='75' />
+                                                  </td>
+												  <!--td width="329" align="center"><input type="button" id="ctk" name="ctk" value="Cetak PO" onClick="window.open('cetak_po.php?jns='+jenis_surat.value+'&tgl='+tgl.value+'&nomor='+no_po.value+'&supplier='+vendor_id.value+'&tgl_kirim='+exp_kirim.value+'&jdl='+judul.value+'&no_po=<?php echo $no_po; ?>')"></td-->
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div style="width:975px; height: inherit; overflow:auto; ">
+                                            
+                                            <table id="tblJual" width="100%" border="0" cellpadding="0" cellspacing="0" align="center">
+                                                <tr>
+                                                    <td colspan="10" align="center" class="jdltable"><hr></td>
+                                                </tr>
+                                                <tr>
+													<td colspan="2">&nbsp;
+													</td>
+                                                    <td colspan="7" align="center" class="jdltable">
+                                                        PURCHASE ORDER</td>
+                                                
+                                                    
+                                                </tr>
+                                                <tr class="headtable" height=35>
+                                                    <td width="50"  class="tblheaderkiri">No</td>
+                                                    <td width="100" class="tblheader">Kode Barang</td>
+                                                    <td width="400" class="tblheader">Nama Barang</td>
+                                                    <td width="100" class="tblheader">Uraian</td>
+                                                    <td width="40" class="tblheader">Jml</td>
+                                                    <td width="40" class="tblheader">Satuan</td>
+                                                    <td class="tblheader" width="50">Harga Satuan</td>
+                                                    <!--td width="40" height="25" class="tblheader">Lain-lain</td-->
+                                                    <!--td class="tblheader">Sub Total</td-->
+                                                    <td width="40" class="tblheader">Total</td>
+                                                    <td class="tblheader" align="center">Peruntukan</td>
+                                                    <td width="30" class="tblheader">Proses</td>
+                                                </tr>
+                                                <?php
+                                                if($act=='add') {
+                                                     $sql = "select * from as_po po 
+																				inner join as_masuk msk on msk.po_id=po.id
+																				inner join as_ms_barang brg on msk.barang_id=brg.idbarang
+																				inner join as_ms_rekanan rek on rek.idrekanan=po.vendor_id
+																				AND po.no_po ='-' AND po.tgl_po is null AND po_akhir = 1 AND 
+																				po.id in (".$idok.") order by po.id asc";
+                                                    $rs1 = mysql_query($sql);
+                                                    $i = 0;
+                                                    while($rows1 = mysql_fetch_array($rs1)) {
+                                                    $status = $rows1['status'];
+                                                    	$visible = 'visible';
+                                                    	$read = '';
+                                                    	if($status==1){$visible='hidden';$read='readonly';}
+                                                        ?>
+                                                <tr class="itemtableA" onMouseOver="this.className='itemtableAMOver'" onMouseOut="this.className='itemtableA'">
+                                                    <td class="tdisikiri" width="25">
+                                                                <?php echo ++$i;?>
+                                                    </td>
+                                                    <td class="tdisi" align="center"><?php echo $rows1['kodebarang'];?></td>
+
+                                                    <td class="tdisi" align="center">
+                                                        <input name="obatid" type="hidden" value="<?php echo $rows1['ms_barang_id'];?>">
+                                                        <input type="text" name="txtObat" readonly="true" class="txtinput" size="20" value="<?php echo $rows1['namabarang'];?>" onKeyUp="suggest(event,this);" autocomplete="off" />
+                                                        <input type="hidden" id="id" name="id" value="<?php echo $rows1['id'];?>" />
+																			         <img alt="tree" width="18" title='Struktur tree kode barang'  style="cursor:pointer;visibility:<?=$visible; ?>;" border=0 src="../images/view_tree.gif" align="absbottom" onClick="treebrg(this)">
+                                                                                                  
+                                                    </td>
+                                                    <td class="tdisi">
+                                                        <input type="text" readonly="true" name="txtUraian" id="txtUraian" size="15" class="txtinput" value="<?php echo $rows1['uraian'];?>" autocomplete="off" />
+                                                    </td>
+                                                    <td class="tdisi">
+                                                        <input type="text" readonly="true" name="txtJml" id="txtJml" size="3" <?=$read; ?> class="txtcenter" value="<?php echo $rows1['qty_satuan'];?>"  onKeyUp="AddRow(event,this,'txtJml');setDisable(event,this);" autocomplete="off" />
+                                                    </td>
+                                                    <td class="tdisi">
+                                                        <input id="satuan" readonly="true" name="satuan" class="txtinput" size="5" value="<?php echo $rows1['idsatuan']; ?>" readonly="readonly" />                                                                      
+                                                    </td>
+                                                    <td class="tdisi">
+                                                        <input name="txtNilai" readonly="true" type="text" class="txtright" <?=$read; ?> id="txtNilai" value="<?php echo $rows1['harga_satuan'];?>" onKeyUp="AddRow(event,this,'txtNilai');setDisable(event,this);" size="10" autocomplete="off" />
+                                                    </td>
+                                                    <!--td class="tdisi" width="30">
+                                                        <input type="text"  name="txtLain2" id="txtLain2" size="10" class="txtright" value="<?php echo round ($rows1['lain2']);?>" readonly size="10" autocomplete="off" />
+                                                    </td-->
+                                                    <!--td class="tdisi" width="30"-->
+                                                        <input name="txtSubTotal" id="txtSubTotal" type="hidden" class="txtright" value="<?php echo round ($rows1['harga_satuan']+$rows1['lain2']/$rows1['qty_satuan']);?>" size="12" readonly="true" />
+                                                    <!--/td-->
+                                                    <td class="tdisi">
+                                                        <input type="text" readonly="true" name="txtTotal" id="txtTotal" class="txtright" readonly value="<?php echo round ($rows1['qty_satuan']*$rows1['harga_satuan']+$rows1['lain2']);?>" size="10" autocomplete="off" /><!-- onKeyUp="AddRow(event,this,'txtTotal')"-->
+                                                    </td>
+                                                    <td class="tdisi">
+                                                       <!--input type="hidden" id="utk_unit_id" class="txtinput" value="<?=$rows1['unit_id'];?>" name="utk_unit_id"--> 
+                                                                 <?php
+                                                                    /* $query = "SELECT idunit, namaunit FROM as_ms_unit where idunit = '".$rows1['unit_id']."' ORDER BY kodeunit ASC";
+                                                                    $rs = mysql_query($query);
+                                                                    $row = mysql_fetch_array($rs); */
+                                                                    ?>
+                                                                    <input type="text" value="<?=$rows1["peruntukan"]?>" name="txtunit" id="txtunit" class="txtinput" size="20"  onKeyUp="" autocomplete="off" />
+                                                        <!--img alt="tree" width="18" title='Struktur tree unit'  style="cursor:pointer;visibility:<?=$visible; ?>;" border=0 src="../images/view_tree.gif" align="absbottom" onClick="treeunit(this);"-->
+                                                  
+                                                    </td>
+                                                    <td class="tdisi">
+                                                        <img alt="del" src="../icon/del.gif" border="0" width="16" height="16" align="absmiddle" class="proses" title="Klik Untuk Menghapus" onClick="if (confirm('Yakin Ingin Menghapus Data?')){removeRowFromTable(this);setDisable('del')}">
+                                                    </td>
+                                                </tr>
+                                                        <?php
+                                                    }
+                                                }
+                                               ?>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                          </table>
+                            <table width="90%" align="center">
+                                <tr>
+                                    <td width="88%" class="txtright">Total :</td>
+                                    <td id="total" width="11%" align="right" class="txtright">0</td>
+                                    <td width="1%">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td height="30" colspan="4" valign="bottom" align="center">
+                                        <!--button type="button" class="Enabledbutton" id="btnDist" name="btnDist" onClick="activate()" title="Save" style="cursor:pointer">
+                                            <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            DISTRIBUSI BIAYA LAIN-LAIN
+                                        </button-->
+                                        <button type="submit" class="Enabledbutton" id="btnSimpan" name="btnSimpan" onClick="save()" title="Save" style="cursor:pointer">
+                                            <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Save Record
+                                        </button>
+                                        <button type="reset" class="Enabledbutton" id="backbutton" onClick="location='brg_langsungPO.php'" title="Back" style="cursor:pointer">
+                                            <img alt="cancel" src="../icon/cancel.gif" width="22" height="22" border="0" align="absmiddle" />
+                                            Cancel
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                        <?php
+                        include '../footer.php';
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <iframe height="193" width="168" name="gToday:normal:agenda.js"
+            id="gToday:normal:agenda.js"
+            src="../theme/popcjs.php" scrolling="no"
+            frameborder="1"
+            style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+    </iframe>
+    <script type="text/javascript" language="javascript">
+    function removeRowFromTable(cRow){
+        var tbl = document.getElementById('tblJual');
+        var jmlRow = tbl.rows.length;
+        if (jmlRow > 4){
+            var i=cRow.parentNode.parentNode.rowIndex;
+            //if (i>2){
+            tbl.deleteRow(i);
+            var lastRow = tbl.rows.length;
+            for (var i=3;i<lastRow;i++){
+                var tds = tbl.rows[i].getElementsByTagName('td');
+                tds[0].innerHTML=i-2;
+            }
+            HitungTot();
+        }
+    }
+
+    function HitungTot(){
+        if (document.form1.txtSubTotal.length){
+            var cStot=0,tmp;
+            for (var i=0;i<document.form1.txtSubTotal.length;i++){
+                //var lain2 = (document.form1.txtLain2[i].value*1)==0||(document.form1.txtLain2[i].value*1)==''?0:(document.form1.txtLain2[i].value*1);
+                //alert(document.form1.txtSubTot[i].value);
+                //tmp = ((document.form1.txtJml[i].value*1)*(document.form1.txtNilai[i].value*1)+lain2).toString();
+                tmp = ((document.form1.txtJml[i].value*1)*(document.form1.txtNilai[i].value*1)).toString();
+                tmp = tmp.split('.');
+                if(tmp[1] != undefined){
+                    tmp = tmp[0]+'.'+tmp[1].substr(0,2);
+                }
+                else{
+                    tmp = tmp[0];
+                }
+                tmp = parseFloat(tmp);
+                document.form1.txtTotal[i].value=tmp;
+                cStot +=(document.form1.txtTotal[i].value*1);
+            }
+            tmp = Math.round(cStot)<cStot?Math.round(cStot)+1:Math.round(cStot);
+            document.getElementById('total').innerHTML=tmp;
+            //alert(cStot);
+        }
+        else{
+            document.form1.txtTotal.value=(document.form1.txtJml.value*1)*(document.form1.txtNilai.value*1);
+            document.getElementById('total').innerHTML=document.form1.txtTotal.value;
+        }
+    }
+    function save(){
+        var cdata='';
+        var ctemp;
+        if (document.forms[0].no_po.value==""){
+            alert('Isikan No PO Terlebih Dahulu !');
+            document.forms[0].no_po.focus();
+            return false;
+        }
+        if (document.forms[0].id.length){
+            for (var i=0;i<document.forms[0].id.length;i++){
+                ctemp=document.forms[0].id[i].value;//.split('|');
+                if (document.forms[0].id[i].value==""){
+                    alert('Pilih Barang Terlebih Dahulu !');
+                    document.forms[0].txtObat[i].focus();
+                    return false;
+                }
+                cdata += ctemp+"|"+document.forms[0].txtunit[i].value;
+               //alert(cdata);
+                
+                cdata += '**';
+            }
+            if (cdata != '')
+                cdata=cdata.substr(0,cdata.length-2);
+        }
+        else{
+            if (document.forms[0].obatid.value==""){
+                alert('Pilih Barang Terlebih Dahulu !');
+                document.forms[0].txtObat.focus();
+                return false;
+            }
+            ctemp=document.forms[0].id.value;//.split('|');
+            cdata=ctemp+"|"+document.forms[0].txtunit.value;;
+            
+        }
+        //ms_barang_id,vendor_id,no_po,tgl,satuan,qty_satuan,harga_satuan
+        //satuan,qty_satuan,harga_satuan
+        document.forms[0].fdata.value=cdata;
+       // alert(document.forms[0].fdata.value);
+        //document.forms[0].submit();
+        //array buat fdata yang dikirim dengan yang ditangkap belum singkron
+    }
+    
+    </script>
+</html>

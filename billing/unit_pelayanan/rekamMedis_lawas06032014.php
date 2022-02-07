@@ -1,0 +1,641 @@
+<?php
+session_start();
+include("../sesi.php");
+?>
+<?php
+include("../koneksi/konek.php");
+$idKunj=$_REQUEST['idKunj'];
+$idPel=$_REQUEST['idPel'];
+$idPasien=$_REQUEST['idPasien'];
+$tgl1=$_REQUEST['tgl1'];
+$tgl2=$_REQUEST['tgl2'];
+$tmp = explode("-",$tgl1);
+$tmp1 = explode("-",$tgl2);
+$tgl1 = $tmp[2].'-'.$tmp[1].'-'.$tmp[0];
+$tgl2 = $tmp1[2].'-'.$tmp1[1].'-'.$tmp1[0];
+
+$qPasien="select p.no_rm,p.nama,p.alamat,p.rt,p.rw,w.nama as desa,i.nama as kec,l.nama as kab,a.nama as prop
+from b_ms_pasien p
+left join b_ms_wilayah w on w.id=p.desa_id
+left join b_ms_wilayah i on i.id=p.kec_id
+left join b_ms_wilayah l on l.id=p.kab_id
+left join b_ms_wilayah a on a.id=p.prop_id where p.id='".$idPasien."'";
+$rsPasien=mysql_query($qPasien);
+$rwPasien=mysql_fetch_array($rsPasien);
+$date_now=gmdate('d-m-Y',mktime(date('H')+7));
+?>
+<html>
+    <head>
+        <title>Rekam Medis Pasien</title>
+        <style>
+            .withline{
+                border:1px solid #000000;
+            }
+            .noline{
+                border:none;
+            }
+            .tableHeader{
+                font:10 bold;
+                border:1px solid #000000;
+                text-align:center;
+            }
+            .tableContent{
+                font:10 sans-serif normal;
+                border:1px solid #000000;
+                padding-left:5px;
+            }
+        </style>
+    </head>
+    <body>
+    <script type="text/JavaScript">
+            var arrRange = depRange = [];
+    </script>
+    <iframe height="193" width="168" name="gToday:normal:agenda.js"
+                id="gToday:normal:agenda.js" src="../theme/popcjs.php" scrolling="no" frameborder="1"
+                style="border:1px solid medium ridge; position:absolute; z-index:65535; left:100px; top:50px; visibility:hidden">
+        </iframe>
+        <table width="100%" align="center" cellpadding=0 cellspacing=0>
+            <tr>
+                <td class="noline" colspan="2" style="font:12 sans-serif normal"><?=$namaRS?></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" style="font:small sans-serif bold"><?=$alamatRS?> </td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" style="font:small sans-serif bold">Telepon <?=$tlpRS?></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" style="font:small sans-serif bold"><?=$kotaRS?></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" style="font:small sans-serif bold"></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" colspan="4" align="center" style="font:14 sans-serif bolder;">Riwayat Pasien</td>
+            </tr>
+            <tr>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline"  style="font:12 sans-serif bolder;">
+                    No Rekam Medis : <?php echo $rwPasien['no_rm'];?>
+                </td>
+                <td class="noline"></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline"  style="font:12 sans-serif bolder;">
+                    Nama Pasien : <?php echo $rwPasien['nama'];?>
+                </td>
+                <td class="noline"></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline"  style="font:12 sans-serif bolder;">
+                    Alamat : <?php echo $rwPasien['alamat']." RT.".$rwPasien['rt']." RW.".$rwPasien['rw']." Desa/Kel.".$rwPasien['desa']." Kec.".$rwPasien['kec']." Kab.".$rwPasien['kab'];?>
+                </td>
+                <td class="noline"></td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline">Periode :
+                &nbsp;
+                <input id="txtAwal" name="txtAwal" readonly size="11" class="txtcenter" type="text" value="<?php 
+				if(!isset($_REQUEST['tgl1']))
+				{
+					echo $date_now;
+				}else{
+					echo $_REQUEST['tgl1'];
+				}
+				?>" />&nbsp;<input type="button" name="btnTgl" value="&nbsp;V&nbsp;" class="txtcenter" onClick="gfPop.fPopCalendar(document.getElementById('txtAwal'),depRange,'');"/>
+				&nbsp; S/d &nbsp;
+                <input id="txtAkhir" name="txtAkhir" readonly size="11" class="txtcenter" type="text" value="<?php if(!isset($_REQUEST['tgl2'])) {
+                                            echo $date_now;
+                                        }
+                                        else {
+                                            echo $_REQUEST['tgl2'];
+                                        }
+                                        ?>" />&nbsp;<input type="button" name="btnTgl" value="&nbsp;V&nbsp;" class="txtcenter" onClick="gfPop.fPopCalendar(document.getElementById('txtAkhir'),depRange,'');"/> &nbsp;<input type="button" name="btnTampil" value="Tampilkan" class="txtcenter" onClick="tampil();"/>
+                </td>
+                <td class="noline">&nbsp;
+                                
+                </td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;
+                
+                </td>
+            </tr>
+            <tr>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+                <td class="noline">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="noline" align="center" colspan="4">
+                    <table class="withline" width="100%" cellpadding=0 cellspacing=0>
+                        <tr>
+                            <td width="3%" class="tableHeader"><strong>No</strong></td>
+                            <td width="12%" class="tableHeader"><strong>Kunjungan</strong></td>
+                            <td width="25%" class="tableHeader"><strong>Tindakan</strong></td>
+                            <td width="20%" class="tableHeader"><strong>Diagnosa</strong></td>
+                            <td width="20%" class="tableHeader"><strong>Obat</strong></td>
+                            <td width="15%" class="tableHeader"><strong>SOAPIER</strong></td>
+                            <td width="15%" class="tableHeader"><strong>ANAMNESIS</strong></td>
+                            <td width="15%" class="tableHeader"><strong>Status Keluar</strong></td>
+                        </tr>
+                        <?php
+						if(!isset($_REQUEST['tgl1']))
+						{
+							$qKunj="select k.id,k.tgl_act from b_kunjungan k where k.pasien_id='".$idPasien."'";	
+						}else{
+							$qKunj="select k.id,k.tgl_act from b_kunjungan k where k.pasien_id='".$idPasien."' AND tgl BETWEEN '$tgl1' AND '$tgl2'";	
+						}
+						//echo $qKunj;
+                        $rsKunj=mysql_query($qKunj);
+                        $no=1;
+                        $tempUnit='';
+                        $tempUnit2='';
+                        $tempUnit3='';
+                        $tempName = '';
+                        while($rwKunj=mysql_fetch_array($rsKunj)) {
+                            $tanggal=explode(" ",$rwKunj['tgl_act']);
+                            ?>
+                        <tr>
+                            <td class="tableContent" align="center"><?php echo $no;?></td>
+                            <td class="tableContent" align="center" valign="middle"><?php echo tglSQL($tanggal[0])." ".$tanggal[1];?>&nbsp;</td>
+                            <td class="tableContent" align="left" valign="top" style="font-size:13px">
+                                    <?php
+									$i = 0;
+									$y = 0;
+                                    /* $qTind="SELECT p.id AS p_id, u.id AS id_unit,u.nama AS unit,mt.nama AS tindakan,IF(u_asal.kategori <> 1,n.nama,'') AS rujuk_dari
+                                      ,IF(u_asal.kategori <> 1,p.tgl,'') AS tgl_rujuk
+                                      ,IF(bp.nama IS NOT NULL,CONCAT('<br/>Dokter:&nbsp;',bp.nama),'') AS nm_dokter,
+                                      IF(bp2.nama IS NOT NULL,CONCAT('<br/>Petugas:&nbsp;',bp2.nama,'<br/>'),'') AS nm_user
+                                            FROM (SELECT * FROM b_tindakan t WHERE t.kunjungan_id='".$rwKunj['id']."') AS t1
+                                            INNER JOIN b_pelayanan p ON p.id=t1.pelayanan_id
+                                            INNER JOIN b_ms_unit u ON u.id=p.unit_id
+                                            INNER JOIN b_ms_tindakan_kelas tk ON tk.id=t1.ms_tindakan_kelas_id
+                                            INNER JOIN b_ms_tindakan mt ON mt.id=tk.ms_tindakan_id
+                                            INNER JOIN b_ms_unit u_asal ON p.unit_id_asal = u_asal.id
+                                            LEFT JOIN b_ms_unit n ON n.id=p.unit_id_asal
+                                            LEFT JOIN b_ms_pegawai bp ON bp.id = t1.user_id
+                                            LEFT JOIN b_ms_pegawai bp2 ON bp2.id= t1.user_act
+                                            ORDER BY unit"; */
+									$qTind = "
+										SELECT 
+										  p.id AS p_id,
+										  u.id AS id_unit,
+										  u.nama AS unit,
+										  /* GROUP_CONCAT(mt.nama SEPARATOR '<br/>- ') AS tindakan, */
+										  GROUP_CONCAT(CONCAT(mt.nama,'*|*',p.id) SEPARATOR '|||') AS tindakan,
+										  IF(u_asal.kategori <> 1, n.nama, '') AS rujuk_dari,
+										  IF(u_asal.kategori <> 1, p.tgl, '') AS tgl_rujuk,
+										  bp.id,
+										  IF(bp.nama IS NOT NULL,bp.nama,'') AS dokter,
+										  bp2.id,
+										  IF(bp2.nama IS NOT NULL,bp2.nama,'') AS petugas 
+										FROM
+										  (SELECT 
+											* 
+										  FROM
+											b_tindakan t 
+										  WHERE t.kunjungan_id = '".$rwKunj['id']."') AS t1 
+										  INNER JOIN b_pelayanan p 
+											ON p.id = t1.pelayanan_id 
+										  INNER JOIN b_ms_unit u 
+											ON u.id = p.unit_id 
+										  INNER JOIN b_ms_tindakan_kelas tk 
+											ON tk.id = t1.ms_tindakan_kelas_id 
+										  INNER JOIN b_ms_tindakan mt 
+											ON mt.id = tk.ms_tindakan_id 
+										  INNER JOIN b_ms_unit u_asal 
+											ON p.unit_id_asal = u_asal.id 
+										  LEFT JOIN b_ms_unit n 
+											ON n.id = p.unit_id_asal 
+										  LEFT JOIN b_ms_pegawai bp 
+											ON bp.id = t1.user_id 
+										  LEFT JOIN b_ms_pegawai bp2 
+											ON bp2.id = t1.user_act 
+										GROUP BY u.id, bp.id, bp2.id
+										ORDER BY unit
+									";
+									//echo $qTind."<br>";
+                                    $rsTind=mysql_query($qTind);
+                                    while($rwTind=mysql_fetch_array($rsTind)) {
+										//echo ++$jo;
+                                        if($tempUnit!=$rwTind['unit']) {
+                                            $tempUnit=$rwTind['unit'];
+							?>
+									<?php
+											echo '<b>'.$rwTind['unit'].'</b>'.(($rwTind['rujuk_dari']!='')?" (Dirujuk dari: ".$rwTind['rujuk_dari']:'').(($rwTind['tgl_rujuk']!='')?" tanggal: ".tglSQL($rwTind['tgl_rujuk']).")":'');
+										}
+									?>
+									<?php 
+										if($tmpDokter != $rwTind['dokter']){
+											$tmpDokter = $rwTind['dokter'];
+											echo "<br />- <b>Dokter</b> : ".$rwTind['dokter']."<br />"; 
+										}
+										/* if($tmpDokter != $rwTind['petugas']){
+											$tmpDokter = $rwTind['petugas']; */
+										echo "&nbsp; * <b>Petugas</b> : ".$rwTind['petugas']."<br />"; 
+										//}
+									?>
+										<div class="kanann" style="margin-left:20px; margin-bottom:5px;">
+									<?php
+										$tindakan = explode('|||',$rwTind['tindakan']);
+										//echo "- ".$rwTind['tindakan'];
+										$no = 1;
+										echo "<ol style='margin-top:5px;'>";
+										foreach($tindakan as $val){
+											$isi = explode('*|*',$val);
+											//$no++.
+											echo '<li>'.$isi[0]."<br />";
+											if($rwTind['id_unit']==58 || $rwTind['id_unit']==59){
+												$sqlP = "SELECT a.*, CONCAT(b.normal1,'-',b.normal2) AS normal FROM b_hasil_lab a
+												INNER JOIN  b_ms_normal_lab b ON a.id_normal = b.id WHERE id_pelayanan = $isi[1]
+												limit $i,1";
+												$rsqlP = mysql_query($sqlP);
+												while($dsqlP = mysql_fetch_array($rsqlP))
+												{
+													$i++;
+												?>
+													&nbsp;&nbsp;Normal Lab : &nbsp;<? echo $dsqlP['normal'];?>
+													<br />&nbsp;&nbsp;Hasil Lab : &nbsp;<? echo $dsqlP['hasil'];?>
+												<?
+												}
+											} elseif ($rwTind['id_unit']==61){
+												$sqlP = "SELECT * FROM b_hasil_rad WHERE pelayanan_id = $isi[1] limit $y,1";
+												$rsqlP = mysql_query($sqlP);
+												while($dsqlP = mysql_fetch_array($rsqlP))
+												{
+													$y++;
+													?>
+													&nbsp;&nbsp;Hasil Radiologi : &nbsp;<? echo $dsqlP['hasil'];?>
+													<?
+												}
+											}
+											echo '</li>';
+										}
+										echo "</ol>";
+									?>
+										</div>
+									<?php
+									}
+									?>
+                                <!--ul style="list-style-position:inside;list-style-type:square;padding-left:2px;">
+                                                <?php
+                                                //echo '<b>'.$rwTind['unit'].'</b>'.(($rwTind['rujuk_dari']!='')?" (Dirujuk dari: ".$rwTind['rujuk_dari']:'').(($rwTind['tgl_rujuk']!='')?" tanggal: ".tglSQL($rwTind['tgl_rujuk']).")":'')?>
+                                    <li><?php //echo $rwTind['tindakan'];?><?php //echo $rwTind['nm_dokter'];?><?php //echo $rwTind['nm_user'];?></li>
+                                                <?php
+                                            //}
+                                            //else {
+                                                ?>
+                                    <li><?php //echo $rwTind['tindakan'];?><?php //echo $rwTind['nm_dokter'];?><?php //echo $rwTind['nm_user'];?></li>
+                                                <?php
+                                            //}
+                                        ?>
+                                        <? 
+											/* if($rwTind['id_unit']==58 || $rwTind['id_unit']==59)
+											{
+												$sqlP = "SELECT a.*, CONCAT(b.normal1,'-',b.normal2) AS normal FROM b_hasil_lab a
+												INNER JOIN  b_ms_normal_lab b ON a.id_normal = b.id WHERE id_pelayanan = $rwTind[p_id]
+												limit $i,1";
+												$rsqlP = mysql_query($sqlP);
+												while($dsqlP = mysql_fetch_array($rsqlP))
+												{
+													$i++;
+												?>
+                                                	&nbsp;Normal Lab : &nbsp;<? echo $dsqlP['normal'];?>
+	                                                &nbsp;Hasil Lab : &nbsp;<? echo $dsqlP['hasil'];?>
+                                                <?
+												}
+											}elseif($rwTind['id_unit']==61){
+												$sqlP = "SELECT * FROM b_hasil_rad WHERE pelayanan_id = $rwTind[p_id] limit $y,1";
+												$rsqlP = mysql_query($sqlP);
+												while($dsqlP = mysql_fetch_array($rsqlP))
+												{
+													$y++;
+													?>
+                                                     &nbsp;Hasil Radiologi : &nbsp;<? echo $dsqlP['hasil'];?>
+                                                    <?
+												}
+											} */
+									//}
+									$tempUnit = '';
+										?>
+                                     </li>
+								</ul-->
+                                    &nbsp;
+                            </td>
+                            <td class="tableContent" align="left" valign="top" style="font-size:13px">
+                                    <?php
+                                   /* echo $qDiag="select d.diagnosa_id,u.nama as unit,IF(md.nama IS NULL, d.diagnosa_manual, md.nama) as diagnosa,IF(bp.nama IS NOT NULL,CONCAT('<br/>Dokter:&nbsp;',bp.nama),'') AS nm_dokter,
+                                      IF(bp2.nama IS NOT NULL,CONCAT('<br/>Petugas:&nbsp;',bp2.nama,'<br/>'),'') AS nm_user, l.unit_id from b_diagnosa d
+                                    LEFT join b_ms_diagnosa md on md.id=d.ms_diagnosa_id
+                                    inner join b_pelayanan l on l.id=d.pelayanan_id
+                                    inner join b_ms_unit u on u.id=l.unit_id
+									LEFT JOIN b_ms_pegawai bp ON bp.id = d.user_id
+                                    LEFT JOIN b_ms_pegawai bp2 ON bp2.id= d.user_act
+                                    where l.kunjungan_id='".$rwKunj['id']."'
+                                        order by unit"; */
+									$qDiag = "SELECT 
+												  d.diagnosa_id,
+												  l.unit_id ,
+												  u.nama AS unit,
+												  GROUP_CONCAT(IF( md.nama IS NULL, d.diagnosa_manual, md.nama) SEPARATOR '|||') AS diagnosa,
+												  bp.id,
+												  IF( bp.nama IS NOT NULL, bp.nama, '' ) AS dokter,
+												  bp2.id,
+												  IF( bp2.nama IS NOT NULL, bp2.nama, '') AS petugas
+												FROM
+												  b_diagnosa d 
+												  LEFT JOIN b_ms_diagnosa md 
+													ON md.id = d.ms_diagnosa_id 
+												  INNER JOIN b_pelayanan l 
+													ON l.id = d.pelayanan_id 
+												  INNER JOIN b_ms_unit u 
+													ON u.id = l.unit_id 
+												  LEFT JOIN b_ms_pegawai bp 
+													ON bp.id = d.user_id 
+												  LEFT JOIN b_ms_pegawai bp2 
+													ON bp2.id = d.user_act 
+												WHERE l.kunjungan_id = '".$rwKunj['id']."' 
+												GROUP BY u.id, bp.id, bp2.id
+												ORDER BY unit";
+                                    $rsDiag=mysql_query($qDiag);
+									$tmpDokter2 = '';
+                                    while($rwDiag=mysql_fetch_array($rsDiag)) {
+                                        if($tempUnit2!=$rwDiag['unit']) {
+                                            $tempUnit2=$rwDiag['unit'];
+											echo '<b>'.$rwDiag['unit'].'</b>';
+										}
+										
+										if($tmpDokter2 != $rwDiag['dokter']){
+											$tmpDokter2 = $rwDiag['dokter'];
+											echo "<br />- <b>Dokter</b> : ".$rwDiag['dokter']."<br />"; 
+										}
+										echo "&nbsp; * <b>Petugas</b> : ".$rwDiag['petugas']."<br />"; 
+							?>
+										<div class="kanann" style="margin-left:20px; margin-bottom:5px;">
+										<?php
+											$tindakan = explode('|||',$rwDiag['diagnosa']);
+											echo "<ol style='margin-top:5px; margin-left:-20px;'>";
+											foreach($tindakan as $val){
+												echo '<li>'.$val."</li>";
+											}
+										?>
+										</div>
+								<?php
+									}
+								?>
+                            <!--ul style="list-style-position:inside;list-style-type:square;padding-left:2px;">
+                                        <?php
+                                        //echo '<b>'.$rwDiag['unit'].'</b>';
+                                        ?>
+                            <li><?php //echo $rwDiag['diagnosa'];?><?php //echo $rwDiag['nm_dokter'];?><?php //echo $rwDiag['nm_user'];?></li>
+                                        <?php
+                                    /* }
+                                    else { */
+                                        ?>
+                            <li><?php //echo $rwDiag['diagnosa'];?><?php //echo $rwDiag['nm_dokter'];?><?php //echo $rwDiag['nm_user'];?></li>
+                                        <?php
+                                
+                                $tempUnit2 = '';
+                                ?>
+							</ul-->
+                            &nbsp;
+                    </td>
+                    <td class="tableContent" align="left" valign="top" style="font-size:13px">
+                            <?php
+                            /*$qObat = "SELECT $dbbilling.b_resep.obat_id, $dbbilling.b_resep.kunjungan_id, qty, $dbapotek.a_obat.OBAT_NAMA,ap.unit_name,
+                                    (SELECT $dbbilling.u.nama FROM $dbbilling.b_ms_unit u inner join $dbbilling.b_pelayanan p on p.unit_id=u.id WHERE $dbbilling.b_resep.id_pelayanan = $dbbilling.p.id) AS unit
+                                    FROM $dbbilling.b_resep
+                                    INNER JOIN $dbapotek.a_obat ON $dbapotek.a_obat.OBAT_ID = $dbbilling.b_resep.obat_id
+                                    inner join $dbapotek.a_unit ap on b_resep.apotek_id = ap.unit_id
+                                    WHERE $dbbilling.b_resep.kunjungan_id = '".$rwKunj['id']."' order by unit,unit_name";*/
+$qObat = "SELECT 
+  $dbbilling.b_resep.obat_id,
+  $dbbilling.b_resep.kunjungan_id,
+  $dbbilling.b_resep.penjualan_id,
+  qty,
+  $dbapotek.a_obat.OBAT_NAMA,
+  ap.unit_name,
+  (SELECT 
+    $dbbilling.u.nama 
+  FROM
+    $dbbilling.b_ms_unit u 
+    INNER JOIN $dbbilling.b_pelayanan p 
+      ON p.unit_id = u.id 
+  WHERE $dbbilling.b_resep.id_pelayanan = $dbbilling.p.id) AS unit,
+  IF($dbbilling.b_resep.penjualan_id = 0,'tru',IF($dbbilling.b_resep.obat_id=(SELECT $dbapotek.a_penerimaan.OBAT_ID idobat2 FROM $dbapotek.a_penjualan
+  INNER JOIN $dbapotek.a_penerimaan
+    ON $dbapotek.a_penerimaan.ID = $dbapotek.a_penjualan.PENERIMAAN_ID
+  INNER JOIN $dbapotek.a_obat a2
+    ON a2.OBAT_ID = $dbapotek.a_penerimaan.OBAT_ID
+  WHERE $dbapotek.a_penjualan.ID = $dbbilling.b_resep.penjualan_id),'true',(SELECT a2.OBAT_NAMA idobat2 FROM $dbapotek.a_penjualan
+  INNER JOIN $dbapotek.a_penerimaan
+    ON $dbapotek.a_penerimaan.ID = $dbapotek.a_penjualan.PENERIMAAN_ID
+  INNER JOIN $dbapotek.a_obat a2
+    ON a2.OBAT_ID = $dbapotek.a_penerimaan.OBAT_ID
+  WHERE $dbapotek.a_penjualan.ID = $dbbilling.b_resep.penjualan_id))) obat_apotek
+FROM
+  $dbbilling.b_resep 
+  INNER JOIN $dbapotek.a_obat 
+    ON $dbapotek.a_obat.OBAT_ID = $dbbilling.b_resep.obat_id 
+  INNER JOIN $dbapotek.a_unit ap 
+    ON b_resep.apotek_id = ap.unit_id 
+WHERE $dbbilling.b_resep.kunjungan_id = '".$rwKunj['id']."' 
+ORDER BY unit,
+  unit_name";
+							$rsObat = mysql_query($qObat);
+                            while($rwObat = mysql_fetch_array($rsObat)) {
+                                if($tempUnit3!=$rwObat['unit']) {
+                                    $tempUnit3=$rwObat['unit'];
+                                    ?>
+                    <ul style="list-style-position:inside; list-style-type:square; padding-left:2px;">
+                        <?php
+                        echo '<b>'.$rwObat['unit'].'</b>';
+                        if(strcmp($tempName,$rwObat['unit_name']) != 0)
+                            echo '<br><i>- '.$rwObat['unit_name'].'</i><br>';
+                        ?>
+                        <li style="padding-left: 10px"><?php echo $rwObat['OBAT_NAMA'].' (Jumlah : '.$rwObat['qty'].')'; if($rwObat['obat_apotek']=='tru'){echo '';}else if($rwObat['obat_apotek']!='true'){echo ' [Obat Diubah]';}?></li>
+                        <?php if($rwObat['obat_apotek']=='tru'){echo '';}else if($rwObat['obat_apotek']!='true'){ ?>
+                    	<li style="padding-left: 10px; color:#F00;"><?php echo $rwObat['obat_apotek'];?></li>
+                                <?php }
+                            }
+                            else {
+                                if(strcmp($tempName,$rwObat['unit_name']) != 0)
+                                    echo '<br><i>- '.$rwObat['unit_name'].'</i><br>';
+                                ?>
+                    <li style="padding-left: 10px"><?php echo $rwObat['OBAT_NAMA'].' (Jumlah : '.$rwObat['qty'].')'; if($rwObat['obat_apotek']=='tru'){echo '';}else if($rwObat['obat_apotek']!='true'){echo ' [Obat Diubah]';}?></li>
+                    <?php if($rwObat['obat_apotek']=='tru'){echo '';}else if($rwObat['obat_apotek']!='true'){ ?>
+                    <li style="padding-left: 10px; color:#F00;"><?php echo $rwObat['obat_apotek'];?></li>
+                                <?php }
+                            }
+                        $tempName = $rwObat['unit_name'];
+                        }
+                        $tempUnit3 = '';
+                        ?>
+                    &nbsp;
+            </td>
+            <td class="tableContent" align="center" valign="top">
+                <table border="1" cellpadding=0 cellspacing=0>
+                	<tr>
+                    	<td align="center">S</td>
+                        <td align="center">O</td>
+                        <td align="center">A</td>
+                        <td align="center">P</td>
+                        <td align="center">I</td>
+                        <td align="center">E</td>
+                        <td align="center">R</td>
+                    </tr>
+                    <?
+					$qsoap="SELECT IF(a.ket_S = ' ','&nbsp', a.ket_S) AS ket_S, IF(a.ket_O = ' ','&nbsp', a.ket_O) AS ket_O, IF(a.ket_A = ' ','&nbsp', a.ket_A) AS ket_A
+, IF(a.ket_P = ' ','&nbsp', a.ket_P) AS ket_P, IF(a.ket_I = ' ','&nbsp', a.ket_I) AS ket_I, IF(a.ket_E = ' ','&nbsp', a.ket_E) AS ket_E
+, IF(a.ket_R = ' ','&nbsp', a.ket_R) AS ket_R FROM {$dbaskep}.ask_soap a INNER JOIN b_pelayanan b ON a.pelayanan_id = b.id
+INNER JOIN b_kunjungan ab ON b.kunjungan_id = ab.id
+WHERE ab.id = '".$rwKunj['id']."' ORDER BY a.tgl";
+                    $rsqsoap=mysql_query($qsoap);
+                    while($rwrsqsoap=mysql_fetch_array($rsqsoap)) {
+                        ?>
+                        <tr>
+                            <td align="center"><?=$rwrsqsoap['ket_S'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_O'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_A'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_P'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_I'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_E'];?></td>
+                            <td align="center"><?=$rwrsqsoap['ket_R'];?></td>
+                        </tr>
+                        <?
+                    }
+					?>
+                </table>
+            </td>
+            <td class="tableContent" align="left" valign="top">
+                    <table border="1" cellpadding=0 cellspacing=0>
+                	<tr>
+                    	<td align="center">No</td>
+                        <td align="center">Tanggal</td>
+                        <td align="center">Dokter</td>
+                        <td align="center">Detil</td>
+                    </tr>
+                    <?
+						$i = 1;
+						$queryAnam = "SELECT a.*, DATE_FORMAT(a.TGL,'%d-%m-%Y %H:%i') AS tgltok, p.nama AS dokter
+					FROM anamnese a 
+				INNER JOIN b_ms_pegawai p ON p.id = a.PEGAWAI_ID 
+				WHERE a.PASIEN_ID = '".$idPasien."' AND snurs = 0";
+						$execAnam = mysql_query($queryAnam);
+						while($dtAnam = mysql_fetch_array($execAnam))
+						{
+							?>
+                            <tr>
+                                <td align="center"><?=$i?></td>
+                                <td align="center"><?=$dtAnam['tgltok']?></td>
+                                <td align="center"><?=$dtAnam['dokter']?></td>
+                                <td align="center"><span onClick="viewResume('<?=$dtAnam['ANAMNESE_ID']?>')" style="color:#03F; cursor:pointer;">Detil</span></td>
+                            </tr>
+                            <?
+						}
+					?>
+                    </table>
+                &nbsp;
+            </td>
+             <td class="tableContent" align="left" valign="top">
+                    <?php
+                    $qKeluar="select p.cara_keluar,p.keadaan_keluar from b_pasien_keluar p
+                                    where p.kunjungan_id='".$rwKunj['id']."'";
+                    $rsKeluar=mysql_query($qKeluar);
+                    while($rwKeluar=mysql_fetch_array($rsKeluar)) {
+                        echo "cara keluar: ".$rwKeluar['cara_keluar']."<br> keadaan keluar: ".$rwKeluar['keadaan_keluar'];
+                    }
+                    ?>
+                &nbsp;
+            </td>
+        </tr>
+            <?php
+            $no++;
+        }
+        ?>
+    </table>
+</td>
+</tr>
+<tr>
+    <td class="noline">&nbsp;</td>
+    <td class="noline">&nbsp;</td>
+    <td class="noline">&nbsp;</td>
+    <td class="noline"></td>
+</tr>
+<!--tr id="trTombol">            
+    <td colspan="4" class="noline" align="center">
+        <input id="btnPrint" type="button" value="Print/Cetak" onClick="cetak(document.getElementById('trTombol'));"/>
+        <input id="btnTutup" type="button" value="Tutup" onClick="window.close();"/>
+    </td>
+</tr-->
+</body>
+</html>
+<script>
+    function cetak(tombol){
+        tombol.style.visibility='collapse';
+        if(tombol.style.visibility=='collapse'){
+            if(confirm('Anda yakin mau mencetak Rekam Medis ini?')){
+                setTimeout('window.print()','1000');
+                setTimeout('window.close()','2000');
+            }
+            else{
+                tombol.style.visibility='visible';
+            }
+
+        }
+    }
+
+	function viewResume(a)
+	{
+		window.open("resumemedis.php?idKunj=<?=$_REQUEST['idKunj']?>&idPel=<?=$_REQUEST['idPel']?>&idPasien=<?=$_REQUEST['idPasien']?>&id_anamnesa="+a);
+	}
+	
+	function tampil()
+	{
+		var tgl1 = document.getElementById("txtAwal").value;
+		var tgl2 = document.getElementById("txtAkhir").value;
+		//alert(tgl1+"\n"+tgl2)
+		window.location = 'rekamMedis.php?idKunj=<?=$idKunj?>&idPel=<?=$idPel?>&idPasien=<?=$idPasien?>&tgl1='+tgl1+'&tgl2='+tgl2;
+	}
+</script>
+<?php 
+mysql_close($konek);
+?>

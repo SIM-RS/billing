@@ -1,0 +1,441 @@
+<style type="text/css">
+<!--
+body {
+	background-color: #FFFFFF;
+}
+-->
+</style><?php
+include("../../koneksi/konek.php");
+//====================================================================
+//Paging,Sorting dan Filter======
+	$id=$_REQUEST['id'];
+	$idPel=$_REQUEST['idPel'];
+	$idUsr=$_REQUEST['idUsr'];
+	$gammex=$_REQUEST['gammex'];
+	$proffel_or=$_REQUEST['proffel_or'];
+	$proffel_lp=$_REQUEST['proffel_lp'];
+	$transofix=$_REQUEST['transofix'];
+	$bhetadine=$_REQUEST['bhetadine'];
+	$alkohol=$_REQUEST['alkohol'];
+	$needle=$_REQUEST['needle'];
+	$netral=$_REQUEST['netral'];
+	$bactigras=$_REQUEST['bactigras'];
+	$mersilk=$_REQUEST['mersilk'];
+	$polisorb=$_REQUEST['polisorb'];
+	$ultra=$_REQUEST['ultra'];
+	$supra=$_REQUEST['supra'];
+	$bisturi=$_REQUEST['bisturi'];
+	$chromic=$_REQUEST['chromic'];
+	$monosyn=$_REQUEST['monosyn'];
+	$vircly=$_REQUEST['vircly'];
+	$plain=$_REQUEST['plain'];
+	$silkam=$_REQUEST['silkam'];
+	$premil=$_REQUEST['premil'];
+	$monocryl=$_REQUEST['monocryl'];
+	$pds=$_REQUEST['pds'];
+	$secureg=$_REQUEST['secureg'];
+	$kassa7=$_REQUEST['kassa7'];
+	$kassax=$_REQUEST['kassax'];
+	$kassa6=$_REQUEST['kassa6'];
+	$kassal=$_REQUEST['kassal'];
+	$under=$_REQUEST['under'];
+	$pembalut=$_REQUEST['pembalut'];
+	$masker=$_REQUEST['masker'];
+	$tega=$_REQUEST['tega'];
+	$paper=$_REQUEST['paper'];
+	$formalin=$_REQUEST['formalin'];
+	$aqua=$_REQUEST['aqua'];
+	$alkaz=$_REQUEST['alkaz'];
+	$hypafix=$_REQUEST['hypafix'];
+	$barovac=$_REQUEST['barovac'];
+	$urine=$_REQUEST['urine'];
+	$foley=$_REQUEST['foley'];
+	$ngt=$_REQUEST['ngt'];
+	$syringe=$_REQUEST['syringe'];
+	$cat=$_REQUEST['cat'];
+	$gua=$_REQUEST['gua'];
+	$gel=$_REQUEST['gel'];
+	$wi=$_REQUEST['wi'];
+	$na=$_REQUEST['na'];
+	$poli=$_REQUEST['poli'];
+	$poliy=$_REQUEST['poliy'];
+	$tenso=$_REQUEST['tenso'];
+	$confo=$_REQUEST['confo'];
+	$micro=$_REQUEST['micro'];
+	$beta=$_REQUEST['beta'];
+	$formal=$_REQUEST['formal'];
+	$cidex=$_REQUEST['cidex'];
+	$suction=$_REQUEST['suction'];
+	$pra=$_REQUEST['pra'];
+	
+	$hogi=$_REQUEST['hogi'];
+	$tsc=$_REQUEST['tsc'];
+	$face=$_REQUEST['face'];
+	$maskerk=$_REQUEST['maskerk'];
+	$surgical=$_REQUEST['surgical'];
+	$sensi=$_REQUEST['sensi'];
+	$xylo=$_REQUEST['xylo'];
+	$urog=$_REQUEST['urog'];
+	$disk=$_REQUEST['disk'];
+	$h2o2=$_REQUEST['h2o2'];
+	$bocal=$_REQUEST['bocal'];
+	$rl=$_REQUEST['rl'];
+	$surgi=$_REQUEST['surgi'];
+	$bone=$_REQUEST['bone'];
+	$micros=$_REQUEST['micros'];
+	$surgicel=$_REQUEST['surgicel'];
+	$lina=$_REQUEST['lina'];
+	$exter=$_REQUEST['exter'];
+	$suct=$_REQUEST['suct'];
+	$bag=$_REQUEST['bag'];
+	$white=$_REQUEST['white'];
+	$be=$_REQUEST['be'];
+	$al=$_REQUEST['al'];
+	$ne=$_REQUEST['ne'];
+	$po=$_REQUEST['po'];
+	$bi=$_REQUEST['bi'];
+	$vi=$_REQUEST['vi'];
+	$si=$_REQUEST['si'];
+	$mo=$_REQUEST['mo'];
+	$pd=$_REQUEST['pd'];
+	$se=$_REQUEST['se'];
+	$pe=$_REQUEST['pe'];
+	$te=$_REQUEST['te'];
+	$sy=$_REQUEST['sy'];
+	
+	
+	
+	
+	
+	$tgl=tglSQL($_REQUEST['tgl']);
+
+
+
+switch(strtolower($_REQUEST['act'])){
+	case 'tambah':
+$sql="INSERT INTO b_ms_pemakaian_alkes (
+  pelayanan_id,
+	gammex,
+	proffel_or,
+	proffel_lp,
+	transofix,
+	bhetadine,
+	alkohol,
+	needle,
+	netral,
+	bactigras,
+	mersilk,
+	polisorb,
+	ultra,
+	supra,
+	bisturi,
+	chromic,
+	monosyn,
+	vircly,
+	plain,
+	silkam,
+	premil,
+	monocryl,
+	pds,
+	secureg,
+	kassa7,
+	kassax,
+	kassa6,
+	kassal,
+	under,
+	pembalut,
+	masker,
+	tega,
+	paper,
+	formalin,
+	aqua,
+	alkaz,
+	hypafix,
+	barovac,
+	urine,
+	foley,
+	ngt,
+	syringe,
+	cat,
+	gua,
+	gel,
+	wi,
+	na,
+	poli,
+	poliy,
+	tenso,
+	confo,
+	micro,
+	beta,
+	formal,
+	cidex,
+	pra,
+	suction,
+
+	hogi,
+	tsc,
+	face,
+	maskerk,
+	surgical,
+	sensi,
+	xylo,
+	urog,
+	disk,
+	h2o2,
+	bocal,
+	rl,
+	surgi,
+	bone,
+	micros,
+	surgicel,
+	lina,
+	exter,
+	suct,
+	bag,
+	white,
+	be,
+	al,
+	ne,
+	po,
+	bi,
+	vi,
+	si,
+	mo,
+	pd,
+	se,
+	pe,
+	te,
+	sy,
+  	tgl_act,
+  	user_act
+) 
+VALUES
+  (
+	'$idPel',
+	$gammex,
+	$proffel_or,
+	$proffel_lp,
+	$transofix,
+	$bhetadine,
+	$alkohol,
+	$needle,
+	$netral,
+	$bactigras,
+	$mersilk,
+	$polisorb,
+	$ultra,
+	$supra,
+	$bisturi,
+	$chromic,
+	$monosyn,
+	$vircly,
+	$plain,
+	$silkam,
+	$premil,
+	$monocryl,
+	$pds,
+	$secureg,
+	$kassa7,
+	$kassax,
+	$kassa6,
+	$kassal,
+	$under,
+	$pembalut,
+	$masker,
+	$tega,
+	$paper,
+	$formalin,
+	$aqua,
+	$alkaz,
+	$hypafix,
+	$barovac,
+	$urine,
+	$foley,
+	$ngt,
+	$syringe,
+	$cat,
+	$gua,
+	$gel,
+	$wi,
+	$na,
+	$poli,
+	$poliy,
+	$tenso,
+	$confo,
+	$micro,
+	$beta,
+	$formal,
+	$cidex,
+	$pra,
+	$suction,
+	$hogi,
+	$tsc,
+	$face,
+	$maskerk,
+	$surgical,
+	$sensi,
+	$xylo,
+	$urog,
+	$disk,
+	$h2o2,
+	$bocal,
+	$rl,
+	$surgi,
+	$bone,
+	$micros,
+	$surgicel,
+	$lina,
+	$exter,
+	$suct,
+	$bag,
+	$white,
+	'$be',
+	'$al',
+	'$ne',
+	'$po',
+	'$bi',
+	'$vi',
+	'$si',
+	'$mo',
+	'$pd',
+	'$se',
+	'$pe',
+	'$te',
+	'$sy',
+	
+  CURDATE(),
+  '$idUsr') ;";
+  echo $sql;
+  $ex=mysql_query($sql);
+		if($ex)
+		{
+			echo "Data berhasil disimpan !";
+		}
+		else
+		{
+			echo "Data gagal disimpan !";
+		}
+
+	break;
+	case 'edit':
+		$sql="UPDATE b_ms_pemakaian_alkes SET pelayanan_id='$idPel', 
+			gammex='$gammex',
+			proffel_or='$proffel_or',
+			proffel_lp='$proffel_lp',
+			transofix='$transofix',
+			bhetadine='$bhetadine',
+			alkohol='$alkohol',
+			needle='$needle',
+			netral='$netral',
+			bactigras='$bactigras',
+			mersilk='$mersilk',
+			polisorb='$polisorb',
+			ultra='$ultra',
+			supra='$supra',
+			bisturi='$bisturi',
+			chromic='$chromic',
+			monosyn='$monosyn',
+			vircly='$vircly',
+			plain='$plain',
+			silkam='$silkam',
+			premil='$premil',
+			monocryl='$monocryl',
+			pds='$pds',
+			secureg='$secureg',
+			kassa7='$kassa7',
+			kassax='$kassax',
+			kassa6='$kassa6',
+			kassal='$kassal',
+			under='$under',
+			pembalut='$pembalut',
+			masker='$masker',
+			tega='$tega',
+			paper='$paper',
+			formalin='$formalin',
+			aqua='$aqua',
+			alkaz='$alkaz',
+			hypafix='$hypafix',
+			barovac='$barovac',
+			urine='$urine',
+			foley='$foley',
+			ngt='$ngt',
+			syringe='$syringe',
+			cat='$cat',
+			gua='$gua',
+			gel='$gel',
+			wi='$wi',
+			na='$na',
+			poli='$poli',
+			poliy='$poliy',
+			tenso='$tenso',
+			confo='$confo',
+			micro='$micro',
+			beta='$beta',
+			formal='$formal',
+			cidex='$cidex',
+			pra='$pra',
+			suction='$suction',
+			hogi='$hogi',
+			tsc='$tsc',
+			face='$face',
+			maskerk='$maskerk',
+			surgical='$surgical',
+			sensi='$sensi',
+			xylo='$xylo',
+			urog='$urog',
+			DISK='$disk',
+			h2o2='$h2o2',
+			bocal='$bocal',
+			rl='$rl',
+			surgi='$surgi',
+			bone='$bone',
+			micros='$micros',
+			surgicel='$surgicel',
+			lina='$	lina',
+			exter='$exter',
+			suct='$suct',
+			bag='$bag',
+			white='$white',
+			be='$be',
+			al='$al',
+			ne='$ne',
+			po='$po',
+			bi='$bi',
+			vi='$vi',
+			si='$si',
+			mo='$mo',
+			pd='$pd',
+			se='$se',
+			pe='$pe',
+			te='$te',
+			sy='$sy',
+		  tgl_act= CURDATE(),
+		  user_act='$idUsr'
+		  WHERE id='".$_REQUEST['id']."'";
+		echo $sql;
+		$ex=mysql_query($sql);
+		//echo $sql;
+		if($ex)
+		{
+			echo "Data berhasil diupdate !";
+		}
+		else
+		{
+			echo "Data gagal diupdate !";
+		}
+	break;
+	case 'hapus':
+		$sql="DELETE FROM b_ms_pemakaian_alkes WHERE id='$id'";
+		$ex=mysql_query($sql);
+		if($ex)
+		{
+			echo "Data berhasil dihapus !";
+		}
+		else
+		{
+			echo "Data gagal dihapus !";
+		}
+	break;
+		
+}
+?>

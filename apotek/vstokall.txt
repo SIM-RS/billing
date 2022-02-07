@@ -1,0 +1,7 @@
+DELIMITER $$;
+
+DROP VIEW IF EXISTS `dbapotik`.`vstokall`$$
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vstokall` AS (select `a_penerimaan`.`OBAT_ID` AS `obat_id`,`a_penerimaan`.`KEPEMILIKAN_ID` AS `KEPEMILIKAN_ID`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 1),`a_penerimaan`.`QTY_STOK`,0)) AS `unit1`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 2),`a_penerimaan`.`QTY_STOK`,0)) AS `unit2`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 3),`a_penerimaan`.`QTY_STOK`,0)) AS `unit3`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 4),`a_penerimaan`.`QTY_STOK`,0)) AS `unit4`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 5),`a_penerimaan`.`QTY_STOK`,0)) AS `unit5`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 6),`a_penerimaan`.`QTY_STOK`,0)) AS `unit6`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 7),`a_penerimaan`.`QTY_STOK`,0)) AS `unit7`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 8),`a_penerimaan`.`QTY_STOK`,0)) AS `unit8`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 9),`a_penerimaan`.`QTY_STOK`,0)) AS `unit9`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 17),`a_penerimaan`.`QTY_STOK`,0)) AS `unit17`,sum(if((`a_penerimaan`.`UNIT_ID_TERIMA` = 20),`a_penerimaan`.`QTY_STOK`,0)) AS `unit20`,sum((`a_penerimaan`.`QTY_STOK` * `a_penerimaan`.`HARGA_BELI_SATUAN`)) AS `ntotal` from `a_penerimaan` where ((`a_penerimaan`.`QTY_STOK` > 0) and (`a_penerimaan`.`STATUS` = 1)) group by `a_penerimaan`.`OBAT_ID`,`a_penerimaan`.`KEPEMILIKAN_ID`)$$
+
+DELIMITER ;$$

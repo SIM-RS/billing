@@ -1,0 +1,35 @@
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penerimaanAU`$$
+
+create trigger `penerimaanAU` AFTER UPDATE on `a_penerimaan` 
+for each row BEGIN
+ /* penerima -->penerimaanAU*/
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=NEW.KEPEMILIKAN_ID and UNIT_ID=NEW.UNIT_ID_TERIMA order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF (NEW.TIPE_TRANS=1) and (NEW.STATUS=1) and (OLD.STATUS=0) then
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	END WHILE;
+	CLOSE Cur;
+	  INSERT INTO A_KARTUSTOK
+	(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+	(NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_TERIMA,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,NEW.QTY_SATUAN,0,vstok+NEW.QTY_SATUAN,concat('IN ',NEW.NOKIRIM,'-',NEW.NOTERIMA),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+IF (NEW.TIPE_TRANS=2) and (NEW.STATUS=1) and (OLD.STATUS=0) then/* 6) Unit Menerima Pinjaman Obat (a_penerimaan) / Pindah Kepemilikan*/
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	END WHILE;
+	CLOSE Cur;
+	  INSERT INTO A_KARTUSTOK
+	(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+	(NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_TERIMA,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,NEW.QTY_SATUAN,0,vstok+NEW.QTY_SATUAN,concat('pinjam ',NEW.NOKIRIM,'-',NEW.NOTERIMA),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+END;
+$$
+
+DELIMITER ;$$

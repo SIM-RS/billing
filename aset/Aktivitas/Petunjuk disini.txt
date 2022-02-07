@@ -1,0 +1,15 @@
+Script ini adalah tool untuk membuat barcode secara online.
+
+Petunjuk pemnggunaan script
+1. Extrak file barcode.rar hasil dari download.
+2. Salin folder barcode beserta isinya ke dalam webserver Anda.
+3. untuk menggeneret barcode Anda dapat menggunakan url:
+http://localhost/barcode/barcode.php?code=123456789012 (angka adalah kode barcode)
+atau juga dapat meletakkan pada file html lain dengan cara insert image
+<img border="0" src="http://localhost/barcode/barcode.php?code=7332265632479" width="111" height="47">
+Semoga script ini berguna untuk Anda dan gunakan untuk kebaikan dan meningkatkan pengetahuan kita.
+
+Administrator
+Cahyo
+cahyo@nicdesain.net
+www.nicdesain.net

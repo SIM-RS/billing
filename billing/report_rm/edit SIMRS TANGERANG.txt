@@ -1,0 +1,35 @@
+10-10-2013
+billing/report_rm/prosedur_pembedahan/cetak_pb.php
+billing/report_rm/prosedur_pembedahan/form_pb.php
+billing/report_rm/persetujuan_transfusi/*
+billing/unit_pelayanan/soap_utils.php
+billing/unit_pelayanan/soap_v2.php
+billing/setting/pengguna.php
+
+11-10-2013
+billing/transaksi/joborder.php
+billing/transaksi/joborderUtils.php
+billing/unit_pelayanan/s_sehat.php
+billing/unit_pelayanan/sk_sakit.php
+billing/report_rm/CRUD_Form_RSUD/2.riwayat_penyakit.php
+billing/report_rm/11.pesanan_pos.php
+billing/report_rm/11.pesanan_pos_utils.php
+billing/report_rm/11.pesanan_post.php
+billing/report_rm/spinnerDefault.png
+billing/report_rm/js/*
+billing/icon/send.png
+
+16-10-2013 s/d 18-10-2013
+billing/report_rm/setting.php
+billing/report_rm/CRUD_Form_RSUD/ *
+billing/rekam_medis/list_indikator_mutu/cetak_im.php
+add table 'lap_srt_balasan'
+billing/theme/js/dropdown.js
+billing/report_rm/Form_RSU_2/ *
+billing/report_rm/Form_RSU/ *
+billing/report_rm/ *filenya
+---------
+billing/report_rm/form_tuk_rsud/ *
+billing/report_rm/CRUD_Form_RSUD/ *
+billing/master/set_diagnosis.php
+

@@ -1,0 +1,305 @@
+<?php
+	include '../sesi.php';
+	include '../koneksi/konek.php';
+	if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') 
+	{
+		echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+							window.location='$def_loc';
+							</script>";
+	}
+	$act=$_GET['act'];
+	$unit_opener="par=idlokasi*kodelokasi";
+	$barang_opener="par=idbarang*kodebarang*namabarang";
+	if(isset($_POST['act']) && $_POST['act'] != '') 
+	{
+		$rkodebarang=$_POST["kodebarang"];
+		$kodelokasi = $_POST['kodelokasi'];
+		$idlokasi = $_POST["idlokasi"];
+		$idjenistrans = $_POST["asalUsul"];
+		$idbarang = $_POST["idbarang"];
+		$merk = $_POST["ket"];
+		$idunit=$_POST['idunit'];
+		$noseri = $_POST["noseri"];
+		$thn_beli = $_POST["thn_beli"];
+		$harga_perolehan = $_POST["harga_perolehan"];
+		$harga_skr = $_POST["harga_skr"];
+		$tgl = tglSQL($_POST["tgl"]);	
+		$opname_id = $_GET['opname_id'];
+		
+		$act = $_POST['act'];
+		if ($act == "add") 
+		{
+			$kib = substr($rkodebarang,0,2);
+				if($kib[0]==0){
+						 $kib = $kib[1];					
+					}
+			$sqlIns1="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Insert OPname Inventaris Ke Inv_opname','insert into inv_opname(tgl,tgl_act,idbarang,noseri,ket,thn_beli,idjenistrans,
+					harga_perolehan,harga_skr,idlokasi,user_id,idunit) 
+ 					values ($tgl,now(),$idbarang,$noseri,$merk,$thn_beli,$idjenistrans,
+					$harga_perolehan,$harga_skr,$idlokasi,".$_SESSION['userid'].",$idunit)','".$_SERVER['REMOTE_ADDR']."')";
+	mysql_query($sqlIns1);
+		
+			$sql1= "insert into inv_opname(tgl,tgl_act,idbarang,noseri,ket,thn_beli,idjenistrans,
+					harga_perolehan,harga_skr,idlokasi,user_id,idunit) 
+ 					values ('$tgl',now(),'$idbarang','$noseri','$merk','$thn_beli','$idjenistrans',
+					'$harga_perolehan','$harga_skr','$idlokasi','".$_SESSION['userid']."','$idunit')";
+					$sql="SELECT idjenistrans, keterangan FROM as_ms_jenistransaksi where idjenistrans = '$idjenistrans' order by keterangan";
+               $rs=mysql_query($sql);
+               $rw=mysql_fetch_array($rs);
+			   $sqlIns2="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Insert Ke as_seri ','insert into as_seri2(idbarang,jenis_kib,asalusul,ms_idunit,ms_idlokasi,noseri,thn_pengadaan,harga_perolehan,nilaibuku)
+			 values($idbarang,$kib,".$rw[1].",$idunit,$idlokasi,$noseri,$thn_beli,$harga_perolehan,$harga_skr)','".$_SERVER['REMOTE_ADDR']."')";
+	mysql_query($sqlIns2);
+		 $sqlup = "insert into as_seri2(idbarang,jenis_kib,asalusul,ms_idunit,ms_idlokasi,noseri,thn_pengadaan,harga_perolehan,nilaibuku)
+			 values('$idbarang','$kib','".$rw[1]."','$idunit','$idlokasi','$noseri','$thn_beli','$harga_perolehan','$harga_skr')";
+ 			$rs = mysql_query($sql1);
+ 			$sq = mysql_query($sqlup);
+ 			$id = mysql_query("select idseri from as_seri2 order by idseri desc limit 1");
+            $idseri = mysql_fetch_array($id);
+            $tbl_kib = "kib".substr($rkodebarang,0,2);
+            mysql_query("insert into $tbl_kib (idseri) values('".$idseri[0]."')");
+				
+				$jmlawal = 0;
+				$jmlmask = 1;
+				$jmlsisa = $jmlawal+$jmlmask;
+				$nilaiawl = 0;
+				$nilaimsk = $harga_perolehan;
+				$nilaisisa = $nilaiawl+$nilaimsk;
+				
+				$dt = mysql_query("select * from as_kstok where barang_id = $idbarang and tipe=5 order by waktu desc limit 1");
+				while($hsl = mysql_fetch_array($dt)) {
+						$jmlawal = $hsl["jml_sisa"];
+						$jmlmask = 1;
+						$jmlsisa = $jmlawal+$jmlmask;
+						$nilaiawl = $hsl["jml_sisa"];
+						$nilaimsk = $harga_perolehan;
+						$nilaisisa = $nilaiawl+$nilaimsk;
+					}
+					$sqlIns3="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Insert Ke Kartu stok ','insert into as_kstok(waktu,barang_id,jml_awal,jml_masuk,jml_sisa,nilai_awal,nilai_masuk,nilai_sisa,ket,tipe) values
+				($tgl,$idbarang,$jmlawal,$jmlmask,$jmlsisa,$nilaiawl,$nilaimsk,$nilaisisa,opname,5)','".$_SERVER['REMOTE_ADDR']."')";
+	mysql_query($sqlIns3);
+				 $sqlKts="insert into as_kstok(waktu,barang_id,jml_awal,jml_masuk,jml_sisa,nilai_awal,nilai_masuk,nilai_sisa,ket,tipe) values
+				('$tgl','$idbarang','$jmlawal','$jmlmask','$jmlsisa','$nilaiawl','$nilaimsk','$nilaisisa','opname','5')";
+            mysql_query($sqlKts);
+ 			echo $err = mysql_error();
+		}
+		else if ($act="edit") 
+		{
+			$sqlIns4="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update OPname Inventaris Ke Inv_opname','update inv_opname set tgl=$tgl,tgl_act=now(),idbarang=$idbarang,noseri=$noseri,ket=$merk,
+					thn_beli=$thn_beli,idjenistrans=$idjenistrans,
+					harga_perolehan=$harga_perolehan,harga_skr=$harga_skr,idlokasi=$idlokasi,user_id=".$_SESSION['userid'].",idunit=$idunit where inv_opname.opname_id=$opname_id','".$_SERVER['REMOTE_ADDR']."')";
+	mysql_query($sqlIns4);
+	
+			$sql2 = "update inv_opname set tgl='$tgl',tgl_act=now(),idbarang='$idbarang',noseri='$noseri',ket='$merk',
+					thn_beli='$thn_beli',idjenistrans='$idjenistrans',
+					harga_perolehan='$harga_perolehan',harga_skr='$harga_skr',idlokasi='$idlokasi',user_id='".$_SESSION['userid']."',idunit='$idunit' where inv_opname.opname_id=$opname_id";
+			$rs = mysql_query($sql2);
+ 			echo $err = mysql_error();
+			if(mysql_affected_rows()>0){
+			echo "<script>alert('Data Berhasil Diubah');</script>";
+			}else{
+			echo "<script>alert('Data Tidak Ada yang Berubah');</script>";
+			}
+		}
+	}
+
+	if(isset($_GET['act']) && $_GET['act']=="edit")
+	{
+		$opname_id = $_GET["opname_id"];
+		 $sql3 = "SELECT
+  inv_opname.*,
+  DATE_FORMAT (inv_opname.tgl,'%d-%m-%Y') AS tglopname,
+  as_lokasi.idlokasi,
+  as_lokasi.kodelokasi,
+  as_lokasi.namalokasi,
+  as_ms_barang.idbarang,
+  as_ms_barang.kodebarang,
+  as_ms_barang.namabarang,
+  as_ms_jenistransaksi.idjenistrans,
+  as_ms_jenistransaksi.keterangan,
+  u.kodeunit,
+  u.namaunit,
+  inv_opname.idunit
+FROM inv_opname
+  LEFT JOIN as_lokasi
+    ON as_lokasi.idlokasi = inv_opname.idlokasi
+  INNER JOIN as_ms_barang
+    ON as_ms_barang.idbarang = inv_opname.idbarang
+  INNER JOIN as_ms_jenistransaksi
+    ON as_ms_jenistransaksi.idjenistrans = inv_opname.idjenistrans
+    LEFT JOIN as_ms_unit u ON inv_opname.idunit=u.idunit
+WHERE inv_opname.opname_id = $opname_id";
+		$rs = mysql_query($sql3);
+    	$rows = mysql_fetch_array($rs);
+	}
+//==============================================================================
+$unit_opener="par=idunit*kodeunit*namaunit*idlokasi*kodelokasi*namalokasi";
+?>
+
+<html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <title>Detil Opname Inventaris</title>
+	</head>
+	<body>
+		<center>
+		<?php
+        	include '../header.php';
+        ?>
+		<div>
+  			<table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="2" cellspacing="0">
+    			<tr>
+      				<td>&nbsp;</td>
+    			</tr>
+    			<tr>
+      				<td align="center"><table width="800" cellpadding="0" cellspacing="0" align="center">
+          				<tr>
+            				<td height="30" colspan="4" valign="bottom" align="right">
+                            	<button class="Enabledbutton" id="backbutton" onClick="location='opname_inventaris.php'" title="Back" style="cursor:pointer"> 
+                                	<img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" /> 
+                                    Back to List 
+                                </button>
+              					<button type="submit" class="Enabledbutton" id="btnSimpan" name="btnSimpan" onClick="save()" title="Save" style="cursor:pointer"> 
+                                	<img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" /> 
+                                    Save Record 
+                                </button>
+              					<button class="Disabledbutton" id="undobutton" onClick="location='detailOpname_inventaris.php?<?php echo $par;?>'" title="Cancel / Refresh" style="cursor:pointer"> 
+                                	<img alt="undo/refresh" src="../images/undosmall.gif" width="22" height="22" border="0" align="absmiddle" /> 
+                                    Undo/Refresh 
+                                </button>
+            				</td>
+          				</tr>
+        	</table>
+        	<form id="form1" name="form1" action="" onSubmit="save()" method="post">
+          	<br>
+          		<table cellspacing="0" cellpadding="4" align="center" width="800" bgcolor="#EDF1FE" border="0">
+            		<tr>
+              			<td height=20 class="header" colspan="3" align="center"> .: Detail Opname inventaris:. </td>
+            		</tr>
+            		<tr>
+              			<td class="label">Tgl Opname </td>
+              			<td class="contright" colspan="2">
+                        	<input name="tgl" type="text" class="txtunedited" readonly id="tgl" tabindex="4" value="<?php echo $rows["tglopname"]; ?>" size="20" maxlength="15"> 
+                				<img alt="calender" style="cursor:pointer" border=0 src="../images/cal.gif" align="absbottom" onClick="gfPop.fPopCalendar(document.getElementById('tgl'),depRange);"> 
+                                <font size=1 color=gray>
+                                	<i>(dd-mm-yyyy)</i>
+                                </font> 
+                       </td>
+                	</tr>
+            		<tr>
+              			<td class="label" width="123">Barang</td>
+              			<td class="contright" width="118">
+              				<input name="idbarang" type="hidden" id="idbarang" value="<?php echo $rows["idbarang"];?>">
+       				  <input name="kodebarang" type="text" class="txtunedited" readonly id="kodebarang" value="<?php echo  $rows["kodebarang"]; ?>" size="16" maxlength="14" >						</td>
+              			<td class="contright" width="535">
+                        	&nbsp;&nbsp;
+                        	<input name="namabarang" type="text" class="txtunedited" readonly id="namabarang" value="<?php echo  $rows["namabarang"]; ?>" size="50" maxlength="50" >
+                			<img alt="tree" title='Struktur tree kode barang'  style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('thing_tree.php?<?php echo $barang_opener; ?>',800,500,'msma',true)"> 
+                      </td>
+            		</tr>
+					<tr>
+              			<td class="label">No Seri</td>
+              			<td colspan="2" class="contright">
+                        	<input name="noseri" type="text" class="txt" id="noseri"  size="50" maxlength="6" value="<?php echo $rows["noseri"];?>">
+                        </td>
+            		</tr>
+            		<tr>
+              			<td class="label">Merk / Type</td>
+              			<td colspan="2" class="contright">
+                        	<input name="ket" type="text" class="txt" id="ket"  size="90" maxlength="50" value="<?php echo $rows["ket"];?>">
+                        </td>
+            		</tr>
+             		
+            		<tr>
+              			<td class="label">Tahun Pengadaan </td>
+              			<td colspan="2" class="contright">
+                        	<input name="thn_beli" type="text" class="txt" id="thn_beli"  size="50" maxlength="15" value="<?php echo $rows["thn_beli"];?>" >
+                        </td>
+            		</tr>
+            		<tr>
+              			<td class="label">Asal Usul</td>
+                      	<td class="contright" colspan="2" >
+                        	<input name="idjenistrans" type="hidden" id="idjenistrans">
+                       		<select name="asalUsul" class="txt" id="asalUsul" style="width:278">
+                          		<?php
+                        			$sql="SELECT idjenistrans, keterangan FROM as_ms_jenistransaksi order by keterangan";
+                        			$rs=mysql_query($sql);
+                        			while($rw=mysql_fetch_array($rs)){
+                        		?>
+                        	<option value="<?php echo $rw['idjenistrans'] ?>" <? if ($rw["idjenistrans"]== $rows["idjenistrans"]) echo "selected";?>><?php echo $rw['keterangan'] ?>
+                            </option>
+                        	<?php 
+									} 
+							?>
+                        	</select>
+              			</td>
+            		</tr>
+            		<tr>
+              			<td class="label">Nilai Perolehan</td>
+              			<td class="contright" colspan="2">
+                			<input name="harga_perolehan" type="text" class="txt" id="harga_perolehan"  size="50" maxlength="15" value="<?php echo $rows["harga_perolehan"];?>">              
+              			</td>
+            		</tr>
+             		<tr>
+              			<td class="label">Nilai Buku</td>
+              			<td class="contright" colspan="2">
+                			<input name="harga_skr" type="text" class="txt" id="harga_skr"  size="50" maxlength="15" value="<?php echo $rows["harga_skr"];?>">              
+              			</td>
+            		</tr>
+					<tr>
+						<td class="label">Nama Unit</td>
+						<td class="contright" colspan="2">&nbsp;<input name="kodeunit" type="text" class="txt" readonly id="kodeunit" tabindex="2" size="20" maxlength="15" value="<?php echo $rows['kodeunit'] ?>" />   &nbsp;-&nbsp;
+							<input type="hidden" id="idunit" name="idunit" value="<?php echo $rows['idunit'] ?>" />
+
+							<input type="text" name="namaunit" id="namaunit" readonly class="txt" size="35" value="<?php echo $rows['namaunit'] ?>" />
+							<input type="hidden" id="namaunit" name="namaunit" />
+							<img alt="tree" title='daftar unit kerja'  style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('unit_tree.php?<?php echo $unit_opener; ?>',800,500,'Tree Unit',true)" />
+						</td>
+					</tr>
+            		<tr>
+              			<td class="label">Lokasi</td>
+              			<td class="contright" colspan="2">
+          					<input name="idlokasi" type="hidden" id="idlokasi"  value="<?php echo $rows["idlokasi"];?>">
+                			<input type="hidden" id="kodelokasi" name="kodelokasi" value="<?php echo $rows["kodelokasi"];?>">
+                			<input name="namalokasi" type="text" class="txt" readonly id="namalokasi" tabindex="3"  size="45" maxlength="10" value="<?php echo $rows["namalokasi"];?>">
+                			&nbsp;<img alt="tree" title='daftar unit kerja'  style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('lokasi_tree.php?par=idlokasi*kodelokasi*namalokasi',600,500,'Daftar Ruangan',true)" />          
+              			</td>
+            		</tr>
+            		<tr valign=center>
+              			<td  class="footer" align="right" colspan="3">&nbsp;</td>
+            		</tr>
+          		</table>
+          		<input type="hidden" name="act" value="<?php echo $act;?>">
+          		<input name="namaunit" type="hidden" id="namaunit"  >  
+        	</form>
+			<?php
+				include '../footer.php';
+			?>
+      			</td>
+    		</tr>
+  		</table>
+		</div>
+		</center>
+	</body>
+    
+	<iframe height="193" width="168" name="gToday:normal:agenda.js"
+		id="gToday:normal:agenda.js"
+        src="../theme/popcjs.php" scrolling="no"
+        frameborder="1"
+        style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+   </iframe>
+
+	<script type="text/javascript" language="javascript">
+        var arrRange=depRange=[];
+        function save()
+		{ 
+            if(ValidateForm('tgl,idbarang,ket,noseri,thn_beli,asalUsul,harga_perolehan,harga_skr,idunit','Ind') == true)
+			{						               
+                document.form1.submit();
+            }
+        }
+    </script>
+
+</html>

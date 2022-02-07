@@ -1,0 +1,16 @@
+alter table `dbapotik`.`a_penerimaan` add column `TGL_PINJAM_TERIMA_ACT` datetime   NULL  after `TANGGAL`, add column `TGL_PINJAM_TERIMA` date   NULL  after `TGL_PINJAM_TERIMA_ACT`
+
+==========================24-07-2013=======================
+apotik/catatan_pemberian_obat.php
+
+master/kso_billing.php
+master/mitra.php
+master/ms_obat_paten.php
+
+transaksi/dokterlist.php
+transaksi/konsulBilling.php
+transaksi/konsulBilling_utils.php
+transaksi/penjualan_dr_konsul.php
+transaksi/penjualanBilling_detail.php
+transaksi/utils.php
+transaksi/utils1.php

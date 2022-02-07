@@ -1,0 +1,27 @@
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penjualanAI`$$
+
+create trigger `penjualanAI` AFTER INSERT on `a_penjualan` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok 
+where OBAT_ID=(SELECT OBAT_ID from a_penerimaan where ID=NEW.PENERIMAAN_ID) and KEPEMILIKAN_ID=NEW.JENIS_PASIEN_ID and UNIT_ID=NEW.UNIT_ID order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF (NEW.STATUS=1)  then
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	      /*IF NOT done THEN         
+		set vstok= vstok;
+	      END IF;*/
+	END WHILE;
+	CLOSE Cur;
+	  INSERT INTO A_KARTUSTOK
+	(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID) VALUES ((SELECT OBAT_ID from a_penerimaan where ID=NEW.PENERIMAAN_ID),NEW.JENIS_PASIEN_ID,NEW.UNIT_ID,NEW.TGL,now(),NEW.NO_PENJUALAN,vstok,0,NEW.QTY,vstok-NEW.QTY,concat('Jual: ',NEW.NO_PENJUALAN,'-',NEW.NO_PASIEN,'-',NEW.NO_KUNJUNGAN),NEW.USER_ID);
+end if;
+END;
+$$
+
+DELIMITER ;$$

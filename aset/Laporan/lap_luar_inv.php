@@ -1,0 +1,245 @@
+<?php
+session_start();
+// is valid users
+include '../koneksi/konek.php';
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$r_formatlap = $_POST["formatlap"];
+
+switch ($r_formatlap) {
+    case "XLS" :
+        Header("Content-Type: application/vnd.ms-excel");
+		header('Content-Disposition: attachment; filename="Laporan_Keluar_Inventaris_'.date('d-m-Y').'.xls"');
+        break;
+    case "WORD" :
+        Header("Content-Type: application/msword");
+		header('Content-Disposition: attachment; filename="Laporan_Keluar_Inventaris_'.date('d-m-Y').'.doc"');
+        break;
+    default :
+        Header("Content-Type: text/html");
+        break;
+}
+
+if (isset($_POST["submit"])) {    
+    $r_tglawal = tglSQL($_POST["tglawal"]);
+    $r_tglakhir = tglSQL($_POST["tglakhir"]);  
+}
+?>
+<html>
+    <head>
+        <title>Laporan Pengeluaran Inventaris</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <?php if($r_formatlap != 'XLS' && $r_formatlap != 'WORD'){ ?>
+        <link href="../theme/report.css" rel="stylesheet" type="text/css" />
+		<?php } ?>
+    </head>
+    <body>
+        <table width="auto" border="0">
+          <tr>
+            <td width="130"><strong>SKPD</strong></td>
+            <td width="300">: <strong>Rumah Sakit Umum Daerah</strong></td>
+          </tr>
+          <tr>
+            <td><strong>KABUPATEN / KOTA</strong></td>
+            <td>:<strong> Kabupaten Sidoarjo</strong></td>
+          </tr>
+          <tr>
+            <td><strong>PROPINSI</strong></td>
+            <td>:<strong> Jawa Timur</strong></td>
+          </tr>
+        </table>
+        <p>&nbsp;</p>
+<p align="center"><strong><font size="4" face="Times New Roman, Times, serif">LAPORAN PENGELUARAN INVENTARIS</font><br />
+                <font size="3" face="Times New Roman, Times, serif"><?php //echo $_POST['kategori_kib']; ?></font></strong>
+            <?php
+            //if ($r_cmbperolehan=="2") {
+                ?>
+            <br />
+            <font size="3" face="Times New Roman, Times, serif">
+                (<?php echo date("d M Y",strtotime($r_tglawal));  ?> - <?php echo date("d M Y",strtotime($r_tglakhir));  ?>)
+            </font>
+                <?php
+            //}
+            ?></p>
+        <?php
+        $strSetting="select * from as_setting";
+        $rsSetting = mysql_query($strSetting);
+        $r_kodepropinsi=13;
+        $r_kodepemda=26;
+        $rowSetting = mysql_fetch_array($rsSetting);
+        $r_kodepropinsi=$rowSetting["kodepropinsi"];
+        $r_kodepemda=$rowSetting["kodekota"];
+
+        //echo $r_tglakhir."<br />";
+        $jmlth = substr($r_tglakhir,0,4)-substr($r_tglawal,0,4);
+        //echo $jmlth; 
+        /*for ($jm=0;$jm<=$jmlth;$jm++) {
+            if ($jm==$jmlth) {
+                if ($jmlth==0) {
+                    $awl=$r_tglawal;
+                    $akhr=$r_tglakhir;
+                }else {
+                    $awl=(substr($akhr,0,4)+1)."-01-01";
+                    $akhr=$r_tglakhir;
+                }
+            }else {
+                if ($jm==0) {
+                    $awl=$r_tglawal;
+                    $akhr=substr($awl,0,4)."-12-31";
+                }else {
+                    $awl=(substr($akhr,0,4)+1)."-01-01";
+                    $akhr=substr($awl,0,4)."-12-31";
+                }
+            }
+            $flt="tgltransaksi between '$awl' and '$akhr'";
+            //echo $flt."<br />";
+            $th = substr($awl,2,2);
+//	}
+
+            if ($r_idunit=="0") $strUnit="select idunit,kodeunit,namaunit,namapanjang from as_ms_unit where idunit<>0 order by kodeunit";
+            else $strUnit="select idunit,kodeunit,namaunit,namapanjang from as_ms_unit where idunit=$r_idunit or parentunit=$r_idunit or parentunit in (select idunit from as_ms_unit where parentunit=$r_idunit) order by kodeunit";
+            //echo $strUnit;
+            $rsUnit = mysql_query($strUnit);
+            while ($rowsUnit = mysql_fetch_array($rsUnit)) {
+                $r_idunit=$rowsUnit["idunit"];
+                //	echo $rowsUnit["kodeunit"]."<br />";
+                $r_kodeunit="";
+                 $r_kodeunit .=$rowsUnit["kodeunit"];
+                //echo strlen($r_kodeunit);
+                //echo $r_kodeunit;
+                if (strlen($r_kodeunit)==2) $r_kodeunit .=".00.00";
+                elseif (strlen($r_kodeunit)==5) $r_kodeunit .=".00";
+
+                //$r_kodeunit="12.".$r_kodepropinsi.".".$r_kodepemda.".".substr($rowsUnit["kodeunit"],0,6).$th.substr($rowsUnit["kodeunit"],5,3);
+                $r_kodeunit="12.".$r_kodepropinsi.".".$r_kodepemda.".".substr($r_kodeunit,0,6).$th.substr($r_kodeunit,5,3);
+                //	echo $r_kodeunit;
+                //switch (substr($_POST['kategori_kib'],0,1)) {
+                   // case "A" :		// KIB - TANAH
+        */?>
+	<!--table border=0 width="698">
+	<tr>
+	    <td colspan="3"><strong>
+	      <?php
+		//echo $rowsUnit["namaunit"];
+	?>
+	    </strong></td>
+      <td width="583" colspan="7">&nbsp;</td>
+	</tr>
+	</table-->
+<br />
+                                 
+        <table border=1 cellspacing="0" cellpadding="4" class="GridStyle" width="100%">
+            <tr align="center" valign="top" bgcolor="#CCCCCC" class="HeaderBW">
+                <td width="32" rowspan="2">
+                    <font size="-2"><br />No</font></td>
+                <td width="72" rowspan="2">
+                    <font size="-2"><br />
+              Tanggal Keluar</font></td>
+			  <td height="22" colspan="2">
+                    <font size="-2">Surat Bon</font></td>
+                <td width="145" rowspan="2"><font size="-2"><br />
+                Untuk</font></td>
+                <td width="46" rowspan="2"><font size="-2"><br />
+                Banyak</font></td>
+                <td width="133" rowspan="2"><font size="-2"><br />
+                Nama Barang</font></td>
+                <td width="77" rowspan="2"><font size="-2"><br />
+                Harga Satuan (Rp)</font></td>
+  <td width="80" rowspan="2"><font size="-2"><br />
+                  Jumlah Harga (Rp)</font></td>
+                <td width="83" rowspan="2">
+                <font size="-2"><br />Tanggal Penyerahan</font>                </td>
+          <td width="137" rowspan="2">
+                    <font size="-2"><br />
+                        Keterangan</font>                </td>
+            </tr>
+            
+            <tr align="center" valign="top" bgcolor="#CCCCCC" class="HeaderBW">
+              <td width="67" height="10"><font size="-2">Nomor</font></td>
+              <td width="70"><font size="-2">Tanggal</font></td>
+            </tr>
+            <tr align="center" valign="top" bgcolor="#FFFFCC" class="SubHeaderBW">
+                <td height="10"><font size="-2">1</font></td>
+                <td height="10"><font size="-2">2</font></td>
+                <td height="10"><font size="-2">3</font></td>
+                <td height="10"><font size="-2">4</font></td>
+                <td height="10"><font size="-2">5</font></td>
+                <td height="10"><font size="-2">6</font></td>
+                <td height="10"><font size="-2">7</font></td>
+                <td height="10"><font size="-2">8</font></td>
+                <td height="10"><font size="-2">9</font></td>
+                <td height="10"><font size="-2">10</font></td>
+                <td height="10"><font size="-2">11</font></td>
+            </tr>
+			    <?php                       
+                        $strSQL .="select k.tgl_gd,k.kode_transaksi,k.tgl_transaksi,u.namaunit,l.namalokasi, 
+                        k.jml_klr,b.namabarang,o.harga_satuan,(k.nilai) as jumlah_keluar,k.petugas_gudang
+                        from as_keluar k 
+                        inner join as_ms_barang b on k.barang_id=b.idbarang 
+                        inner join as_ms_unit u on k.unit_id=u.idunit 
+                        left join as_lokasi l on k.lokasi_id=l.idlokasi 
+                        inner join as_operasi o on k.klr_id = o.klr_id
+                        where k.tgl_transaksi between '$r_tglawal' and '$r_tglakhir' AND b.tipe=1
+						GROUP BY k.kode_transaksi, k.barang_id
+						ORDER BY k.tgl_gd DESC, k.no_gd DESC";
+                        //echo $strSQL."<br />";
+                        $rs = mysql_query($strSQL);
+                        if (mysql_affected_rows() > 0) { // Iterating through record
+			   
+                                $j = 0;
+                                $totalharga=0;
+                                $totalgeneral=0;
+                                while ($rows = mysql_fetch_array($rs)) {
+                                    if ($j % 2) $rowStyle = "NormalBG";  else $rowStyle = "AlternateBG";
+                                    $j++;
+                                    $totalharga +=$rows["nilai"];
+                                    ?>
+            <tr class="<?php echo $rowStyle ?>" valign="top">
+                <td align="center"><?php echo $j;?></td>
+                <td align="left"><?php echo tglSQL($rows["tgl_gd"]);?></td>
+                <td align="center"><?php echo $rows["kode_transaksi"];?></td>
+                <td align="center"><?php echo tglSQL($rows["tgl_transaksi"]);?></td>
+                <td align="center"><?php echo $rows["namaunit"]." - ".$rows["namalokasi"];?></td>
+                <td align="center"><?php echo $rows["jml_klr"];?></td>
+                <td align="left"><?php echo $rows["namabarang"];?></td>
+                <td align="right"><?php echo number_format($rows["harga_satuan"],0,'','.');?></td>
+                <td align="right"><?php
+                $totalgeneral += $rows["jumlah_keluar"];
+                echo number_format($rows["jumlah_keluar"],0,'','.');?></td>
+                <td align="center"><?php echo tglSQL($rows["tgl_gd"]);?></td>
+                <td align="center"><?php echo $rows["petugas_gudang"];?></td>
+            </tr>
+                                    <?php
+                                } // end while
+                                ?>
+            <tr>
+                <td class="HeaderBW" colspan="2">&nbsp;</td>
+                <td class="HeaderBW" colspan="6" align="left">J U M L A H ................................................................</td>
+                <td align="right" class="HeaderBW"><?php echo number_format($totalgeneral,0,'','.');?></td>
+                <td class="HeaderBW" colspan="2">&nbsp;</td>
+            </tr>
+        </table>
+<br />
+        <br />
+        <table border=0 cellspacing="0" cellpadding="0" width="1300">
+            <tr>
+                <td align="center"><strong>MENGETAHUI<br />KEPALA SKPD<br /><br /><br /><br />(...............................)<br />
+                        NIP. .......................</strong></td>
+                <td width="100">&nbsp;</td>
+
+                <td align="center"><strong>Sidoarjo,...................,.........................................<br />PENGURUS BARANG<br /><br /><br /><br />(...............................)<br />
+                        NIP. .......................</strong></td>
+            </tr>
+        </table><br /><br /><br /><br />
+                            <?php
+                        } // end
+                       // break;
+                  //  case "B" :		// KIB - PERALATAN DAN MESIN
+            //}
+       // }
+        ?>
+    </body>
+</html>

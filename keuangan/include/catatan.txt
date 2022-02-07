@@ -1,0 +1,19 @@
+transaksi/penerimaan_billing_kasir.php --> transaksi penerimaan kasir billing
+verifikasi 	--> k_transaksi.id_trans = 38
+			--> b_bayar.id --> k_transaksi.fk_id
+			--> b_bayar.posting = 1
+			--> k_transaksi --> split/group_by : unitId, ksoId
+
+transaksi/penerimaan_penjualan_obat_utils.php --> transaksi penerimaan kasir farmasi
+verifikasi 	--> k_transaksi.id_trans = 39
+			--> k_transaksi.kso_id = a_penjualan.KSO_ID
+			--> k_transaksi.tgl_klaim = tanggalSlip
+			--> k_transaksi.no_bukti = no_slip
+			--> k_transaksi.no_faktur = a_penjualan.NO_PENJUALAN
+			--> k_transaksi.no_terima = a_penjualan.NO_PASIEN = NO_RM
+			--> k_transaksi.unit_id = a_penjualan.UNIT_ID
+			--> k_transaksi.unit_id_billing = a_penjualan.RUANGAN --> a_unit.UNIT_ID --> a_unit.unit_billing
+			--> k_transaksi.nilai_sim = harga_jual
+			--> k_transaksi.nilai = harga_jual
+			--> k_transaksi.nilai_hpp = h_netto
+			

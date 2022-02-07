@@ -1,0 +1,120 @@
+<?php
+include '../sesi.php';
+include("../koneksi/konek.php");
+//if (isset($_SESSION["PATH_MS_MA"]))
+//	$PATH_INFO=$_SESSION["PATH_MS_MA"];
+//else{
+$PATH_INFO="?".$_SERVER['QUERY_STRING'];
+$_SESSION["PATH_MS_MA"]=$PATH_INFO;
+//}
+$par=$_REQUEST['par'];
+
+$par=explode("*",$par);
+$cmb = $_GET['cmb'];
+$no = $_REQUEST["no"];
+if($cmb==''){
+		$cmb=1;	
+	}
+//echo $par[0];
+?>
+<html>
+    <title>Tree Barang</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+    <link rel="stylesheet" href="../theme/mod.css" type="text/css" />
+    
+    <body style="border-width:0px;" bgcolor="#CCCCCC" topmargin="0" leftmargin="0" onLoad="javascript:if (window.focus) window.focus();" onBlur="window.close();">
+        <div align="center">
+            <table border=1 cellspacing=0 width="98%">
+                <tr>
+                    <td class=GreenBG align=center>
+                        <font size=4><b>
+                                .: Data Barang :.
+                            </b></font>
+                    </td>
+                </tr>
+                <tr>
+                <td>          
+                </td></tr>
+                
+                <tr bgcolor="whitesmoke">
+                    <td nowrap>
+                        <?php
+                        // Detail Data Parameters
+                        if (isset($_REQUEST["p"])) {
+                            $_SESSION['itemtree.filter'] = $_REQUEST["p"];
+                            $p = $_SESSION['itemtree.filter'];
+                        }
+                        else {
+                            if ($_SESSION['itemtree.filter'])
+                                $p = $_SESSION['itemtree.filter'];
+                        }
+
+                        /*********************************************/
+                        /*  Read text file with tree structure       */
+                        /*********************************************/
+
+                        /*********************************************/
+                        /* read file to $tree array                  */
+                        /* tree[x][0] -> tree level                  */
+                        /* tree[x][1] -> item text                   */
+                        /* tree[x][2] -> item link                   */
+                        /* tree[x][3] -> link target                 */
+                        /* tree[x][4] -> last item in subtree        */
+                        /*********************************************/
+                        //$tree=array();
+                        $canRead = true;
+                        $maxlevel=0;
+                        $cnt=0;
+                      $strSQL =  $sql="SELECT DISTINCT level,a.idbarang,kodebarang,namabarang,idsatuan,islast,b.idseri
+		FROM as_ms_barang a left JOIN as_seri2 b on a.idbarang = b.idbarang
+		WHERE tipe=1 ORDER BY kodebarang";
+                        $rs = mysql_query($strSQL);
+                        while ($rows=mysql_fetch_array($rs)) {
+                            $c_level = $rows["level"];
+							$idbrg = $rows["idbarang"];
+                            $mpkode=trim($rows['kodebarang']);
+							$islast = $rows["islast"];
+                            $tree[$cnt][0]= $c_level;
+                            $tree[$cnt][1]= ($mpkode==""?"":$mpkode." - ").$rows["namabarang"];
+							$data = $rows['idseri'];
+                            $arfvalue = $rows['idbarang']."|".$rows['kodebarang']."|".$rows['namabarang']."|".$data;
+                            if ($islast>0&&$data!='')
+                               $tree[$cnt][2]= "javascript:window.opener.setNilai('".$arfvalue."');window.close();";
+                            else
+                                $tree[$cnt][2] = null;
+
+                            $tree[$cnt][3]= "";
+                            $tree[$cnt][4]= 0;
+                            if ($tree[$cnt][0] > $maxlevel)
+                                $maxlevel=$tree[$cnt][0];
+							$cnt++;
+							//if(!$ra){
+							
+							//}
+                        }
+                        mysql_free_result($rs);
+
+                        $tree_img_path="../images";
+                        include("../theme/treemenu.inc.php");
+
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script type="text/javascript" language="javascript">
+        function goEdit(pid,pkode,pnama,plvl) {
+            window.opener.document.form1.idbarang.value = pid;
+            window.opener.document.form1.namabarang.value = pnamabarang;
+            window.opener.document.form1.idbarang.value = pidbarang;
+            window.opener.document.form1.namabarang.value = pnamabarang;
+            window.close();
+        }
+		
+    </script>
+</html>
+<?php
+mysql_close($konek);
+?>

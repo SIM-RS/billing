@@ -1,0 +1,116 @@
+<?php 
+include("../koneksi/konek.php");
+$grd = $_REQUEST["grd"];
+$idDiagUnit = $_REQUEST["id"];
+//====================================================================
+//Paging,Sorting dan Filter======
+$page=$_REQUEST["page"];
+$defaultsort="kode";
+$sorting=$_REQUEST["sorting"];
+$filter=$_REQUEST["filter"];
+//===============================
+
+switch(strtolower($grd)){
+	case '2':
+		switch(strtolower($_REQUEST['act'])){
+			case 'tambah':
+				$arfdata=explode(",",$idDiagUnit);
+				for ($i=0;$i<count($arfdata);$i++){
+					$sqlTambah="SELECT * FROM b_ms_diagnosa_unit WHERE ms_unit_id='".$_REQUEST['unitId']."' AND ms_diagnosa_id='".$arfdata[$i]."'";
+					$rs=mysql_query($sqlTambah);
+					if (mysql_num_rows($rs)<=0){
+						$sqlTambah="insert into b_ms_diagnosa_unit (ms_unit_id,ms_diagnosa_id) values('".$_REQUEST['unitId']."','".$arfdata[$i]."')";
+						$rs=mysql_query($sqlTambah);
+					}
+					/*if($rs>0) echo "<script>alert('Data Telah Berhasil Tersimpan..');</script>";*/
+				}
+				break;
+			case 'hapus':
+				$arfdata=explode(",",$idDiagUnit);
+				for ($i=0;$i<count($arfdata);$i++){
+					$sqlHapus="delete from b_ms_diagnosa_unit where id='".$arfdata[$i]."'";
+					mysql_query($sqlHapus);
+				}
+				break;
+			case 'simpan':
+				$sqlSimpan = "UPDATE b_ms_diagnosa_unit SET ms_unit_id='".$_REQUEST['unitId']."',ms_diagnosa_id='".$_REQUEST['diagId']."' WHERE id='".$_REQUEST['id']."'";	
+				$rs=mysql_query($sqlSimpan);
+				break;
+		}
+		break;
+}
+
+if ($filter!=""){
+	$filter=explode("|",$filter);
+	$filter=" where ".$filter[0]." like '%".$filter[1]."%'";
+}
+
+if ($sorting==""){
+	$sorting=$defaultsort;
+}
+
+switch($grd){
+	case "1":
+	//$sql = "SELECT id, kode, nama FROM b_ms_diagnosa ".$filter." order by ".$sorting;
+		$sql = "SELECT * FROM (SELECT d.id, d.kode, d.nama 
+FROM b_ms_diagnosa d LEFT JOIN 
+(SELECT * FROM b_ms_diagnosa_unit du WHERE du.ms_unit_id='".$_REQUEST['unitId']."') t ON d.id=t.ms_diagnosa_id
+WHERE d.aktif=1 AND t.id IS NULL) AS t1 ".$filter." ORDER BY ".$sorting;
+	break;
+	case "2":
+		$sql = "select * from (SELECT du.id AS mdId, d.id, d.kode, d.nama, du.ms_unit_id
+			FROM b_ms_diagnosa d
+			INNER JOIN b_ms_diagnosa_unit du ON du.ms_diagnosa_id = d.id
+			WHERE du.ms_unit_id = '".$_REQUEST['unitId']."') as t1 ".$filter." ORDER BY ".$sorting;
+	break;
+}
+
+//echo $sql."<br>";
+$rs=mysql_query($sql);
+$jmldata=mysql_num_rows($rs);
+if ($page=="" || $page=="0") $page=1;
+$tpage=($page-1)*$perpage;
+if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+if ($page>1) $bpage=$page-1; else $bpage=1;
+if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+$sql=$sql." limit $tpage,$perpage";
+//echo $sql;
+
+$rs=mysql_query($sql);
+$i=($page-1)*$perpage;
+$dt=$totpage.chr(5);
+
+switch($grd){
+	case "1":
+	while ($rows=mysql_fetch_array($rs))
+	{
+		$i++;
+		$dt.=$rows["id"].chr(3)."0".chr(3).$rows["kode"].chr(3).$rows["nama"].chr(6);
+	}
+	break;
+	case "2":
+	while ($rows=mysql_fetch_array($rs))
+	{
+		$i++;
+		$sisipan = $rows['mdId'];
+		$dt.=$sisipan.chr(3)."0".chr(3).$rows["kode"].chr(3).$rows["nama"].chr(6);
+	}
+	break;
+}
+
+if ($dt!=$totpage.chr(5))
+{
+	$dt=substr($dt,0,strlen($dt)-1).chr(5).strtolower($_REQUEST['act']);
+	$dt=str_replace('"','\"',$dt);
+}
+mysql_free_result($rs);
+mysql_close($konek);
+header("Cache-Control: no-cache, must-revalidate" );
+header("Pragma: no-cache" );
+if (stristr($_SERVER["HTTP_ACCEPT"],"application/xhtml+xml")){
+	header("Content-type: application/xhtml+xml");
+}else{
+	header("Content-type: text/xml");
+}
+echo $dt;
+?>

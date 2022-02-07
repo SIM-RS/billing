@@ -1,0 +1,171 @@
+<?php
+session_start();
+include '../koneksi/konek.php';
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$r_formatlap = $_POST["formatlap"];
+
+switch ($r_formatlap) {
+    case "XLS" :
+        Header("Content-Type: application/vnd.ms-excel");
+		header('Content-Disposition: attachment; filename="Laporan_Mutasi_Barang_'.date('d-m-Y').'.xls"');
+        break;
+    case "WORD" :
+        Header("Content-Type: application/msword");
+		header('Content-Disposition: attachment; filename="Laporan_Mutasi_Barang_'.date('d-m-Y').'.doc"');
+        break;
+    default :
+        Header("Content-Type: text/html");
+        break;
+}
+
+if (isset($_POST["submit"])) {
+    /*
+    $r_tahun = $_POST["tahun"];
+    $th = substr($r_tahun,2,2);
+    $r_semester = $_POST["semester"];
+    $r_idunit = $_POST["idunit"];
+    $r_jlaporan = $_POST["jlaporan"];
+    //echo $r_jlaporan."<br>";
+
+    $r_tglawal=$r_tahun."-01-01";
+    $r_tglakhir=$r_tahun."-12-31";
+    switch ($r_jlaporan) {
+        case "1" :
+            if ($r_semester=="1") {
+                $lbl_semester="SEMESTER I";
+                $r_tglawal=$r_tahun."-01-01";
+                $r_tglakhir=$r_tahun."-06-30";
+            }else {
+                $lbl_semester="SEMESTER II";
+                $r_tglawal=$r_tahun."-07-01";
+                $r_tglakhir=$r_tahun."-12-31";
+            }
+            $title="LAPORAN MUTASI BARANG<br>KABUPATEN<br>TAHUN ANGGARAN : $r_tahun<br>$lbl_semester";
+            break;
+        case "2" :
+            $title="DAFTAR MUTASI BARANG<br>KABUPATEN<br>TAHUN ANGGARAN : $r_tahun";
+            break;
+        case "3" :
+            $title="REKAPITULASI DAFTAR MUTASI BARANG<br>KABUPATEN<br>TAHUN ANGGARAN : $r_tahun";
+            break;
+    }
+    */
+    
+    $tglAwal = $_POST['tglAwal'];
+    $tglAkhir = $_POST['tglAkhir'];
+    function tglBlnAngkaToBlnText($tgl){
+	/*
+	tgl input dengan format dd-mm-yyyy
+	output dengan format dd-mmmm-yyyy
+	*/
+	$temp = explode("-",$tgl);	
+	$nmBln = array ('','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','Nopember','Desember');
+	return $temp[0]." ".$nmBln[intval($temp[1])]." ".$temp[2];
+    }
+    $title="LAPORAN MUTASI BARANG<br>PERIODE : ".tglBlnAngkaToBlnText($tglAwal)." s/d ".tglBlnAngkaToBlnText($tglAkhir);
+    $strSetting="select * from as_setting";
+    $rsSetting=mysql_query($strSetting);
+    $r_kodepropinsi=13;
+    $r_kodepemda=13;
+    $r_namapropinsi="JAWA TIMUR";
+    $r_namapemda="SIDOARJO";
+    if ($rowSetting = mysql_fetch_array($rsSetting)) {
+        $r_kodepropinsi=$rowSetting["kodepropinsi"];
+        $r_kodepemda=$rowSetting["kodekota"];
+        $r_namapropinsi=$rowSetting["namapropinsi"];
+        $r_namapemda=$rowSetting["namakota"];
+    }
+}
+?>
+<html>
+    <head>
+        <title>Laporan Mutasi Barang</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <?php if($r_formatlap != 'XLS' && $r_formatlap != 'WORD'){ ?>
+			<link href="../theme/report.css" rel="stylesheet" type="text/css" />
+		<?php } ?>
+    </head>
+    <body>
+        <table border=0 cellpadding="0" cellspacing="0" width="1000">
+	    <tr align="center" valign="middle" >
+	    <td>
+		<font size="4" face="Times New Roman, Times, serif"><strong><?php echo $title; ?></strong></font>
+	    </td>
+	    </tr>
+	</table>
+        
+        <table border=0 cellpadding="0" cellspacing="0" width="1000">
+            <tr><td colspan="3">&nbsp;</td></tr>
+			<tr>
+                <td width="130"><strong>SKPD</strong></td>
+                <td width="1100"><strong>&nbsp;:&nbsp;<?php echo $rowSetting[namadepartemen];?></strong></td>
+                <td width="320">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><strong>KABUPATEN </strong></td>
+                <td><strong>&nbsp;:&nbsp;<?php echo $r_namapemda; ?></strong></td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td><strong>PROPINSI</strong></td>
+                <td><strong>&nbsp;:&nbsp;<?php echo $r_namapropinsi; ?></strong></td>
+                <td></td>
+            </tr>
+        </table>
+        <br>
+	    <table border=1 cellspacing="0" cellpadding="4" class="GridStyle" width="1000">
+		<tr align="center" valign="middle" bgcolor="#CCCCCC" height=15>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">No</td>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">Tanggal Mutasi</td>
+		    <td bordercolor="#000000" class="HeaderBW" colspan="2">Lokasi Awal</td>
+		    <td bordercolor="#000000" class="HeaderBW" colspan="2">Lokasi Tujuan</td>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">Kode Barang</td>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">No Seri</td>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">Nama Barang</td>
+		    <td bordercolor="#000000" class="HeaderBW" rowspan="2">Spesifikasi</td>
+		</tr>
+		<tr align="center" valign="middle" bgcolor="#CCCCCC" height=15>
+		    <td bordercolor="#000000" class="HeaderBW">Unit</td>
+		    <td bordercolor="#000000" class="HeaderBW">Ruang</td>
+		    <td bordercolor="#000000" class="HeaderBW">Unit</td>
+		    <td bordercolor="#000000" class="HeaderBW">Ruang</td>
+		</tr>
+		<?php
+		$query="SELECT mt.tglmutasi,mu.namaunit AS unitAsal,l.namalokasi AS lokasiAsal, 
+mu2.namaunit AS unitTujuan,l2.namalokasi AS lokasiTujuan,mb.kodebarang,s.noseri,mb.namabarang
+FROM as_mutasi mt INNER JOIN as_seri2 s ON s.idseri=mt.idseri
+INNER JOIN as_ms_barang mb ON s.idbarang=mb.idbarang
+INNER JOIN as_ms_unit mu ON mt.idunitasal=mu.idunit
+INNER JOIN as_ms_unit mu2 ON mt.idunittujuan=mu2.idunit
+LEFT JOIN as_lokasi l ON mt.idlokasi_asal=l.idlokasi
+LEFT JOIN as_lokasi l2 ON mt.idlokasi_tujuan=l2.idlokasi
+WHERE DATE(mt.tglmutasi) BETWEEN '".tglSQL($tglAwal)."' AND '".tglSQL($tglAkhir)."'
+ORDER BY mt.tglmutasi";
+		$rs=mysql_query($query);
+		$no=1;
+		//echo $query;
+		while($rw=mysql_fetch_array($rs)){
+		?>
+		<tr>
+		    <td align="center"><?php echo $no;?></td>
+		    <td align="center"><?php echo tglSQL($rw['tglmutasi']);?></td>
+		    <td align="center"><?php echo $rw['unitAsal'];?></td>
+		    <td align="center"><?php echo $rw['lokasiAsal'];?></td>
+		    <td align="center"><?php echo $rw['unitTujuan'];?></td>
+		    <td align="center"><?php echo $rw['lokasiTujuan	'];?></td>
+		    <td align="center"><?php echo $rw['kodebarang'];?></td>
+		    <td align="center"><?php echo str_pad($rw["noseri"], 4, "0", STR_PAD_LEFT);?></td>
+		    <td align="center"><?php echo $rw['namabarang'];?></td>
+		    <td align="center"><?php echo $rw['spesifikasi'];?></td>
+		</tr>
+		<?php
+		$no++;
+		}
+		?>
+	    </table>
+	   </body>
+</html>

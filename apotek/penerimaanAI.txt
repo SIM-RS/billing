@@ -1,0 +1,81 @@
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penerimaanAI`$$
+
+create trigger `penerimaanAI` AFTER INSERT on `a_penerimaan` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;
+DECLARE vstok2 INT DEFAULT 0;   
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok 
+  where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=NEW.KEPEMILIKAN_ID and UNIT_ID=NEW.UNIT_ID_TERIMA order by tgl_act desc limit 1;   
+DECLARE curpengirim CURSOR FOR SELECT stok_after from a_kartustok 
+  where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=NEW.KEPEMILIKAN_ID and UNIT_ID=NEW.UNIT_ID_KIRIM order by tgl_act desc limit 1;
+DECLARE curlama CURSOR FOR SELECT stok_after from a_kartustok 
+  where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=(select KEPEMILIKAN_ID from a_penerimaan where id=new.ID_LAMA ) and UNIT_ID=NEW.UNIT_ID_KIRIM order by tgl_act desc limit 1;    
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1;   
+IF (NEW.TIPE_TRANS=5) and (NEW.STATUS=1)  then/*9 opname barang fisik lebih dari sistem*/
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	END WHILE;
+	CLOSE Cur;
+	INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+  (NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_TERIMA,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,NEW.QTY_SATUAN,0,vstok+      NEW.QTY_SATUAN,concat('opname ',now()),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+IF (NEW.TIPE_TRANS=0) and (NEW.STATUS=1)  then/*jika gudang terima PO*/
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	END WHILE;
+	CLOSE Cur;
+	INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+  (NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_TERIMA,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,NEW.QTY_SATUAN,0,vstok+      NEW.QTY_SATUAN,concat('PBF ',NEW.nobukti),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+IF (NEW.TIPE_TRANS=1) and (NEW.STATUS=0)  then/*jika mutasi dari gudang*/
+   /* penerima -->penerimaanAU
+   /*u/ pengirim*/
+	OPEN curpengirim;   
+	WHILE Done <> 1  DO      
+	FETCH curpengirim INTO vstok;      
+        END WHILE;
+        CLOSE curpengirim;
+  INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+  (NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_KIRIM,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,0,NEW.QTY_SATUAN,vstok - NEW.QTY_SATUAN,concat('out ',NEW.NOKIRIM),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+IF (NEW.TIPE_TRANS=2) and (NEW.STATUS=0)  then/*5) Unit Memberikan Pinjaman Obat (a_penerimaan)*/
+	OPEN curlama;   
+	WHILE Done <> 1  DO      
+	FETCH curlama INTO vstok;      
+        END WHILE;
+        CLOSE curlama;
+  INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+  (NEW.OBAT_ID,(select KEPEMILIKAN_ID from a_penerimaan where ID=NEW.id_lama),NEW.UNIT_ID_KIRIM,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,0,NEW.QTY_SATUAN,vstok - NEW.QTY_SATUAN,concat('meminjamkan ',NEW.NOKIRIM),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+IF (NEW.TIPE_TRANS=2) and (NEW.STATUS=1)  then/*7)Unit Pinjam Obat ke unit sendiri / Gudang pinjam obat ke gudang / Pindah Kepemilikan (a_penerimaan)*/
+	OPEN curlama;   
+	WHILE Done <> 1  DO      
+	FETCH curlama INTO vstok;      
+        END WHILE;
+        CLOSE curlama;
+INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES 
+  (NEW.OBAT_ID,(select KEPEMILIKAN_ID from a_penerimaan where ID=NEW.id_lama),NEW.UNIT_ID_KIRIM,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,0,NEW.QTY_SATUAN,vstok - NEW.QTY_SATUAN,concat('meminjamkan*',NEW.NOKIRIM),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+	set vstok =0;
+	set done =1;
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	END WHILE;
+	CLOSE Cur;
+INSERT INTO A_KARTUSTOK
+  (OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID,fkid,tipetrans) VALUES (NEW.OBAT_ID,NEW.KEPEMILIKAN_ID,NEW.UNIT_ID_TERIMA,NEW.TANGGAL,now(),NEW.NOBUKTI,vstok,NEW.QTY_SATUAN,0,vstok+      NEW.QTY_SATUAN,concat('Pinjam*',NEW.nobukti),NEW.USER_ID_TERIMA,new.id,new.tipe_trans);
+end if;
+END;
+$$
+
+DELIMITER ;$$

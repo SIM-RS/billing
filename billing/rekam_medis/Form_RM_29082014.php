@@ -1,0 +1,3146 @@
+<?php
+session_start();
+include("../sesi.php");
+?>
+<?php
+//session_start();
+$userId = $_SESSION['userId'];
+if(!isset($userId) || $userId == ''){
+    header('location:../index.php');
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <script type="text/JavaScript" language="JavaScript" src="../report_rm/listterima.js"></script>
+        <link rel="stylesheet" type="text/css" href="../theme/tab-view.css" />
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css" />
+        <script type="text/javascript" src="../theme/js/tab-view.js"></script>
+
+        <script type="text/JavaScript" language="JavaScript" src="../theme/js/dsgrid.js"></script>
+        <script type="text/JavaScript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <script type="text/javascript" src="../theme/js/ajax.js"></script>
+        
+         <script language="JavaScript" src="../theme/js/mm_menu.js"></script>
+		<?php include("dropdown.php"); ?>
+        
+        <link href="../theme/jquery-ui/css/ui-lightness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
+		<script src="../theme/jquery-ui/js/jquery-1.8.3.js"></script>
+		<script src="../theme/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+        
+        <!--dibawah ini diperlukan untuk menampilkan popup-->
+        <link rel="stylesheet" type="text/css" href="../theme/popup.css" />
+        <script type="text/javascript" src="../theme/prototype.js"></script>
+        <script type="text/javascript" src="../theme/effects.js"></script>
+        <script type="text/javascript" src="../theme/popup.js"></script>
+        <!--diatas ini diperlukan untuk menampilkan popup-->
+        
+        <!--tooltip awal-->
+        <link rel="stylesheet" type="text/css" href="jquery.qtip.css" />
+        <script type="text/javascript" src="jquery.qtip.js"></script>
+        <!--tooltip akhir-->
+        
+        <title>Form Rekam Medis</title>
+    </head>
+
+    <!--<body onload="setJam();loadUlang();cekSentPar();">-->
+	<body onload="loadHeight();cekAnamSoap();">
+        <script type="text/JavaScript">
+            var arrRange = depRange = [];
+        </script>
+        <iframe height="72" width="130" name="sort"
+                id="sort"
+                src="../theme/dsgrid_sort.php" scrolling="no"
+                frameborder="0"
+                style="border: medium ridge; position: absolute; z-index: 65535; left: 100px; top: 250px; visibility: hidden">
+        </iframe>
+        <iframe height="193" width="168" name="gToday:normal:agenda.js"
+                id="gToday:normal:agenda.js" src="../theme/popcjs.php" scrolling="no" frameborder="1"
+                style="border:1px solid medium ridge; position:absolute; z-index:65535; left:100px; top:50px; visibility:hidden">
+        </iframe>
+       
+    <div id="divKunj">          
+        <div id="divPilihan" style="display:none; width:320px" class="popup">
+                <fieldset>
+                    <table border=0 width="300">
+                        <tr>
+                            <td width="120" align="right">Status Medik :</td>
+                            <td >&nbsp;<select id="cmbPilihan">
+                            <option value="1">Keluar</option>
+                            <option value="2">Dipinjam</option>
+                            <option value="3">Kembali / Masuk</option>
+                            </select></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center">
+                                <input type="button" value="Simpan" style="cursor:pointer" onclick="simpan();document.getElementById('divPilihan').popup.hide();" />
+                                <input type="button" value="Batal" style="cursor:pointer" class="popup_closebox" onclick="document.getElementById('txtFilter').select();"/>
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            
+            <input type="hidden" id="kunjungan_id" name="kunjungan_id" />
+            <input type="hidden" id="status_medik" name="status_medik" />
+            <input type="hidden" id="pelayanan_id" name="pelayanan_id" />
+            <input type="hidden" id="formulir_id" name="formulir_id" />
+            <input type="hidden" id="norm" name="norm" />
+            <span id="spanSukRM" style="display:none"></span>
+<?php
+            include("../koneksi/konek.php");
+            include("../header1.php");
+            $date_now=gmdate('d-m-Y',mktime(date('H')+7));
+            $time_now=gmdate('H:i:s',mktime(date('H')+7));
+            $tglGet=$_REQUEST['tgl'];
+            ?>
+            <table width="1000" border="0" cellpadding="0" cellspacing="0" bgcolor="#008484"  align="center" class="hd2">
+              <tr>
+                    <td height="30">&nbsp;FORM REKAM MEDIS</td>
+					<td align="right">&nbsp;</td>
+                </tr>
+            </table>
+            <table width="1000" border="0" cellpadding="0" cellspacing="0" align="center" class="tabel">
+                <tr>
+                    <td width="4%">&nbsp;</td>
+                    <td width="46%">&nbsp;</td>
+                    <td width="48%">&nbsp;</td>
+                    <td width="2%">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <fieldset>
+                            <table width="75%" align="center">
+                                <tr id="trTgl">
+                                    <td height="30">Tanggal</td>
+                                    <td align="center">:</td>
+                                    <td>
+                                        <input id="txtTgl" name="txtTgl" readonly size="11" class="txtcenter" type="text" value="<?php if($tglGet=='') {
+                                            echo $date_now;
+                                        }
+                                        else {
+                                            echo $tglGet;
+                                        }
+                                        ?>"/>&nbsp;<input type="button" name="btnTgl" value="&nbsp;V&nbsp;" class="txtcenter" onclick="gfPop.fPopCalendar(document.getElementById('txtTgl'),depRange,saring);"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="30">Kunjungan</td>
+                                    <td align="center">:</td>
+                                    <td>
+                                    <select class="txtinput" id="cmbKunjungan" name="cmbKunjungan" onchange="cekKunjungan(this.value);saring()">
+                                    	<option value="0">RAWAT JALAN</option>
+                                        <option value="1">RAWAT INAP</option>
+                                    </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </fieldset>
+                    </td>
+                    <td align="center">
+						<div id="batalKunjungan" style="display:block; font-size:14px; font-weight:bold; color:blue;"></div>
+                        <div id="loadGambar"></div>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="2">
+                        <fieldset>
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+                                <tr id="trDilayani"> 
+                            		<td align="left" colspan="2" width="100%"><span style="padding-left:20px">
+                                        No. RM :
+                                        <input id="txtFilter" name="txtFilter" size="10" class="txtinput" onkeyup="filterNoRM(event,this)"/>
+                                        </span>&nbsp;<input type="checkbox" id="chkHistory" name="chkHistory" style="cursor:pointer; vertical-align:middle" onchange="viewHistory(this)" />&nbsp;Riwayat Kunjungan&nbsp;<button style="cursor:pointer; display:none" onclick="pilihStatusMedik();">Status Medik</button>
+                                	</td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" style="vertical-align:top" align="left">
+                                        <div id="gridbox" style="width:450px; height:270px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging" style="width:450px;"></div>
+                                    </td>
+                                    <td width="50%" style="vertical-align:top" align="right">
+                                        <div id="gridbox4" style="width:450px; height:270px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging4" style="width:450px;"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                	<td colspan="2">&nbsp;</td>
+                                </tr>
+                                <tr style="display:none">
+                                	<td width="50%" style="vertical-align:top" align="left">
+                                    	<div id="gridbox2" style="width:450px; height:270px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging2" style="width:450px;"></div>
+                                    </td>
+                              		<td width="50%" style="vertical-align:top" align="right">
+                                    	<div id="gridbox3" style="width:450px; height:270px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging3" style="width:450px;"></div>
+                                    </td>
+                                </tr>
+								<style type="text/css">
+									#kotak{
+										width:10px;
+										height:10px;
+										display:inline-block;
+									}
+								</style>
+								<tr>
+									<td>
+										<div id="kotak" style="background:red; margin-right:10px;"></div>Beberapa data pelayanan terhadap pasien belum di coding <br />
+										<div id="kotak" style="background:blue; margin-right:10px;"></div>Semua data pelayanan terhadap pasien telah di coding <br />
+										<div id="kotak" style="background:black; margin-right:10px;"></div>Semua data pelayanan terhadap pasien belum di coding <br />
+									</td>
+									<td valign="top" align="right">
+										Pelayanan telah di coding<div id="kotak" style="background:blue; margin-left:10px;"></div><br />
+										Pelayanan belum di coding<div id="kotak" style="background:black; margin-left:10px;"></div><br />
+									</td>
+								</tr>
+                            </table>
+                        </fieldset>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                	<td>&nbsp;</td>
+                    <td colspan="2">
+                    	<fieldset>
+                    	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="tabel" align="center">
+                            <tr>
+                                <td colspan="5">&nbsp;</td>
+                            </tr>
+                            <tr style="display:none">
+                                <td width="4%">&nbsp;</td>
+                                <td width="92%">
+                                    <fieldset>
+                                        <table width="100%" align="center" border="0" cellpadding="1" cellspacing="1" class="tabel">
+                                            <tr>
+                                                <td width="7%">&nbsp;No RM</td>
+                                                <td width="15%">:&nbsp;<input id="txtNo" name="txtNo" size="12" value="" class="txtinput" readonly="readonly" /></td>
+                                                <td width="6%">&nbsp;Nama</td>
+                                                <td width="30%">:&nbsp;<input id="txtNama" name="txtNama" size="28" value=""  class="txtinput" readonly="readonly" />&nbsp;</td>
+                                                <td width="42%" >&nbsp;Tg Lhr&nbsp;: <input id="txtTglLhr" name="txtTglLhr" size="10" value="" class="txtinput"  readonly="readonly"/>&nbsp;Umur&nbsp;:&nbsp;<input id="txtUmur" name="txtUmur" size="12" value="" class="txtinput" />&nbsp;&nbsp;&nbsp;L/P&nbsp;:&nbsp;<input id="txtSex" name="txtSex" size="1" value="" readonly="readonly" class="txtinput" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="vertical-align:top">&nbsp;Ortu</td>
+                                                <td style="vertical-align:top">: <input id="txtOrtu" name="txtOrtu" size="12" value=""  readonly="readonly" class="txtinput" />&nbsp;
+                                                <br />
+                                                <div id="loadGambar"></div>
+                                                <div id="loadGambar1"></div>
+                                                </td>
+                                                <td style="vertical-align:top">&nbsp;Alamat</td>
+                                                <td rowspan="2" style="vertical-align:top"><span style="vertical-align:top">:</span> <textarea id="txtAlmt" name="txtAlmt" cols="30" rows="2" readonly="readonly" class="txtinput" ></textarea></td>
+                                                <td rowspan="2"  style="vertical-align:top">&nbsp;<span style="vertical-align:top">R. Alergi&nbsp;:</span>&nbsp;<textarea id="txtRA" name="txtRA" cols="33" rows="2" readonly="readonly" class="txtinput" ></textarea><span id="hsl_RA_terakhir" style="display:none"></span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5" align="center" style="color:#203C42; font-weight:bold; font-size: 14px" id="tdStat"></td>
+                                             </tr>
+                                        </table>
+                                    </fieldset>
+                                </td>
+                                <td width="4%">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>
+                                <input type="button" id="btnCtkFrm" name="btnCtkFrm" value="REPORT RM" style="cursor:pointer" onMouseOver="MM_showMenu(window.mm_menu_0814123211_4,0,20,null,'btnCtkFrm');" onMouseOut="MM_startTimeout();" class="tblBtn"/>
+                                <input type="button" id="btnRekamMds" name="btnRekamMds" value="REKAM MEDIS" onclick="rekamMedis()" class="tblBtn"/>
+                                <input type="button" id="btnResume" name="btnResume" value="RESUME MEDIS" onclick="showResumeMedis()" class="tblBtn"/>
+                                <input type="button" id="btnIsiDataRM15" name="btnIsiDataRM" value="PERLAKUAN KHUSUS" onclick="tampilPerlakuan();" class="tblBtn" />
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>   
+                                <td colspan="3" align="center"><div class="TabView" id="TabView" style="width:900px; height:400px"></div></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
+                        </fieldset>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+
+    </div>
+    
+	<div id="divDetil" align="center" style="display:none;">
+       <div align="center">
+          <table width="1000" border="0" cellpadding="0" cellspacing="0" bgcolor="#008484"  class="hd2">
+                    <tr>
+                        <td height="30">&nbsp;</td>
+                        <td>
+                            <img alt="close" src="../icon/close.png" onClick="closeDetail();" border="0" style="cursor:pointer; float:right" />
+                        </td>
+                    </tr>
+              </table>
+                
+            </div>
+        </div>
+        
+        <div id="divICD10" style="display:none;width:880px" class="popup">
+            <span id="spn_ICD_RM" style="display:none"></span>
+            <img alt="close" src="../icon/x.png" width="32" class="popup_closebox" onclick="batalICD_RM()" style="float:right; cursor: pointer" />
+            
+            <form id="form_icd_rm" name="form_icd_rm" >
+                <fieldset><legend id="lgn_icd">Kode ICD X</legend>
+                    <table border=0 width="760">
+                        <tr>
+                            <td width="241" align="right"><span id="spn_icd">&nbsp;&nbsp;ICD X</span>&nbsp;:&nbsp;</td>
+                            <td width="533">
+							<input type="hidden" id="tot_asterix" name="tot_asterix" />
+                            <input type="hidden" id="deggernya" name="deggernya" />
+                            <input type="hidden" id="isinyaid" name="isinyaid" />
+                            <input type="hidden" id="barisx" name="barisx" />
+                            <input type="hidden" id="id_degger" name="id_degger" />
+                            <input type="hidden" id="cek_degger" name="cek_degger" />
+							<input type="hidden" id="cek_degger_cdgn" name="cek_degger_cdgn" />
+                            <input type="hidden" id="id_diagnosa_ICD_RM" name="id_diagnosa_ICD_RM" />
+                            <input type="hidden" id="ms_diagnosa_ICD_RM" name="ms_diagnosa_ICD_RM" />
+                            <input type="hidden" id="ms_diagnosa_ICD_RM_cdgn" name="ms_diagnosa_ICD_RM_cdgn" />
+                            <input type="hidden" id="kode_diagnosa_ICD_RM" name="kode_diagnosa_ICD_RM" />
+                            <input type="hidden" id="kode_diagnosa_ICD_RM_cdgn" name="kode_diagnosa_ICD_RM_cdgn" />
+                            <input id="txtICD10" name="txtICD10" size="50" onKeyUp="suggest_ICD_RM(event,this);" autocomplete="off" class="txtinput">
+                            <input type="hidden" id="txtICD10_cdgn" name="txtICD10_cdgn" />
+                            <input type="hidden" id="pernahHapusAsterix" name="pernahHapusAsterix" />
+                            <div id="divICD_RM" align="left" style="position:absolute; z-index:0; height: 200px; width: 620px; overflow: scroll; border:1px solid; display:none; background-color: #CCCCCC; layer-background-color: #CCCCCC;"></div>
+                            <div id="loadHapusAsterix"></div></td>
+                        </tr>
+                        <tr id="trCatatan" style="display:none;">
+                        	<td align="right">Catatan&nbsp;:&nbsp;</td>
+                            <td><input id="txtCatatan" name="txtCatatan" size="50" class="txtinput"></td>
+                        </tr>
+                        <tr>
+                            <td align="center" colspan="2">
+                            <div id="AsterixShow" style="display:none">
+                            <table id="tblJual" width="100%" border="0" cellpadding="0" cellspacing="0" align="center">
+            <tr> 
+              <td colspan="5" align="center" class="jdltable"><hr></td>
+            </tr>
+            <tr> 
+              <td colspan="4" align="center" class="jdltable">DAFTAR ASTERIX</td>
+              <td align="right" valign="bottom"><input type="button" value="+" onClick="addRowToTable();" /></td>
+            </tr>
+            <tr class="headtable"> 
+              <td width="27" class="tblheaderkiri">No</td>
+              <td width="80" class="tblheader">Kode</td>
+              <td width="333" class="tblheader">Asterix<div id="divICD_RM_Asterix" align="left" style="position:absolute; z-index:0; height: 230px; width:620px; overflow: scroll; border:1px solid; display:none; background-color: #CCCCCC; color:black;"></div></td>
+              <td width="274" class="tblheader">Catatan</td>
+              <td class="tblheader" width="40">Hapus</td>
+            </tr>
+            <tr class="itemtable" onMouseOver="this.className='itemtableMOver'" onMouseOut="this.className='itemtable'"> 
+              <td class="tdisikiri" width="27">1</td>
+              <td class="tdisi" align="left"><input type="text" name="txtKodeAsterix" id="txtKodeAsterix" class="txtinput txtKodeAsterix2" size="10" disabled="disabled" /></td>
+              <td class="tdisi" align="left"><input type="hidden" id="degger_id" name="degger_id" class="degger_id2"/>
+    						<input type="hidden" id="ms_diagnosa_Asterix" name="ms_diagnosa_Asterix" class="ms_diagnosa_Asterix2"/>
+                            <input type="hidden" id="ms_diagnosa_Asterix_cdgn" name="ms_diagnosa_Asterix_cdgn" class="ms_diagnosa_Asterix2"/>
+                            <input type="hidden" id="kode_diagnosa_Asterix" name="kode_diagnosa_Asterix" class="kode_diagnosa_Asterix2"/>
+                            <input type="text" name="txtAsterix" id="txtAsterix" class="txtinput txtAsterix2" size="50" onKeyUp="suggest_Asterix(event,this);" autocomplete="off" /></td>
+              <td class="tdisi"><input type="text" id="txtCatatanAsterix" name="txtCatatanAsterix" size="43" onkeyup="AddRow(event,this)" class="txtinput txtCatatanAsterix2"/></td>
+              <td class="tdisi"><img src="../icon/del.gif" border="0" width="16" height="16" align="absmiddle" class="proses" title="Klik Untuk Menghapus" onClick="if (confirm('Yakin Ingin Menghapus Data?')){removeRowFromTable(this);}"><!--<input type="checkbox" id="racik" name="racik">--><!--<input id="HapusAsterix" name="HapusAsterix" class="hapusasterix2" type="image" src="../icon/del.gif" width="16" height="16" align="absmiddle" onclick="if (confirm('Yakin Ingin Menghapus Data?')){removeRowFromTable(this);}" title="Klik Untuk Menghapus" />--></td>
+            </tr>
+          </table></div>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" value="Simpan" onclick="updateICD_RM();"/></td>
+                        </tr>
+                    </table>
+                </fieldset>
+                </form>
+         </div>
+         
+         <div id="divHapusAsterix" style="display:none;width:400px" class="popup">
+            <span id="spn_HapusAsterix" style="display:none"></span>
+            <!--<img alt="close" src="../icon/close.png" width="32" class="popup_closebox" style="float:right; cursor: pointer" />-->
+            
+            <form id="form_asterix" name="form_asterix" action="">
+                <fieldset><legend>Kasus</legend>
+                    <table border=0 width="350">
+                        <tr>
+                            <td width="200" align="right">Catatan&nbsp;:&nbsp;</td>
+                            <td><input type="text" id="txtCatatanHapusAsterix" name="txtCatatanHapusAsterix" size="43" class="txtinput"/><input type="hidden" id="parHapusAsterix" name="parHapusAsterix" size="43" class="txtinput"/></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" value="Simpan" onclick="SimpanHapusAsterix();"/></td>
+                        </tr>
+                    </table>
+                </fieldset>
+             </form>
+         </div>
+         
+         <div id="divKasusICD10" style="display:none;width:400px" class="popup">
+            <span id="spn_Kasus_ICD_RM" style="display:none"></span>
+            <img alt="close" src="../icon/close.png" width="32" class="popup_closebox" style="float:right; cursor: pointer" />
+                <fieldset><legend>Kasus</legend>
+                    <table border=0 width="350">
+                        <tr>
+                            <td width="200" align="right">Jenis Kasus&nbsp;:&nbsp;</td>
+                            <td>
+                            <select id="cmbKasusDiag">
+                            	<option value="1" label="Baru">Baru</option>
+                                <option value="0" label="Lama">Lama</option>
+                            </select></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" value="Simpan" onclick="updateKasusICD_RM();"/></td>
+                        </tr>
+                    </table>
+                </fieldset>
+         </div>
+         
+         <div id="divResumeMedis" style="width:400px; display:none;" class="popup">
+            <span style="width:350px;"><img alt="close" src="../icon/close.png" width="32" class="popup_closebox" style="float:right; cursor: pointer" /></span>
+                <fieldset>
+                    <table border=0 width="350">
+                        <tr>
+                            <td width="50%" align="right">Resume Medis&nbsp;:&nbsp;</td>
+                            <td width="50%">
+                            <select id="cmbResumeMedis">
+                            	<option value="">-</option>
+                            </select></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" value="Cetak" style="cursor:pointer" onclick="resumeMedis(document.getElementById('cmbResumeMedis').value);"/></td>
+                        </tr>
+                    </table>
+                </fieldset>
+         </div>
+         
+         <div id="div_popup_iframe" style="display:none;width:1200px" class="popup">
+			<img alt="close" src="../icon/x.png" width="32" class="popup_closebox" style="float:right; display:none; cursor: pointer" />
+			<img alt="close" src="../icon/x.png" width="32" onclick="document.getElementById('div_popup_iframe').popup.hide();resizeAwal();" style="float:right; cursor: pointer" />
+			<fieldset>
+				<legend id="legend_popup_iframe"></legend>
+				<iframe id="popup_iframe" class="framex" src="" onload="javascript:resizeIframe(this);" style="width:100%; height:400px; border:none;" ></iframe>
+			</fieldset>
+		</div>
+        
+        <div id="pKhusus" style="display:none;width:500px" class="popup">
+            <img alt="close" src="../icon/x.png" width="32" class="popup_closebox" onclick="batal('btnBatalIsiDataRM')" style="float:right; cursor: pointer" />
+             <fieldset>
+             	<legend id="lgnIsiDataRM">Perlakuan Khusus&nbsp;</legend>
+                <table border=0 align="center">
+                	<tr>
+                         <td align="left"><input type="checkbox" id="psnKomplain" name="psnKomplain"/>Pasien Potensi Komplain</td>
+                    </tr>
+                    <tr>
+                         <td align="left"><input type="checkbox" id="psnPemilik" name="psnPemilik"/>Pasien Adalah Pemilik Rumah Sakit</td>
+                    </tr>
+                    <tr>
+                         <td align="left"><input type="checkbox" id="psnPejabat" name="psnPejabat"/>Pasien Adalah Pejabat</td>
+                    </tr>
+                    <tr>
+                         <td align="center"><input type="button" id="btnSimpanPerlakuan" name="btnSimpanPerlakuan" value="Tambah" onclick="simpanPerlakuan();" class="tblTambah"/></td>
+                    </tr>
+                </table>
+             </fieldset>
+        </div>
+<div id="divCheckListTerima" style="display:none;width:850px" class="popup">
+			<? include '../report_rm/9.check_list_pnrmn.php'; ?>
+</div>
+	</body>
+</html>
+<script type="text/JavaScript" language="JavaScript">
+var getIdKunj,getIdPel,getIdPasien,getIdUnit,getJnsLay,batalKunj,tmpLayanan;
+
+mTab=new TabView("TabView");
+mTab.setTabCaption("ANAMNESA,DIAGNOSA,TINDAKAN,RESEP");
+mTab.setTabCaptionWidth("225,225,225,225");
+mTab.setTabDisplay("true,true,true,true,0");
+mTab.onLoaded(showGrid);
+mTab.setTabPage("anamnesia.php,diagnosa.php,tindakan.php,resep.php");
+
+// ===============================================================================================================================
+	
+		function showGrid(){
+            a1 = new DSGridObject("gridbox");
+            a1.setHeader("DATA KUNJUNGAN PASIEN");
+            a1.setColHeader("NO,TGL KUNJUNGAN,NO RM,NAMA,PENJAMIN,ALAMAT");
+            a1.setIDColHeader(",tgl,no_rm,nama,penjamin,alamat");
+            a1.setColWidth("30,80,70,200,100,300");
+			a1.setCellType("txt,txt,txt,txt,txt,txt");
+            a1.setCellAlign("center,center,center,left,left,left");
+            a1.setCellHeight(20);
+            a1.setImgPath("../icon");
+            a1.setIDPaging("paging");
+            a1.attachEvent("onRowClick","ambilDataPasien");
+            //a1.onLoaded(ambilDataPasien);
+			a1.onLoaded(konfirmasi);
+			a1.baseURL("RM_utils.php?grd=true&tgl="+document.getElementById('txtTgl').value+"&cmbKunjungan="+document.getElementById('cmbKunjungan').value);
+            a1.Init();
+			
+			a4 = new DSGridObject("gridbox4");
+            a4.setHeader("DATA PELAYANAN PASIEN");
+            a4.setColHeader("NO,TGL,TEMPAT LAYANAN,DOKTER,ASAL KUNJUNGAN,STATUS KODING");
+            a4.setIDColHeader(",,,,,");
+            a4.setColWidth("30,80,100,200,150,100");
+			a4.setCellType("txt,txt,txt,txt,txt,txt");
+            a4.setCellAlign("center,center,left,left,left,center");
+            a4.setCellHeight(20);
+            a4.setImgPath("../icon");
+            a4.setIDPaging("paging4");
+			a4.attachEvent("onRowClick","loadDetail");
+            a4.onLoaded(loadDetail); //nyala
+			a4.baseURL("RM_utils.php?grd4=true&kunjungan_id="+document.getElementById('kunjungan_id').value);
+            a4.Init();
+			
+			a2 = new DSGridObject("gridbox2");
+            a2.setHeader("JENIS FORMULIR REPORT RM");
+            a2.setColHeader("NO,NAMA");
+            a2.setIDColHeader(",");
+            a2.setColWidth("50,300");
+			a2.setCellType("txt,txt");
+            a2.setCellAlign("center,left");
+            a2.setCellHeight(20);
+            a2.setImgPath("../icon");
+            a2.setIDPaging("paging2");
+            a2.attachEvent("onRowClick","ambilDataReportRM");
+            a2.onLoaded(ambilDataReportRM); //nyala
+			a2.baseURL("RM_utils.php?grd2=true&pelayanan_id="+document.getElementById('pelayanan_id').value);
+            a2.Init();
+			
+			a3 = new DSGridObject("gridbox3");
+            a3.setHeader("DATA REPORT RM");
+            a3.setColHeader("NO,CEKLIST,ANALISA,KODE,NAMA");
+            a3.setIDColHeader(",,,,");
+            a3.setColWidth("30,50,50,100,250");
+			a3.setCellType("txt,chk,chk,txt,txt");
+            a3.setCellAlign("center,center,center,center,left");
+            a3.setCellHeight(20);
+            a3.setImgPath("../icon");
+            a3.setIDPaging("paging3");
+            a3.attachEvent("onRowClick","cekZXC");
+            a3.onLoaded(cekAnalisa);
+			a3.baseURL("RM_utils.php?grd3=true&parent_id="+document.getElementById('formulir_id').value+'&pelayanan_id='+document.getElementById('pelayanan_id').value);
+            a3.Init();
+			
+			anam1=new DSGridObject("gridbox1_1");
+			anam1.setHeader("DATA ANAMNESA");
+			anam1.setColHeader("NO,TANGGAL,DOKTER");
+			anam1.setIDColHeader(",TGL,");
+			anam1.setColWidth("30,100,350");
+			anam1.setCellAlign("center,center,left");
+			anam1.setCellHeight(20);
+			anam1.setImgPath("../icon");
+			anam1.setIDPaging("paging1_1");
+			anam1.attachEvent("onRowClick","ambilDataAnamnesa1");
+			anam1.baseURL("tindiag_utils.php?grdAnamnesa=true");
+			anam1.Init();	
+			
+			subj1 = new DSGridObject("gridbox1_2");
+			subj1.setHeader(" ",false);
+			subj1.setColHeader("No,Tanggal,Nama Dokter/Perawat,S,O,A,P,I,E,R");
+			subj1.setIDColHeader(",,nama,,,,,,,");
+			subj1.setColWidth("40,70,255,100,100,100,100,100,100,100");
+			subj1.setCellAlign("center,center,left,left,left,left,left,left,left,left");
+			subj1.setCellType("txt,txt,txt,txt,txt,txt,txt,txt,txt,txt");
+			subj1.setCellHeight(20);
+			subj1.setImgPath("../icon");
+			subj1.setIDPaging("paging1_2");
+			subj1.attachEvent("onRowClick","ambilIdS1");
+			subj1.baseURL("soap_utils.php?grd=1");
+			subj1.Init();
+			
+			b=new DSGridObject("gridbox1");
+			b.setHeader("DATA DIAGNOSA PASIEN");
+			b.setColHeader("NO,TANGGAL,DIAGNOSA,ICD-10 [RM],DOKTER,CODER,USER BILLING,PRIORITAS,KASUS,AKHIR,KLINIS,BANDING,UNIT");
+			b.setIDColHeader(",,nama,icdrm,dokter,coder,petugas,,,,,,");
+			b.setColWidth("30,100,240,80,200,200,200,80,100,70,70,70,70");
+			b.setCellAlign("center,center,left,center,left,left,left,center,center,,center,center,center,center");
+			b.setCellHeight(20);
+			b.setImgPath("../icon");
+			b.setIDPaging("paging1");
+			b.attachEvent("onRowClick","ambilDataDiag");
+			b.baseURL("tindiag_utils.php?grd1=true");
+			b.Init();
+			
+			f=new DSGridObject("gridboxTind");
+			f.setHeader("DATA TINDAKAN PASIEN");
+			f.setColHeader("NO,TANGGAL,TINDAKAN,ICD-9CM,KELAS,BIAYA,JUMLAH,SUBTOTAL,DOKTER,PETUGAS INPUT,KETERANGAN");
+			f.setIDColHeader(",tanggal,nama,,,,,,,dokter,");
+			f.setColWidth("30,100,250,75,75,75,75,75,200,175,150");
+			f.setCellAlign("center,center,left,center,center,right,center,right,left,left,left");
+			f.setCellHeight(20);
+			f.setImgPath("../icon");
+			f.setIDPaging("pagingTind");
+			f.attachEvent("onRowDblClick","printReport");
+			f.baseURL("tindiag_utils.php?grd=true");
+			f.Init();
+			
+			aResep=new DSGridObject("gridboxResepAwal");
+			aResep.setHeader("DATA RESEP");
+			aResep.setColHeader("NO,NO RESEP,TANGGAL,APOTEK,STATUS");
+			aResep.setIDColHeader(",,,,");
+			aResep.setColWidth("50,100,100,150,100");
+			aResep.setCellAlign("center,center,center,left,center");
+			aResep.setCellType("txt,txt,txt,txt,txt,chk");
+			aResep.setCellHeight(20);
+			aResep.setImgPath("../icon");
+			aResep.attachEvent("onRowClick","ambilDataResepDetail");
+			aResep.onLoaded(ambilDataResepDetail); //nyala
+			aResep.baseURL("tindiag_utils.php?grdRsp1=true");
+			aResep.Init();
+			
+			aDet=new DSGridObject("gridboxResepDetail");
+			aDet.setHeader("DATA OBAT DALAM RESEP");
+			aDet.setColHeader("NO,NAMA OBAT,JUMLAH,RACIKAN,DOSIS,DOKTER,STOK");
+			aDet.setIDColHeader(",OBAT_NAMA,,,,,");
+			aDet.setColWidth("30,200,40,80,180,150,50");
+			aDet.setCellAlign("center,left,center,center,left,left,center");
+			aDet.setCellType("txt,txt,txt,txt,txt,txt,txt");
+			aDet.setCellHeight(20);
+			aDet.setImgPath("../icon");
+			aDet.baseURL("tindiag_utils.php?grdRsp2=true");
+			aDet.Init();
+		}
+		
+		function cekZXC(){
+			var idReport = a3.getRowId(parseInt(a3.getSelRow()-1)+1).split('|');
+			//alert(idReport[2]);
+		}
+		
+		function cekAnalisa(){
+			var data='';
+			for(var i=0;i<a3.getMaxRow();i++){
+				data = a3.getRowId(i+1).split('|');
+				
+				
+				if(data[1]=='0'){
+					a3.obj.childNodes[0].childNodes[i].childNodes[2].childNodes[0].disabled=true;
+				}
+				else{
+					a3.obj.childNodes[0].childNodes[i].childNodes[2].childNodes[0].disabled=false;
+				}
+				
+				if(data[2]=='1'){
+					a3.obj.childNodes[0].childNodes[i].childNodes[1].childNodes[0].disabled=true;
+				}
+				else{
+					a3.obj.childNodes[0].childNodes[i].childNodes[1].childNodes[0].disabled=false;
+				}
+				
+				
+				a3.obj.childNodes[0].childNodes[i].childNodes[1].childNodes[0].lang=data[3];
+				
+				a3.obj.childNodes[0].childNodes[i].childNodes[1].childNodes[0].onchange=function(){cekList(1)};
+				a3.obj.childNodes[0].childNodes[i].childNodes[2].childNodes[0].onchange=function(){cekList(2)};
+				
+				a3.obj.childNodes[0].childNodes[i].childNodes[1].childNodes[0].style.cursor='pointer';
+				a3.obj.childNodes[0].childNodes[i].childNodes[2].childNodes[0].style.cursor='pointer';
+			}
+		}
+		
+		function cekList(x){
+			var act,baris,id;
+			var idPel = document.getElementById('pelayanan_id').value;
+			var idReport = a3.getRowId(parseInt(a3.getSelRow()-1)+1).split('|');
+			
+			if(x==1){
+				if(a3.obj.childNodes[0].childNodes[parseInt(a3.getSelRow())-1].childNodes[1].childNodes[0].checked){
+					id = idReport[0]; 
+					act = 'tambah';
+					baris = parseInt(a3.getSelRow())-1;
+				}
+				else{
+					id = idReport[0];
+					act = 'hapus';
+					baris = parseInt(a3.getSelRow())-1;
+				}
+			}
+			else{			
+				if(a3.obj.childNodes[0].childNodes[parseInt(a3.getSelRow())-1].childNodes[2].childNodes[0].checked){
+					id = a3.obj.childNodes[0].childNodes[parseInt(a3.getSelRow())-1].childNodes[1].childNodes[0].lang;
+					act = 'tambah_analisa';
+					baris = parseInt(a3.getSelRow())-1;
+				}
+				else{
+					id = a3.obj.childNodes[0].childNodes[parseInt(a3.getSelRow())-1].childNodes[1].childNodes[0].lang;
+					act = 'hapus_analisa';
+					baris = parseInt(a3.getSelRow())-1;
+				}
+			}
+			
+			Request('RM_utils.php?grd3=false&baris='+baris+'&act='+act+'&id='+id+'&pelayanan_id='+idPel+'&formulir_id='+document.getElementById('formulir_id').value+'&userId=<?php echo $userId; ?>','spanSukRM','','GET',hslCekList,'noLoad');
+		}
+		
+		function hslCekList(){
+			
+			var hasil = document.getElementById('spanSukRM').innerHTML.split('|');
+			var r = hasil[1];
+			
+			if(hasil[2]=='tambah' || hasil[2]=='hapus'){
+				a3.obj.childNodes[0].childNodes[r].childNodes[1].childNodes[0].lang=hasil[3];
+			}
+			
+			
+			if(hasil[0]=='1'){
+				if(a3.obj.childNodes[0].childNodes[r].childNodes[1].childNodes[0].checked){
+					a3.obj.childNodes[0].childNodes[r].childNodes[2].childNodes[0].disabled=false;
+				}
+				else{
+					a3.obj.childNodes[0].childNodes[r].childNodes[2].childNodes[0].disabled=true;
+				}
+				
+				if(a3.obj.childNodes[0].childNodes[r].childNodes[2].childNodes[0].checked){
+					a3.obj.childNodes[0].childNodes[r].childNodes[1].childNodes[0].disabled=true;
+				}
+				else{
+					a3.obj.childNodes[0].childNodes[r].childNodes[1].childNodes[0].disabled=false;
+				}
+			}
+			
+		}
+		
+		function ambilDataReportRM(){
+			var sisip = a2.getRowId(a2.getSelRow());
+			document.getElementById('formulir_id').value=sisip;
+			a3.loadURL("RM_utils.php?grd3=true&parent_id="+sisip+'&pelayanan_id='+document.getElementById('pelayanan_id').value,'','GET');
+		}
+		
+		function ambilDataPasien(){
+			var data = a1.getRowId(a1.getSelRow()).split('|');
+			jQuery("#btnResume").load("cek_resume.php?cek=true&kunjungan_id="+data[0]);	
+		
+			getIdKunj = data[0];
+			getIdPasien = data[3];
+			jQuery("#loadGambar").load("gambar1.php?id_pasien="+getIdPasien);
+			
+			/*if(data[12] == 0){
+				jQuery('#batalKunjungan').html('Pasien Batal Berkunjung');
+			} else {
+				jQuery('#batalKunjungan').html('');
+			}*/
+			
+			document.getElementById('txtNo').value = data[2];
+			document.getElementById('txtNama').value = data[7];
+			document.getElementById('txtTglLhr').value = data[8];
+			document.getElementById('txtUmur').value = data[5];
+			document.getElementById('txtOrtu').value = data[6];
+			document.getElementById('txtAlmt').value = data[4];
+			document.getElementById('txtSex').value = data[9];
+			Request('riwayat_alergi_util.php?act=view_last&idpasien='+getIdPasien,'hsl_RA_terakhir','','GET',loadRATerakhir,'noLoad');
+			jQuery("#loadGambar").load("gambar1.php?id_pasien="+getIdPasien);
+			
+			document.getElementById('kunjungan_id').value=data[0];
+			a4.loadURL("RM_utils.php?grd4=true&kunjungan_id="+document.getElementById('kunjungan_id').value,'','GET');
+			//document.getElementById('txtFilter').select();
+			//alert('AmbilDataPAsien');
+			setTimeout('loadData()',5000);			//loadData();
+			toltip();
+		}
+		
+		function ambilDataDiag()
+		{
+			var sisip=b.getRowId(b.getSelRow()).split("|");
+			b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+			toltip();
+		}
+		
+		function loadRATerakhir(){
+			//alert(document.getElementById('hsl_RA_terakhir').innerHTML);
+			document.getElementById('txtRA').value = document.getElementById('hsl_RA_terakhir').innerHTML;	
+		}
+		
+		function loadFormulirRM(){
+			var data = a4.getRowId(a4.getSelRow()).split('|');
+			
+			getIdPel = data[0];
+			getIdUnit = data[1];
+			getJnsLay = data[2];
+			
+			document.getElementById('pelayanan_id').value=data[0];
+			a2.loadURL("RM_utils.php?grd2=true&pelayanan_id="+document.getElementById('pelayanan_id').value,'','GET');
+			
+			loadData();
+		}
+		
+		function loadDetail(){
+			//alert(a4.getSelRow());
+			detail(a4.getSelRow());
+		}
+		
+		function detail(i){
+			//jQuery("#divKunj").hide(500);
+			//jQuery("#divDetil").slideToggle("slow");
+			
+			//document.getElementById('divKunj').style.display='none';
+			//document.getElementById('divDetil').style.display='block';
+			var data = a4.getRowId(i).split('|');
+			if(getJnsLay!=data[2])
+				cekTab(data[2]);
+			
+			getIdPel = data[0];
+			getIdUnit = data[1];
+			getJnsLay = data[2];
+			batalKunj = data[3];
+			tmpLayanan = data[4];
+			
+			document.getElementById('pelayanan_id').value=data[0];
+			document.getElementById('deggernya').value=data[5];
+			//alert('DEtail');
+			loadData(); //nyala
+		}
+		
+		function loadDetailLoad(){
+			alert('load');
+			//alert(a4.getSelRow());
+			detailLoad(a4.getSelRow());
+		}
+		
+		function detailLoad(i){
+			//jQuery("#divKunj").hide(500);
+			//jQuery("#divDetil").slideToggle("slow");
+			
+			//document.getElementById('divKunj').style.display='none';
+			//document.getElementById('divDetil').style.display='block';
+			var data = a4.getRowId(i).split('|');
+			if(getJnsLay!=data[2])
+				cekTab(data[2]);
+			
+			getIdPel = data[0];
+			getIdUnit = data[1];
+			getJnsLay = data[2];
+			batalKunj = data[3];
+			tmpLayanan = data[4];
+			
+			document.getElementById('pelayanan_id').value=data[0];
+			document.getElementById('deggernya').value=data[5];
+			//alert('DEtail');
+			//loadData(); //nyala
+		}
+		
+		function closeDetail(){
+			//jQuery("#divDetil").hide(500);
+			//jQuery("#divKunj").slideToggle("slow");
+			
+			//document.getElementById('divKunj').style.display='block';
+			//document.getElementById('divDetil').style.display='none';
+		}
+		
+		function loadData(){
+			//alert('LoadData');
+			subj1.loadURL("soap_utils.php?grd=1&idPel="+getIdPel,'','GET');
+			anam1.loadURL("tindiag_utils.php?grdAnamnesa=true&pasien_id="+getIdPasien,'','GET');
+			b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+			f.loadURL("tindiag_utils.php?grd=true&pelayanan_id="+getIdPel,"","GET");
+			aResep.loadURL("tindiag_utils.php?grdRsp1=true&pelayanan_id="+getIdPel,"","GET");
+			toltip();
+		}
+		
+		function loadData2(){
+			var data = a1.getRowId(a1.getSelRow()).split('|');
+			jQuery("#btnResume").load("cek_resume.php?cek=true&kunjungan_id="+data[0]);
+			a4.loadURL("RM_utils.php?grd4=true&kunjungan_id="+document.getElementById('kunjungan_id').value,'','GET');				
+		}
+		
+		function ambilDataResepDetail(){
+			var sisip = aResep.getRowId(aResep.getSelRow()).split("|");
+			aDet.loadURL("tindiag_utils.php?grdRsp2=true&pelayanan_id="+getIdPel+"&no_resep="+sisip[2]+"&apotek_id="+sisip[0]+"&tgl_resep="+sisip[1],"","GET");
+		}
+
+		function cekAnamSoap(){
+		var cek = document.getElementById('cmbKunjungan').value;
+			if(cek==1){
+				jQuery("#soap1").show();
+				jQuery("#anam").hide();
+			}else{
+				jQuery("#soap1").hide();
+				jQuery("#anam").show();	
+			}
+
+		}
+		
+		function cekTab(a){
+			if(a==57){
+				mTab.setTabCaption2("ANAMNESIA,DIAGNOSA,TINDAKAN,RESEP");
+				mTab.setTabDisplay("false,false,true,false,2");
+				mTab.setTabCaptionWidth("0,0,900,0");
+			}
+			else if(a==60){
+				mTab.setTabCaption2("ANAMNESIA,DIAGNOSA,TINDAKAN,RESEP");
+				mTab.setTabDisplay("false,false,true,false,2");
+				mTab.setTabCaptionWidth("0,0,900,0");
+			}
+			else{
+				if(a != 44 && a != 27 && a != 68 && a != 94 && a != 62)
+				{
+					mTab.setTabCaption2("ANAMNESIA,DIAGNOSA,TINDAKAN,RESEP");
+					mTab.setTabDisplay("true,true,true,true,0");
+					mTab.setTabCaptionWidth("225,225,225,225");
+					jQuery("#soap1").hide();
+					jQuery("#anam").show();
+				}else{
+					mTab.setTabCaption2("SOAPIER,DIAGNOSA,TINDAKAN,RESEP");
+					mTab.setTabDisplay("true,true,true,true,0");
+					mTab.setTabCaptionWidth("225,225,225,225");
+					jQuery("#soap1").show();
+					jQuery("#anam").hide();
+				}
+			}	
+		}
+		
+		function saring(){
+
+			
+			var tgl=document.getElementById('txtTgl').value;
+			var cmbKunjungan=document.getElementById('cmbKunjungan').value;
+			var no_rm=document.getElementById('txtFilter').value;
+			var url='';
+			
+			var baris = a1.getSelRow();
+			
+			if(document.getElementById('chkHistory').checked){
+				url = "RM_utils.php?grdH=true&no_rm="+no_rm+"&baris="+baris+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+			}
+			else{
+				url = "RM_utils.php?grd=true&tgl="+tgl+"&no_rm="+no_rm+"&cmbKunjungan="+cmbKunjungan+"&baris="+baris+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+			}
+			document.getElementById("cmbKunjungan").disabled = true;
+			a1.loadURL(url,"","GET");
+			//alert('Saring');
+			//loadData();
+			toltip();
+		}
+		
+		function filterNoRM(ev,par){
+			if(ev.which==13){
+				if(isNaN(par.value) == true || par.value == ''){
+					alert("Masukan Nomor Rekam Medis Dengan Benar !");
+					//return;
+				}
+				
+				var tgl=document.getElementById('txtTgl').value;
+				var no_rm=document.getElementById('txtFilter').value;
+				var cmbKunjungan=document.getElementById('cmbKunjungan').value;
+				var url = "RM_utils.php?act=view&grd=true&tgl="+tgl+"&no_rm="+no_rm+"&cmbKunjungan="+cmbKunjungan+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+				a1.loadURL(url,"","GET");
+			}
+		}
+		
+		function pilihStatusMedik(){
+			var data = a1.getRowId(a1.getSelRow()).split('|');
+			document.getElementById('kunjungan_id').value=data[0];
+			document.getElementById('norm').value=data[2];
+			//alert(data[0]);
+			if(document.getElementById('kunjungan_id').value==''){
+				alert('Pilih pasien terlebih dahulu !');
+				return false;
+			}
+			new Popup('divPilihan',null,{modal:true,position:'center',duration:1});
+			document.getElementById('divPilihan').popup.show();	
+		}
+		
+		function goFilterAndSort(grd){
+			var tgl=document.getElementById('txtTgl').value;
+			var cmbKunjungan=document.getElementById('cmbKunjungan').value;
+			var no_rm=document.getElementById('txtFilter').value;
+			var url = "RM_utils.php?grd=true&tgl="+tgl+"&no_rm="+no_rm;
+			
+			if (grd=="gridbox"){		
+				url="RM_utils.php?grd=true&tgl="+tgl+"&cmbKunjungan="+cmbKunjungan+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+				a1.loadURL(url,"","GET");
+			}
+		}
+
+		function simpan(){
+			if(confirm('Pasien dengan norm '+document.getElementById('norm').value+'. Apakah sudah benar ?')){			
+				var cmbPilihan = document.getElementById('cmbPilihan').value;
+				var tgl=document.getElementById('txtTgl').value;
+				var no_rm=document.getElementById('txtFilter').value;
+				
+				var url = "RM_utils.php?act=save&grd=true&tgl="+tgl+"&no_rm="+no_rm+"&statusKeluar="+cmbPilihan+"&kunjungan_id="+document.getElementById('kunjungan_id').value+"&status_medik="+document.getElementById('status_medik').value;
+				a1.loadURL(url,"","GET");
+			}
+		}
+		
+		function konfirmasi(key,val){
+			
+			var zxc=val.split('|');
+			if(zxc[1]!='' && zxc[1]<=a1.getMaxRow()){
+				a1.setSelRow(zxc[1]);
+			}
+			document.getElementById("cmbKunjungan").disabled = false;
+			ambilDataPasien();
+			
+			if(key=='Error'){
+				if(val=='transfer'){
+					
+				}
+			}else{
+				if(val=='view'){
+				
+				}
+			}
+			
+		}
+		
+
+function fSetICD_RM(id,baris,ksg){
+document.getElementById('cek_id').value=id;
+document.getElementById('cek_baris').value=baris;
+document.getElementById('cek_ksg').value=ksg;
+	var zxc = b.cellsGetValue(baris+1,3);
+	//batalICD_RM();
+	document.getElementById('lgn_icd').innerHTML="Kode ICD X";
+	document.getElementById('spn_icd').innerHTML="&nbsp;&nbsp;ICD X";
+	new Popup('divICD10',null,{modal:true,position:'rm',duration:1});
+	//document.getElementById('divICD10').style.top='1000px';
+	document.getElementById('divICD10').popup.show();
+	document.getElementById('txtICD10').focus();
+	document.getElementById('barisx').value=baris;
+	
+if(ksg!=1){
+	//alert(ksg);
+	var sisip=b.getRowId(baris+1).split("|");
+	
+	batalICD_RM2(sisip[14]);
+	document.getElementById('tot_asterix').value=sisip[14];
+	document.getElementById('kode_diagnosa_ICD_RM').value=sisip[9];
+	document.getElementById('kode_diagnosa_ICD_RM_cdgn').value=sisip[9];
+	document.getElementById('id_degger').value=sisip[10];
+	document.getElementById('cek_degger').value=sisip[11];
+	document.getElementById('cek_degger_cdgn').value=sisip[11];
+	document.getElementById('ms_diagnosa_ICD_RM').value=sisip[12];
+	document.getElementById('ms_diagnosa_ICD_RM_cdgn').value=sisip[12];
+	document.getElementById('txtICD10').value=sisip[9]+" - "+sisip[13];
+	document.getElementById('txtICD10_cdgn').value=sisip[9]+" - "+sisip[13];
+	
+	document.getElementById('isinyaid').value=sisip[16];
+	
+		if(sisip[14]!=''){
+				//alert(sisip[14]);
+var tbl = document.getElementById('tblJual');
+tbl.deleteRow(3);
+/*var lastRow = tbl.rows.length;
+	  for (var i=2;i<lastRow;i++){
+		var tds = tbl.rows[i].getElementsByTagName('td');
+		tds[0].innerHTML=i-1;
+	  }*/
+	  
+			if(sisip[14]!='1'){
+
+if(document.getElementById('pernahHapusAsterix').value==""){
+document.getElementById('pernahHapusAsterix').value=1;
+}
+				/*var isiin=sisip[15].split("***");
+					var ok=isiin[0].split("**");
+				addRowToTable2(ok[0]);*/
+				
+				//if(sisip[14]>1){
+				var tampung=0;
+				for (var j=0;j<sisip[14]-1;j++){
+					var isiin=sisip[15].split("***");
+					var ok=isiin[j].split("**");
+					//alert(ok[0]);
+				addRowToTable2(ok[0]);
+					//addRowToTable2();
+					tampung=j;
+				}
+				tampung=tampung+1;
+				if(sisip[15]!=""){
+				var isiin=sisip[15].split("***");
+					var ok=isiin[tampung].split("**");
+				addRowToTable3(ok[0]);
+				}
+				//}
+				/*var isiin=sisip[15].split("***");
+					var ok=isiin[tampung].split("**");
+				addRowToTable3(ok[0]);*/
+				for (var j=0;j<sisip[14];j++){
+					//alert(sisip[15]);
+					var isiin=sisip[15].split("***");
+					//alert(isiin[j]);
+					var ok=isiin[j].split("**");
+					//alert(j);//alert(ok[2]);alert(ok[0]);
+					document.forms[0].degger_id[j].value=ok[0];
+					document.forms[0].ms_diagnosa_Asterix[j].value=ok[1];
+					document.forms[0].ms_diagnosa_Asterix_cdgn[j].value=ok[1];
+					document.forms[0].kode_diagnosa_Asterix[j].value=ok[2];
+					//document.forms[0].txtAsterix[j].value=ok[2]+" - "+ok[3];
+					document.forms[0].txtKodeAsterix[j].value=ok[2];
+					document.forms[0].txtAsterix[j].value=ok[3];
+					//document.forms[0].HapusAsterix[j].value=ok[0];
+					//alert(document.forms[0].HapusAsterix[j].value);
+					//addRowToTable();		
+				}
+			}else{
+var cekHapus = document.getElementById('pernahHapusAsterix').value;				
+		/*if(cekHapus==""){
+				var isiin=sisip[15].split("***");
+				//alert(isiin[j]);
+				var ok=isiin[0].split("**");
+				addRowToTable2(ok[0]);
+				
+				document.getElementById('degger_id').value=ok[0];
+				document.getElementById('ms_diagnosa_Asterix').value=ok[1];
+				document.getElementById('ms_diagnosa_Asterix_cdgn').value=ok[1];
+				document.getElementById('kode_diagnosa_Asterix').value=ok[2];
+				//document.getElementById('txtAsterix').value=ok[2]+" - "+ok[3];
+				document.getElementById('txtKodeAsterix').value=ok[2];
+				document.getElementById('txtAsterix').value=ok[3];
+				//document.getElementById('HapusAsterix').value=ok[0];
+				
+		}else{*/
+				var isiin=sisip[15].split("***");
+				//alert(isiin[j]);
+				var ok=isiin[0].split("**");
+				addRowToTable2(ok[0]);
+		//}	
+				document.forms['form_icd_rm'].elements['degger_id'].value=ok[0];
+				document.forms['form_icd_rm'].elements['ms_diagnosa_Asterix'].value=ok[1];
+				document.forms['form_icd_rm'].elements['ms_diagnosa_Asterix_cdgn'].value=ok[1];
+				document.forms['form_icd_rm'].elements['kode_diagnosa_Asterix'].value=ok[2];
+				//document.forms[0].txtAsterix[j].value=ok[2]+" - "+ok[3];
+				document.forms['form_icd_rm'].elements['txtKodeAsterix'].value=ok[2];
+				document.forms['form_icd_rm'].elements['txtAsterix'].value=ok[3];
+				//document.getElementById('HapusAsterix').value=ok[0];
+		//}
+		}	
+		}
+	
+	if(sisip[11]==1){
+		document.getElementById('AsterixShow').style.display='block';
+	}else{
+		document.getElementById('AsterixShow').style.display='none';
+	}
+}else{
+	batalICD_RM();
+	document.getElementById('AsterixShow').style.display='none';
+}
+	
+	if(document.getElementById('xxxicdrm_'+id).value=='1'){
+		document.getElementById('trCatatan').style.display='table-row';
+		//jQuery(".txtCatatanAsterix2").prop('disabled', false);
+		//document.getElementById('txtCatatanAsterix').disabled = false;
+	}
+	else{
+		document.getElementById('trCatatan').style.display='none';
+		//jQuery(".txtCatatanAsterix2").prop('disabled', true);
+		//document.getElementById('txtCatatanAsterix').disabled = true;
+	}
+	jQuery(".txtKodeAsterix2").prop('disabled', true);
+	document.getElementById('id_diagnosa_ICD_RM').value=id;
+	
+}
+
+function updateICD_RM(){
+	var isinyaid=document.getElementById('isinyaid').value;
+	var id_degger=document.getElementById('id_degger').value;
+	var cek_degger=document.getElementById('cek_degger').value;
+	var id_diagnosa_ICD_RM=document.getElementById('id_diagnosa_ICD_RM').value;
+	var ms_diagnosa_ICD_RM=document.getElementById('ms_diagnosa_ICD_RM').value;
+	var ms_diagnosa_ICD_RM_cdgn=document.getElementById('ms_diagnosa_ICD_RM_cdgn').value;
+	var txtCatatan=document.getElementById('txtCatatan').value;
+	var url;
+	
+//degger
+var cdata='';
+if(cek_degger=='1'){// awal cek degger
+var ctemp;
+var sx1,sx2;
+	if (document.forms[0].ms_diagnosa_Asterix.length){
+		for (var i=0;i<document.forms[0].ms_diagnosa_Asterix.length;i++){
+			ctemp=document.forms[0].ms_diagnosa_Asterix[i].value.split('|');
+			/*if (document.forms[0].racik[i].checked==true){
+				sx4="1";
+			}else{
+				sx4="0";
+			}*/
+			sx1=document.forms[0].txtCatatanAsterix[i].value;
+			sx2=document.forms[0].degger_id[i].value;
+			sx3=document.forms[0].ms_diagnosa_Asterix_cdgn[i].value;
+			sx4="";
+			while (sx1.indexOf(".")>-1){
+				sx1=sx1.replace(".","");
+			}
+			while (sx2.indexOf(".")>-1){
+				sx2=sx2.replace(".","");
+			}
+			while (sx3.indexOf(".")>-1){
+				sx3=sx3.replace(".","");
+			}
+			
+			cdata +=ctemp[0]+'|'+sx1+'|'+sx2+'|'+sx3+'|'+sx4+'**';
+		}
+		if (cdata!=''){
+			cdata=cdata.substr(0,cdata.length-2);
+		}else{
+			document.forms[0].txtAsterix[i].focus();
+			alert('Isikan Asterix Terlebih Dahulu !');
+			return false;
+		}
+	}else{
+		if (document.forms[0].ms_diagnosa_Asterix.value==""){
+			document.forms[0].txtAsterix.focus();
+			alert('Isikan Asterix Terlebih Dahulu !');
+			return false;
+		}
+		ctemp=document.forms[0].ms_diagnosa_Asterix.value.split('|');
+		/*if (document.forms[0].racik.checked==true){
+			sx4="1";
+		}else{
+			sx4="0";
+		}*/
+		sx1=document.forms[0].txtCatatanAsterix.value;
+		sx2=document.forms[0].degger_id.value;
+		sx3=document.forms[0].ms_diagnosa_Asterix_cdgn.value;
+		sx4="";
+		while (sx1.indexOf(".")>-1){
+			sx1=sx1.replace(".","");
+		}
+		while (sx2.indexOf(".")>-1){
+			sx2=sx2.replace(".","");
+		}
+		while (sx3.indexOf(".")>-1){
+			sx3=sx3.replace(".","");
+		}
+		
+		cdata=ctemp[0]+'|'+sx1+'|'+sx2+'|'+sx3+'|'+sx4;
+	}
+}//akhir degger	
+	//alert(ms_diagnosa_ICD_RM);
+	//alert(ms_diagnosa_ICD_RM_cdgn);
+	if (document.getElementById('lgn_icd').innerHTML=="Kode ICD X"){
+		url = "ICD_RM_util.php?act=updateicdxrm&id_diagnosa_ICD_RM="+id_diagnosa_ICD_RM+"&ms_diagnosa_ICD_RM="+ms_diagnosa_ICD_RM+"&ms_diagnosa_ICD_RM_cdgn="+ms_diagnosa_ICD_RM_cdgn+"&txtCatatan="+txtCatatan+"&fdata="+cdata+"&cek_degger="+cek_degger+"&id_degger="+id_degger+"&isinyaid="+isinyaid+"&user_act=<?php echo $userId; ?>";
+	}else{
+		url = "ICD_RM_util.php?act=updateicd9cm&id_diagnosa_ICD_RM="+id_diagnosa_ICD_RM+"&ms_diagnosa_ICD_RM="+ms_diagnosa_ICD_RM+"&ms_diagnosa_ICD_RM_cdgn="+ms_diagnosa_ICD_RM_cdgn+"&txtCatatan="+txtCatatan+"&fdata="+cdata+"&cek_degger="+cek_degger+"&id_degger="+id_degger+"&isinyaid="+isinyaid+"&user_act=<?php echo $userId; ?>";
+	}
+	//alert(url);
+	Request(url,'spn_ICD_RM','','GET',showICD_RM,'noload');
+	b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+}
+	
+function showICD_RM(){
+	var zxc;
+	if(document.getElementById('spn_ICD_RM').innerHTML=='ok'){
+		if (document.getElementById('lgn_icd').innerHTML=="Kode ICD X"){
+			zxc = '<div class="overout" onmouseover="degger('+document.getElementById('id_diagnosa_ICD_RM').value+')"><span style="color:#0000FF" title="Klik Untuk Mengubah ICD-10" onclick="fSetICD_RM('+document.getElementById('cek_id').value+','+document.getElementById('cek_baris').value+','+document.getElementById('cek_ksg').value+');">'+document.getElementById('kode_diagnosa_ICD_RM').value+'</span></div>';
+			b.cellsSetValue(b.getSelRow(),4,zxc);
+			//document.getElementById('xxxicdrm_'+document.getElementById('id_diagnosa_ICD_RM').value).value='1';
+			
+		}else{
+			zxc = '<div class="overout" onmouseover="degger('+document.getElementById('id_diagnosa_ICD_RM').value+')"><span style="color:#0000FF" title="Klik Untuk Mengubah ICD-9CM" onclick="fSetICD_9CM('+document.getElementById('id_diagnosa_ICD_RM').value+');">'+document.getElementById('kode_diagnosa_ICD_RM').value+'</span></div>';
+			f.cellsSetValue(f.getSelRow(),4,zxc);
+			//document.getElementById('xxxicd9cm_'+document.getElementById('id_diagnosa_ICD_RM').value).value='1';
+		}
+		alert('simpan berhasil.');
+		document.getElementById('divICD10').popup.hide();
+	}
+	else if(document.getElementById('spn_ICD_RM').innerHTML=='error'){
+		alert('simpan gagal.');
+	}
+	else{
+		alert(document.getElementById('spn_ICD_RM').innerHTML);
+	}
+	batal('btnBatalDiag');
+}
+
+function suggest_ICD_RM(e,par){
+	var keywords=par.value;//alert(keywords);
+	if(e == 'cariDiag'){
+		if(document.getElementById('divICD_RM').style.display == 'block'){
+			document.getElementById('divICD_RM').style.display='none';
+		}
+		else{
+			//alert(document.getElementById('lgn_icd').innerHTML);
+			if (document.getElementById('lgn_icd').innerHTML=="Kode ICD X"){
+				//alert('icd-x');
+				Request('diagnosalist_ICD_RM.php?findAll=true&aKeyword='+keywords+'&unitId='+getIdUnit+'&PK=0' , 'divICD_RM', '', 'GET' );
+			}else{
+				//alert('icd-9cm');
+				Request('diagnosalist_ICD_RM.php?findAll=true&aKeyword='+keywords+'&unitId='+getIdUnit+'&PK=0&is_icd9cm=1' , 'divICD_RM', '', 'GET' );
+			}
+			if (document.getElementById('divICD_RM').style.display=='none') fSetPosisi(document.getElementById('divICD_RM'),par);
+			document.getElementById('divICD_RM').style.display='block';
+		}
+	}
+	else{
+		if(keywords==""){
+			document.getElementById('divICD_RM').style.display='none';
+		}else{
+			var key;
+			if(window.event) {
+				key = window.event.keyCode;
+			}
+			else if(e.which) {
+				key = e.which;
+			}
+			//alert(key);
+			if (key==38 || key==40){
+				var tblRow=document.getElementById('tblDiagnosa').rows.length;
+				if (tblRow>0){
+					//alert(RowIdx);
+					if (key==38 && RowIdx>0){
+						RowIdx=RowIdx-1;
+						document.getElementById('lstDiag'+(RowIdx+1)).className='itemtableReq';
+						if (RowIdx>0) document.getElementById('lstDiag'+RowIdx).className='itemtableMOverReq';
+					}else if (key == 40 && RowIdx < tblRow){
+						RowIdx=RowIdx+1;
+						if (RowIdx>1) document.getElementById('lstDiag'+(RowIdx-1)).className='itemtableReq';
+						document.getElementById('lstDiag'+RowIdx).className='itemtableMOverReq';
+					}
+				}
+			}
+			else if (key==13){
+				if (RowIdx>0){
+					if (fKeyEnt==false){
+						fSetICDX_RM(document.getElementById('lstDiag'+RowIdx).lang);
+					}else{
+						fKeyEnt=false;
+					}
+				}
+			}
+			else if (key!=27 && key!=37 && key!=39){
+				RowIdx=0;
+				fKeyEnt=false;
+				//alert(document.getElementById('lgn_icd').innerHTML);
+				if (document.getElementById('lgn_icd').innerHTML=="Kode ICD X"){
+					//alert('icd-x');
+					Request('diagnosalist_ICD_RM.php?aKeyword='+keywords+'&unitId='+getIdUnit+'&PK=0', 'divICD_RM', '', 'GET' );
+				}else{
+					//alert('icd-9cm');
+					Request('diagnosalist_ICD_RM.php?aKeyword='+keywords+'&unitId='+getIdUnit+'&PK=0&is_icd9cm=1', 'divICD_RM', '', 'GET' );
+				}
+				if (document.getElementById('divICD_RM').style.display=='none') fSetPosisi(document.getElementById('divICD_RM'),par);
+				document.getElementById('divICD_RM').style.display='block';
+			}
+		}
+	}
+}
+
+var RowIdx;
+var fKeyEnt;
+//var keyCari;
+function suggest_Asterix(e,par){
+	var keywords=par.value;//alert(keywords);
+	
+  var tbl = document.getElementById('tblJual');
+  var jmlRow = tbl.rows.length;
+  var i;
+  if (jmlRow > 2){
+  	i=par.parentNode.parentNode.rowIndex-3;
+  }else{
+  	i=0;	
+  }
+	//alert(jmlRow+'-'+i);
+	
+	if(keywords==""){
+		document.getElementById('divICD_RM_Asterix').style.display='none';
+	}else{
+		var key;
+		if(window.event) {
+		  key = window.event.keyCode; 
+		}
+		else if(e.which) {
+		  key = e.which;
+		}
+		//alert(key);
+		if (key==38 || key==40){
+			var tblRow=document.getElementById('tblDiagnosaAsterix').rows.length;
+			if (tblRow>0){
+				//alert(RowIdx);
+				if (key==38 && RowIdx>0){
+					RowIdx=RowIdx-1;
+					document.getElementById(RowIdx+1).className='itemtableReq';
+					if (RowIdx>0) document.getElementById(RowIdx).className='itemtableMOverReq';
+				}else if (key==40 && RowIdx<tblRow){
+					//alert('asd');
+					RowIdx=RowIdx+1;
+					if (RowIdx>1) document.getElementById(RowIdx-1).className='itemtableReq';
+					document.getElementById(RowIdx).className='itemtableMOverReq';
+				}
+			}
+		}else if (key==13){
+			if (RowIdx>0){
+				if (fKeyEnt==false){
+					ValNamaBag(document.getElementById(RowIdx).lang);
+				}else{
+					fKeyEnt=false;
+				}
+			}
+		}else if (key!=27 && key!=37 && key!=39){
+			//alert();
+			RowIdx=0;
+			fKeyEnt=false;
+			//jQuery("#txtKodeAsterix").prop('disabled', false);
+			Request('diagnosalist_ICD_RM_Asterix.php?aKeyword='+keywords+'&unitId='+getIdUnit+'&PK=0&no='+i, 'divICD_RM_Asterix', '', 'GET' );		
+			if (document.getElementById('divICD_RM_Asterix').style.display=='none') {	
+				fSetPosisi_asterix(document.getElementById('divICD_RM_Asterix'),par);
+				//document.getElementById('divICD_RM_Asterix').style.top='600px';
+			}
+			document.getElementById('divICD_RM_Asterix').style.display='block';
+		}
+	}
+}
+
+function fSetICDX_RM(par){
+	var cdata=par.split("*|*");
+	if(document.getElementById("cek_degger").value == 1 && document.getElementById("ms_diagnosa_ICD_RM_cdgn").value!=cdata[0] && document.getElementById("tot_asterix").value != 0){
+	//if(document.getElementById("ms_diagnosa_ICD_RM_cdgn").value!=cdata[0]){
+	//if(document.getElementById("tot_asterix").value != 0){
+		if (confirm('Apakah Anda Yakin Ingin Mengubah Data ?')){
+			//alert(document.getElementById("id_degger").value);
+				var id_degger = document.getElementById("id_degger").value;
+				jQuery("#loadHapusAsterix").load("updateAsterix.php?cp=true&id_degger="+id_degger+"&user_act=<?php echo $userId; ?>");
+				batalICD_RM3();
+	
+				document.getElementById("ms_diagnosa_ICD_RM").value=cdata[0];
+				//document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+				document.getElementById("kode_diagnosa_ICD_RM").value=cdata[2];
+				document.getElementById("txtICD10").value=cdata[2]+" - "+cdata[1];
+				document.getElementById('divICD_RM').style.display='none';
+				document.getElementById("cek_degger").value=cdata[3];
+				//document.getElementById('AsterixShow').style.display='block';
+				//alert(cdata[3]);
+				if(cdata[3]==1){
+					document.getElementById('AsterixShow').style.display='block';
+					//alert();
+				}else{
+					document.getElementById('AsterixShow').style.display='none';
+				}
+		}else{
+				document.getElementById("ms_diagnosa_ICD_RM").value=document.getElementById("ms_diagnosa_ICD_RM_cdgn").value;
+				//document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+				document.getElementById("kode_diagnosa_ICD_RM").value=document.getElementById("kode_diagnosa_ICD_RM_cdgn").value;
+				document.getElementById("txtICD10").value=document.getElementById("txtICD10_cdgn").value;
+				document.getElementById('divICD_RM').style.display='none';
+				document.getElementById("cek_degger").value=document.getElementById("cek_degger").value;
+		}
+	//}
+	//}
+	}else if(document.getElementById("cek_degger").value == 1 && document.getElementById("ms_diagnosa_ICD_RM_cdgn").value!=cdata[0]){
+		if (confirm('Apakah Anda Yakin Ingin Mengubah Data ?')){
+				batalICD_RM3();
+	
+				document.getElementById("ms_diagnosa_ICD_RM").value=cdata[0];
+				//document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+				document.getElementById("kode_diagnosa_ICD_RM").value=cdata[2];
+				document.getElementById("txtICD10").value=cdata[2]+" - "+cdata[1];
+				document.getElementById('divICD_RM').style.display='none';
+				document.getElementById("cek_degger").value=cdata[3];
+				//document.getElementById('AsterixShow').style.display='block';
+				//alert(cdata[3]);
+				if(cdata[3]==1){
+					document.getElementById('AsterixShow').style.display='block';
+					//alert();
+				}else{
+					document.getElementById('AsterixShow').style.display='none';
+				}
+		}else{
+				document.getElementById("ms_diagnosa_ICD_RM").value=document.getElementById("ms_diagnosa_ICD_RM_cdgn").value;
+				//document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+				document.getElementById("kode_diagnosa_ICD_RM").value=document.getElementById("kode_diagnosa_ICD_RM_cdgn").value;
+				document.getElementById("txtICD10").value=document.getElementById("txtICD10_cdgn").value;
+				document.getElementById('divICD_RM').style.display='none';
+				document.getElementById("cek_degger").value=document.getElementById("cek_degger").value;
+		}
+	}else{
+	
+		document.getElementById("ms_diagnosa_ICD_RM").value=cdata[0];
+		document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+		//document.getElementById("ms_diagnosa_ICD_RM_cdgn").value=cdata[0];
+		document.getElementById("kode_diagnosa_ICD_RM").value=cdata[2];
+		document.getElementById("kode_diagnosa_ICD_RM_cdgn").value=cdata[2];
+		document.getElementById("txtICD10").value=cdata[2]+" - "+cdata[1];
+		document.getElementById("txtICD10_cdgn").value=cdata[2]+" - "+cdata[1];
+		document.getElementById('divICD_RM').style.display='none';
+		document.getElementById("cek_degger").value=cdata[3];
+		document.getElementById("cek_degger_cdgn").value=cdata[3];
+		//document.getElementById('AsterixShow').style.display='block';
+		//alert(cdata[3]);
+		if(cdata[3]==1){
+			document.getElementById('AsterixShow').style.display='block';
+			//alert();
+		}else{
+			document.getElementById('AsterixShow').style.display='none';
+		}
+	}
+}
+
+var kedua=0;
+function fSetICDX_RM_Asterix(par){
+	var cdata=par.split("*|*");
+	/*document.getElementById("ms_diagnosa_Asterix").value=cdata[0];
+	document.getElementById("kode_diagnosa_Asterix").value=cdata[2];
+	document.getElementById("txtAsterix").value=cdata[2]+" - "+cdata[1];*/
+	//alert(cdata[3]);
+if(document.form_icd_rm.kode_diagnosa_Asterix.length==undefined){
+		kedua=0;
+	}
+	if ((cdata[0]*1)==0){
+		if(kedua==1){
+			//document.forms[0].idP[(cdata[0]*1)].value=cdata[1];
+			document.form_icd_rm.ms_diagnosa_Asterix[(cdata[0])].value=cdata[1];
+			document.form_icd_rm.kode_diagnosa_Asterix[(cdata[0])].value=cdata[3];
+			//document.form_icd_rm.txtAsterix[(cdata[0])].value=cdata[3]+" - "+cdata[2];
+			document.form_icd_rm.txtKodeAsterix[(cdata[0])].value=cdata[3];
+			document.form_icd_rm.txtAsterix[(cdata[0])].value=cdata[2];
+			document.form_icd_rm.txtCatatanAsterix[(cdata[0])].focus();
+		}
+		if(kedua==0){
+			document.form_icd_rm.ms_diagnosa_Asterix.value=cdata[1];
+			document.form_icd_rm.kode_diagnosa_Asterix.value=cdata[3];
+			//document.form_icd_rm.txtAsterix.value=cdata[3]+" - "+cdata[2];
+			document.form_icd_rm.txtKodeAsterix.value=cdata[3];
+			document.form_icd_rm.txtAsterix.value=cdata[2];
+			//document.getElementById('txtCatatanAsterix').focus();
+			
+			kedua=1;
+		}
+	}else{
+		document.form_icd_rm.ms_diagnosa_Asterix[(cdata[0])].value=cdata[1];
+		document.form_icd_rm.kode_diagnosa_Asterix[(cdata[0])].value=cdata[3];
+		//document.form_icd_rm.txtAsterix[(cdata[0])].value=cdata[3]+" - "+cdata[2];
+		document.form_icd_rm.txtKodeAsterix[(cdata[0])].value=cdata[3];
+		document.form_icd_rm.txtAsterix[(cdata[0])].value=cdata[2];
+		document.form_icd_rm.txtCatatanAsterix[(cdata[0])].focus();
+	}
+
+	document.getElementById('divICD_RM_Asterix').style.display='none';
+	jQuery(".txtKodeAsterix2").prop('disabled', true);
+}
+
+function batalICD_RM(){
+//alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	if (document.form_icd_rm.ms_diagnosa_Asterix.length > 1){
+		for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}
+	}else{
+		/*for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}*/
+	  var tbl = document.getElementById('tblJual');
+	  var jmlRow = tbl.rows.length;
+	  //alert(jmlRow);
+	  /*if(jmlRow==4){
+			addRowToTable5();
+	  }*/
+	 //alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	 /*if(document.form_icd_rm.ms_diagnosa_Asterix.length == 2){
+		var tbl=document.getElementById('tblJual');
+		tbl.deleteRow(4);
+	 }*/
+	}
+	
+	document.getElementById('barisx').value='';
+	document.getElementById('id_degger').value='';
+	document.getElementById('cek_degger').value='';
+	document.getElementById('id_diagnosa_ICD_RM').value='';
+	document.getElementById('ms_diagnosa_ICD_RM').value='';
+	document.getElementById('ms_diagnosa_ICD_RM_cdgn').value='';
+	document.getElementById('kode_diagnosa_ICD_RM').value='';
+	document.getElementById('txtICD10').value='';
+	document.getElementById('txtCatatan').value='';
+	
+	/*jQuery(".degger_id2").val("");
+	jQuery(".ms_diagnosa_Asterix2").val("");
+	jQuery(".kode_diagnosa_Asterix2").val("");
+	jQuery(".txtAsterix2").val("");
+	jQuery(".txtCatatanAsterix2").val("");*/
+	
+	document.form_icd_rm.degger_id.value = '';
+	document.form_icd_rm.ms_diagnosa_Asterix.value = '';
+	document.form_icd_rm.kode_diagnosa_Asterix.value = '';
+	document.form_icd_rm.txtKodeAsterix.value = '';
+	document.form_icd_rm.txtAsterix.value = '';
+	document.form_icd_rm.txtCatatanAsterix.value = '';
+	
+	//document.form_icd_rm.racik.checked = false;
+	document.form_icd_rm.txtKodeAsterix.disabled = false;
+	
+	document.getElementById('divICD_RM').style.display='none';
+	document.getElementById('AsterixShow').style.display='none';
+	b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+}
+
+function batalICD_RM2(par){
+//alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	if (document.form_icd_rm.ms_diagnosa_Asterix.length > 1){
+		for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}
+	}else{
+		/*for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}*/
+	  var tbl = document.getElementById('tblJual');
+	  var jmlRow = tbl.rows.length;
+	  //alert(jmlRow);
+	  if(par==0){
+			addRowToTable5();
+	  }
+	 //alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	 /*if(document.form_icd_rm.ms_diagnosa_Asterix.length == 2){
+		var tbl=document.getElementById('tblJual');
+		tbl.deleteRow(4);
+	 }*/
+	}
+	
+	document.getElementById('barisx').value='';
+	document.getElementById('id_degger').value='';
+	document.getElementById('cek_degger').value='';
+	document.getElementById('id_diagnosa_ICD_RM').value='';
+	document.getElementById('ms_diagnosa_ICD_RM').value='';
+	document.getElementById('ms_diagnosa_ICD_RM_cdgn').value='';
+	document.getElementById('kode_diagnosa_ICD_RM').value='';
+	document.getElementById('txtICD10').value='';
+	document.getElementById('txtCatatan').value='';
+	document.getElementById('tot_asterix').value='';
+	
+	/*jQuery(".degger_id2").val("");
+	jQuery(".ms_diagnosa_Asterix2").val("");
+	jQuery(".kode_diagnosa_Asterix2").val("");
+	jQuery(".txtAsterix2").val("");
+	jQuery(".txtCatatanAsterix2").val("");*/
+	
+	document.form_icd_rm.degger_id.value = '';
+	document.form_icd_rm.ms_diagnosa_Asterix.value = '';
+	document.form_icd_rm.kode_diagnosa_Asterix.value = '';
+	document.form_icd_rm.txtKodeAsterix.value = '';
+	document.form_icd_rm.txtAsterix.value = '';
+	document.form_icd_rm.txtCatatanAsterix.value = '';
+	
+	//document.form_icd_rm.racik.checked = false;
+	document.form_icd_rm.txtKodeAsterix.disabled = false;
+	
+	document.getElementById('divICD_RM').style.display='none';
+	document.getElementById('AsterixShow').style.display='none';
+	b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+}
+
+function batalICD_RM3(){
+//alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	if (document.form_icd_rm.ms_diagnosa_Asterix.length > 1){
+		for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}
+	}else{
+		/*for(var i=document.form_icd_rm.ms_diagnosa_Asterix.length+2;i>(1+2);i--){			
+			var del=i;
+			var tbl=document.getElementById('tblJual');
+			tbl.deleteRow(del);
+		}*/
+	  var tbl = document.getElementById('tblJual');
+	  var jmlRow = tbl.rows.length;
+	  //alert(jmlRow);
+	  /*if(jmlRow==4){
+			addRowToTable5();
+	  }*/
+	 //alert(document.form_icd_rm.ms_diagnosa_Asterix.length);
+	 /*if(document.form_icd_rm.ms_diagnosa_Asterix.length == 2){
+		var tbl=document.getElementById('tblJual');
+		tbl.deleteRow(4);
+	 }*/
+	}
+	
+	//document.getElementById('barisx').value='';
+	//document.getElementById('id_degger').value='';
+	document.getElementById('cek_degger').value='';
+	//document.getElementById('id_diagnosa_ICD_RM').value='';
+	document.getElementById('ms_diagnosa_ICD_RM').value='';
+	//document.getElementById('ms_diagnosa_ICD_RM_cdgn').value='';
+	document.getElementById('kode_diagnosa_ICD_RM').value='';
+	document.getElementById('txtICD10').value='';
+	document.getElementById('txtCatatan').value='';
+	document.getElementById('tot_asterix').value='';
+	
+	/*jQuery(".degger_id2").val("");
+	jQuery(".ms_diagnosa_Asterix2").val("");
+	jQuery(".kode_diagnosa_Asterix2").val("");
+	jQuery(".txtAsterix2").val("");
+	jQuery(".txtCatatanAsterix2").val("");*/
+	
+	document.form_icd_rm.degger_id.value = '';
+	document.form_icd_rm.ms_diagnosa_Asterix.value = '';
+	document.form_icd_rm.ms_diagnosa_Asterix_cdgn.value = '';
+	document.form_icd_rm.kode_diagnosa_Asterix.value = '';
+	document.form_icd_rm.txtKodeAsterix.value = '';
+	document.form_icd_rm.txtAsterix.value = '';
+	document.form_icd_rm.txtCatatanAsterix.value = '';
+	
+	//document.form_icd_rm.racik.checked = false;
+	document.form_icd_rm.txtKodeAsterix.disabled = false;
+	
+	document.getElementById('divICD_RM').style.display='none';
+	document.getElementById('AsterixShow').style.display='none';
+	b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+}
+
+function fSetKasusICD_RM(id,ksg){
+if(ksg==1){
+	alert("Anda harus koding terlebih dahulu!");	
+}else{
+	document.getElementById('id_diagnosa_ICD_RM').value=id;
+	new Popup('divKasusICD10',null,{modal:true,position:'rm',duration:1});
+	document.getElementById('divKasusICD10').popup.show();
+}
+}
+
+function showResumeMedis(){
+	//( vUrl , vTarget, vForm, vMethod,evl,noload)
+	Request("RM_utils.php?act=getresumemedis&kunjungan_id="+document.getElementById('kunjungan_id').value,"cmbResumeMedis","","GET");
+	new Popup('divResumeMedis',null,{modal:true,position:'rm',duration:1});
+	document.getElementById('divResumeMedis').popup.show();
+}
+
+function updateKasusICD_RM(){
+	var id_diagnosa_ICD_RM=document.getElementById('id_diagnosa_ICD_RM').value;
+	var ms_diagnosa_ICD_RM=document.getElementById('ms_diagnosa_ICD_RM').value;
+	var url;
+	
+	url = "ICD_RM_util.php?act=updatekasusicdxrm&kasus_baru="+document.getElementById('cmbKasusDiag').value+"&ms_diagnosa_ICD_RM="+ms_diagnosa_ICD_RM+"&id_diagnosa_ICD_RM="+id_diagnosa_ICD_RM+"&user_act=<?php echo $userId; ?>";
+	
+	Request(url,'spn_Kasus_ICD_RM','','GET',showKasusICD_RM,'noload');
+	b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+}
+
+function showKasusICD_RM(){
+	if(document.getElementById('spn_Kasus_ICD_RM').innerHTML=='ok'){
+		var labelKasusICD=document.getElementById('cmbKasusDiag').options[document.getElementById('cmbKasusDiag').options.selectedIndex].label;
+		zxc = '<span style="color:#0000FF" title="Klik Untuk Mengubah Kasus ICD-10" onclick="fSetKasusICD_RM('+document.getElementById('id_diagnosa_ICD_RM').value+');">'+labelKasusICD+'</span>';
+		b.cellsSetValue(b.getSelRow(),6,zxc);
+		alert('simpan berhasil.');
+		document.getElementById('divKasusICD10').popup.hide();
+	}
+	else{
+		alert('simpan gagal.');
+	}
+	batal('btnBatalDiag');	
+}
+
+function batal(id){		
+	if (id != undefined && id != ""){
+		if (document.getElementById(id)) document.getElementById(id).disabled = false;
+	}
+	switch(id){
+		case 'btnBatalDiag':
+			var p="diagnosa_id*-**|*txtDiag*-**|*btnSimpanDiag*-*Tambah*|*btnSimpanDiag*-*false*|*btnHapusDiag*-*true";
+			fSetValue(window,p);
+			document.getElementById('chkPenyebabKecelakaan').checked='';
+			document.getElementById('trPenyebab').style.display='none';
+			document.getElementById('chkAkhir').checked='';
+			break;
+	}
+}
+
+function fSetICD_9CM(id){
+	batalICD_RM();
+	document.getElementById('lgn_icd').innerHTML="Kode ICD-9CM";
+	document.getElementById('spn_icd').innerHTML="ICD-9CM";
+	document.getElementById('id_diagnosa_ICD_RM').value=id;
+	new Popup('divICD10',null,{modal:true,position:'rm',duration:1});
+	document.getElementById('divICD10').popup.show();
+	document.getElementById('txtICD10').focus();
+	
+	if(document.getElementById('xxxicd9cm_'+id).value=='1'){
+		document.getElementById('trCatatan').style.display='table-row';
+	}
+	else{
+		document.getElementById('trCatatan').style.display='none';
+	}
+}
+
+function cetak_resume2()
+{
+	var id_anamnesia1 = anam1.getRowId(anam1.getSelRow()).split("|");
+	window.open('../unit_pelayanan/resumemedis.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien+'&id_anamnesa='+id_anamnesia1[0]+'&userId=<?php echo $userId; ?>&rm=1','_blank');
+}
+
+function viewHistory(c){
+	var tgl=document.getElementById('txtTgl').value;
+	var no_rm = document.getElementById('txtFilter').value;
+	var cmbKunjungan = document.getElementById('cmbKunjungan').value;
+	var url = '';
+	
+	if(c.checked){
+		url = "RM_utils.php?grdH=true&no_rm="+no_rm+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+	}
+	else{
+		url = "RM_utils.php?act=view&grd=true&tgl="+tgl+"&no_rm="+no_rm+"&cmbKunjungan="+cmbKunjungan+"&filter="+a1.getFilter()+"&sorting="+a1.getSorting()+"&page="+a1.getPage();
+	}
+	a1.loadURL(url,"","GET");
+	toltip();
+}
+
+function load_popup_iframe(leg,url){
+	//alert(leg+' '+url);
+	window.scroll(0,0);
+	jQuery('#legend_popup_iframe').html(leg);
+	jQuery('#popup_iframe').attr('src',url+"&idKunj="+getIdKunj+"&idPel="+getIdPel+"&idUsr=<?=$userId?>");
+	new Popup('div_popup_iframe',null,{modal:true,position:'top',duration:1});
+	document.getElementById('div_popup_iframe').popup.show();
+	//alert(document.getElementById('popup_iframe').src);
+}
+
+function resizeIframe(obj) {
+	jQuery("#popup_iframe").height(450);
+	var a = obj.contentWindow.document.body.scrollHeight
+	obj.style.height = a + 'px';
+	if(a<heightOvr){
+		document.getElementById('popup_overlay').style.height=(heightOvr+100)+'px';
+	}else if(a != 0){
+		document.getElementById('popup_overlay').style.height=(a+100)+'px';
+	}
+}
+	
+var heightOvr=0;	
+function loadHeight(){
+	heightOvr=document.body.scrollHeight;
+}
+
+function alertsize(pixels){
+    pixels+=10;
+	jQuery(".framex").animate({height:pixels+"px"},'slow');
+	if(pixels<heightOvr){
+		window.scrollTo(0,0);
+	}else{
+		document.getElementById('popup_overlay').style.height=(pixels+100)+'px';		
+	}
+}
+
+function resizeAwal() {
+	jQuery("#div_popup_iframe").height();
+	jQuery("#popup_iframe").height(430);
+}
+
+function rekamMedis(){
+	window.open('../unit_pelayanan/rekamMedis.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'rekam_medis');
+}
+
+function resumeMedis(x){
+	if(x=='3'){
+		window.open('../unit_pelayanan/resumemedis_inap.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'_blank');
+	}
+	else if(x=='2'){
+		window.open('../unit_pelayanan/resumemedis_igd.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'_blank');
+	}
+	else if(x=='1'){
+		window.open('../unit_pelayanan/resumemedis.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'_blank');
+	}
+	else{
+		
+	}
+	
+	if(getIdKunj=="")
+	{
+		alert("pilih kunjungan pasien terlebih dahulu");
+	}else{
+		jQuery.ajax({
+			type: "POST",
+			url: "cetak_util.php",
+			data: { idKunj: getIdKunj, idPel: getIdPel, status: "resCetak", idUser: "<?php echo $userId; ?>" }
+		});
+	}
+	saring();
+	
+	/*
+	var data = a1.getRowId(a1.getSelRow()).split('|');
+	var unit_id = data[10];
+	var inap = data[11];
+	
+	//alert(inap+' '+unit_id);
+	
+	if(inap=='1'){
+		window.open('../unit_pelayanan/resumemedis_inap.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'_blank');		
+	}
+	else{
+		if(unit_id=='45'){
+			window.open('../unit_pelayanan/resumemedis_inap.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien+'&jenislayanan=44','_blank');
+		}
+		else{
+			window.open('../unit_pelayanan/resumemedis.php?idKunj='+getIdKunj+'&idPel='+getIdPel+'&idPasien='+getIdPasien,'_blank');
+		}
+	}
+	*/
+}
+
+function tampilPerlakuan(){
+	window.scroll(0,0);
+	new Popup('pKhusus',null,{modal:true,position:'center',duration:1});
+	document.getElementById('pKhusus').popup.show();
+}
+
+function simpanPerlakuan(){
+	var kon1;
+	
+	if(document.getElementById('psnKomplain').checked){
+		kon1 = "2";
+	}else{
+		kon1 = "0";
+	}
+	if(document.getElementById('psnPemilik').checked){
+		kon1 += ",3";
+	}else{
+		kon1 += ",0";
+	}
+	if(document.getElementById('psnPejabat').checked){
+		kon1 += ",10";
+	}else{
+		kon1 += ",0";
+	}
+	jQuery("#loadGambar1").load("../unit_pelayanan/update_in_out.php?getIdPasien="+getIdPasien+"&kh=true&kon1="+kon1,'',function(){
+		alert("update status berhasil");
+		jQuery("#loadGambar").load("../unit_pelayanan/gambar1.php?id_pasien="+getIdPasien);
+	});
+}
+
+function cekKunjungan(z){
+	//clearInterval('loadData()');clearInterval('loadData2()');
+	//httpRequest.abort();
+	if(z=='0'){
+		jQuery("#trTgl").show();
+			}
+	else{
+		jQuery("#trTgl").hide();
+	}
+}
+cekKunjungan(document.getElementById('cmbKunjungan').value);
+
+setInterval('loadData()',20000);
+setInterval('loadData2()',20000);
+//setInterval('saring()',60000);
+setInterval('saring()',180000);
+
+function ReportRm(no)
+	{
+		var noRM = document.getElementById("txtNo").value;
+		var nama = document.getElementById("txtNama").value;
+		var umur = document.getElementById("txtUmur").value;
+		var sex = document.getElementById("txtSex").value;
+		var alamat = document.getElementById("txtAlmt").value;
+		var tgl = document.getElementById("txtTglLhr").value;
+		//var kamar = document.getElementById("txtPelUnit").value;
+		//alert(getKelas_id);
+		
+		//var tambahan = "nama="+nama+"&umur="+umur+"&sex="+sex+"&alamat="+alamat+"&noRM="+noRM+"&tgl="+tgl+"&kamar="+kamar+"&kelas_id="+getKelas_id;
+		//alert(tambahan);
+		var tambahan = 'report=1&idKunj='+getIdKunj+'&idPel='+getIdPel+'&idUser=<?php echo $userId;?>&inap='+inap;
+		//alert(coba);
+		if(no==1)
+		{
+			var url = '../report_rm/1.inform_konsen.php?'+tambahan; 
+		}
+		else if(no==2)
+		{
+			var url = '../report_rm/2.APS.php?'+tambahan;
+		}
+		else if(no==3)
+		{
+			var url = '../report_rm/3.ctt_asuhan_gizi.php?'+tambahan; 
+		}
+		else if(no==4)
+		{
+			var url = '../report_rm/4.srt_kenal_lahir.php?'+tambahan; 
+		}
+		else if(no==5)
+		{
+			var url = '../report_rm/5.monitpring_ESO.php?'+tambahan; 
+		}
+		else if(no==6)
+		{
+			var url = '../report_rm/6.check_list_cath.php?'+tambahan; 
+		}
+		else if(no==7)
+		{
+			var url = '../report_rm/7.rujukan.php?'+tambahan; 
+		}
+		else if(no==8)
+		{
+			//var url = '../report_rm/8.rencana_harian.php?'+tambahan;
+			var url = '../report_rm/rencana_harian_perawat/rencana_perawat.php?'+tambahan;
+		}
+		else if(no==9)
+		{
+			//var url = '../report_rm/9.check_list_pnrmn.php?'+tambahan;
+			var dohkah = 1;
+		}
+		else if(no==10)
+		{
+			var url = '../report_rm/10.lap_kejadian_form.php?'+tambahan; 
+		}
+		else if(no==11)
+		{
+			var url = '../report_rm/11.pesanan_post.php?'+tambahan; 
+		}
+		else if(no==12)
+		{
+			var url = '../report_rm/12.persetujuan_transfusi.php?'+tambahan; 
+		}
+		else if(no==13)
+		{
+			var url = '../report_rm/13. checklist_pengkajian_kep.php?'+tambahan; 
+		}
+		else if(no==14)
+		{
+			var url = '../report_rm/14.resume_kep.php?'+tambahan; 
+		}
+		else if(no==15)
+		{
+			var url = '../report_rm/15.rekam_medis.php?'+tambahan; 
+		}
+		else if(no==16)
+		{
+			var url = '../report_rm/16.Chart_ICU.php?'+tambahan; 
+		}
+		else 
+		{
+			var url = '../report_rm/17.obs_harian_bayi.php?'+tambahan; 
+		}
+		if(dohkah != 1){
+			window.open(url);
+		} else {
+			checkListTerima();
+		}
+	}
+function checkListTerima(){
+		new Popup('divCheckListTerima',null,{modal:true,position:'center',duration:1});
+		document.getElementById('divCheckListTerima').popup.show(); 		
+		jQuery('#divCheckListTerima').load('../report_rm/9.check_list_pnrmn.php?report=1&idKunj='+getIdKunj+'&idPel='+getIdPel+'&idUser=<?=$_SESSION['userId']?>');
+	}
+function closeDivCheckListTerima(){
+		document.getElementById('divCheckListTerima').popup.hide();
+	}
+
+document.getElementById('form_icd_rm').addEventListener('keypress', function(event) {
+	if (event.keyCode == 13) {
+		event.preventDefault();
+	}
+});
+
+function AddRow(e,par){
+var key;
+	if(window.event) {
+	  key = window.event.keyCode; 
+	}
+	else if(e.which) {
+	  key = e.which;
+	}
+	//alert(key);
+	//alert(par);
+	if (key==13){
+		addRowToTable();
+	}/*else if (key==46){
+		removeRowFromTable(par);
+	}*/
+}
+
+function HapusAsterixnya(par,tez){
+	//alert(par);
+	/*new Popup('divHapusAsterix',null,{modal:true,position:'rm',duration:1});
+	document.getElementById('divHapusAsterix').popup.show();*/
+	document.getElementById("parHapusAsterix").value=par;
+	
+	var tbl = document.getElementById('tblJual');
+	var jmlRow = tbl.rows.length;
+	var i=tez.parentNode.parentNode.rowIndex;
+//alert(i);
+i=i-3
+
+//alert(i);
+var cekHapus = document.getElementById('pernahHapusAsterix').value;
+
+if (document.forms[0].ms_diagnosa_Asterix.length>1){
+  //for (var i=0;i<document.forms[0].ms_diagnosa_Asterix.length;i++){
+  var cat=document.forms[0].txtCatatanAsterix[i].value;
+  var alasan=document.forms[0].txtAsterix[i].value;
+  //alert(cat);
+  //}
+}else{
+  /*if(cekHapus==1){
+	var cat=document.forms[0].txtCatatanAsterix[i].value;
+	var alasan=document.forms[0].txtAsterix[i].value;
+  }else{*/
+	var cat=document.forms['form_icd_rm'].elements['txtCatatanAsterix'].value;
+	//var cat=document.forms[0].txtCatatanAsterix.value;
+	var alasan=document.forms['form_icd_rm'].elements['txtAsterix'].value;
+	//var alasan=document.forms[0].txtAsterix.value;
+  //}
+	//alert(cat);
+}
+	
+	var isi = document.getElementById("parHapusAsterix").value;
+	//var cat = document.getElementById("txtCatatanHapusAsterix").value;
+	var id_degger=document.getElementById('id_degger').value;
+	//alert(cat);
+  if(cat==""){
+	alert('Catatan Asterix "'+alasan+'" Tidak Boleh Kosong !')  
+  }else{
+	if (confirm('Yakin Ingin Menghapus Data?')){
+		jQuery("#loadHapusAsterix").load("updateAsterix.php?in=true&catatan="+cat+"&id="+isi+"&id_degger="+id_degger+"&user_act=<?php echo $userId; ?>");
+	  	removeRowFromTable2(tez);
+		b.loadURL("tindiag_utils.php?grd1=true&pelayanan_id="+getIdPel+"&kunjungan_id="+getIdKunj,"","GET");
+	}
+  }
+}
+
+function SimpanHapusAsterix(){
+	var isi = document.getElementById("parHapusAsterix").value;
+	var cat = document.getElementById("txtCatatanHapusAsterix").value;
+	var id_degger=document.getElementById('id_degger').value;
+	jQuery("#loadHapusAsterix").load("updateAsterix.php?in=true&catatan="+cat+"&id="+isi+"&id_degger="+id_degger+"&user_act=<?php echo $userId; ?>");
+	document.getElementById('divHapusAsterix').popup.hide();
+	
+	freeAsterix();
+}
+
+function freeAsterix(){
+	document.getElementById("parHapusAsterix").value="";
+	document.getElementById("txtCatatanHapusAsterix").value="";
+}
+
+/*jQuery("HapusAsterix").click(function(event){
+  event.preventDefault();
+});*/
+
+function addRowToTable()
+{
+//use browser sniffing to determine if IE or Opera (ugly, but required)
+	var isIE = false;
+	if(navigator.userAgent.indexOf('MSIE')>0){isIE = true;}
+//	alert(navigator.userAgent);
+//	alert(isIE);
+  var tbl = document.getElementById('tblJual');
+  var lastRow = tbl.rows.length;
+  // if there's no header row in the table, then iteration = lastRow + 1
+  //alert(lastRow);
+  var iteration = lastRow;
+  var row = tbl.insertRow(lastRow);
+  	//row.id = 'row'+(iteration-1);
+  	row.className = 'itemtable';
+	//row.setAttribute('class', 'itemtable');
+	row.onmouseover = function(){this.className='itemtableMOver';};
+	row.onmouseout = function(){this.className='itemtable';};
+	//row.setAttribute('onMouseOver', "this.className='itemtableMOver'");
+	//row.setAttribute('onMouseOut', "this.className='itemtable'");
+  
+  // left cell
+  var cellLeft = row.insertCell(0);
+  var textNode = document.createTextNode(iteration-2);
+  cellLeft.className = 'tdisikiri';
+  cellLeft.appendChild(textNode);
+  
+  // right cell
+  cellRight = row.insertCell(1);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtKodeAsterix';
+  	el.setAttribute('disabled', "true");
+  }else{
+  	el = document.createElement('<input name="txtKodeAsterix" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 10;
+  el.className = 'txtinput txtKodeAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  var cellRight = row.insertCell(2);
+  var el;
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'degger_id';
+  }else{
+  	el = document.createElement('<input name="degger_id"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'degger_id2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix_cdgn';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix_cdgn"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'kode_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="kode_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'kode_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtAsterix';
+	el.setAttribute('OnKeyUp', "suggest_Asterix(event,this);");
+	el.setAttribute('autocomplete', "off");
+  }else{
+  	el = document.createElement('<input name="txtAsterix" onkeyup="suggest_Asterix(event, this);" autocomplete="off" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtAsterix'+(iteration-1);
+  el.size = 50;
+  el.className = 'txtinput txtAsterix2';
+
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(3);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtCatatanAsterix';
+  	el.setAttribute('OnKeyUp', "AddRow(event,this);");
+	//el.setAttribute('readonly', "true");
+  }else{
+  	el = document.createElement('<input name="txtCatatanAsterix" onkeyup="AddRow(event,this);" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 43;
+  el.className = 'txtinput txtCatatanAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(4);
+  if(!isIE){
+  	el = document.createElement('img');
+  	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="img" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}"/>');
+  }
+  el.src = '../icon/del.gif';
+  el.border = "0";
+  el.width = "16";
+  el.height = "16";
+  el.className = 'proses';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";
+  /*if(!isIE){
+  	el = document.createElement('img');
+  	//el.name = 'HapusAsterix';
+	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="HapusAsterix" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}" />');
+  }
+  //el.type = 'image';
+  el.src = '../icon/del.gif';
+  el.width = "16";
+  el.height = "16";
+  el.className = 'hapusasterix2';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";*/
+  
+//  cellRight.setAttribute('class', 'tdisi');
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  document.forms[0].txtAsterix[iteration-3].focus();
+
+  // select cell
+/*  var cellRightSel = row.insertCell(2);
+  var sel = document.createElement('select');
+  sel.name = 'selRow';
+  sel.id = 'selRow'+iteration;
+  sel.options[0] = new Option('text zero', 'value0');
+  sel.options[1] = new Option('text one', 'value1');
+  cellRightSel.appendChild(sel);
+*/
+}
+
+function addRowToTable2(par)
+{
+//use browser sniffing to determine if IE or Opera (ugly, but required)
+	var isIE = false;
+	if(navigator.userAgent.indexOf('MSIE')>0){isIE = true;}
+//	alert(navigator.userAgent);
+//	alert(isIE);
+  var tbl = document.getElementById('tblJual');
+  var lastRow = tbl.rows.length;
+  // if there's no header row in the table, then iteration = lastRow + 1
+  //alert(lastRow);
+  var iteration = lastRow;
+  var row = tbl.insertRow(lastRow);
+  	//row.id = 'row'+(iteration-1);
+  	row.className = 'itemtable';
+	//row.setAttribute('class', 'itemtable');
+	row.onmouseover = function(){this.className='itemtableMOver';};
+	row.onmouseout = function(){this.className='itemtable';};
+	//row.setAttribute('onMouseOver', "this.className='itemtableMOver'");
+	//row.setAttribute('onMouseOut', "this.className='itemtable'");
+  
+  // left cell
+  var cellLeft = row.insertCell(0);
+  var textNode = document.createTextNode(iteration-2);
+  cellLeft.className = 'tdisikiri';
+  cellLeft.appendChild(textNode);
+  
+  // right cell
+  cellRight = row.insertCell(1);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtKodeAsterix';
+  	el.setAttribute('disabled', "true");
+  }else{
+  	el = document.createElement('<input name="txtKodeAsterix" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 10;
+  el.className = 'txtinput txtKodeAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  var cellRight = row.insertCell(2);
+  var el;
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'degger_id';
+  }else{
+  	el = document.createElement('<input name="degger_id"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'degger_id2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix_cdgn';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix_cdgn"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'kode_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="kode_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'kode_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtAsterix';
+	el.setAttribute('OnKeyUp', "suggest_Asterix(event,this);");
+	el.setAttribute('autocomplete', "off");
+  }else{
+  	el = document.createElement('<input name="txtAsterix" onkeyup="suggest_Asterix(event, this);" autocomplete="off" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtAsterix'+(iteration-1);
+  el.size = 50;
+  el.className = 'txtinput txtAsterix2';
+
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(3);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtCatatanAsterix';
+  	el.setAttribute('OnKeyUp', "AddRow(event,this);");
+	//el.setAttribute('readonly', "true");
+  }else{
+  	el = document.createElement('<input name="txtCatatanAsterix" onkeyup="AddRow(event,this);" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 43;
+  el.className = 'txtinput txtCatatanAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(4);
+  if(!isIE){
+  	el = document.createElement('img');
+  	el.setAttribute('onClick','HapusAsterixnya('+par+',this)');
+  }else{
+  	el = document.createElement('<img name="img" onClick="HapusAsterixnya('+par+',this)"/>');
+  }
+  el.src = '../icon/del.gif';
+  el.border = "0";
+  el.width = "16";
+  el.height = "16";
+  el.className = 'proses';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";
+  /*if(!isIE){
+  	el = document.createElement('img');
+  	//el.name = 'HapusAsterix';
+	//el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){HapusAsterixnya('+par+');removeRowFromTable2(this);}');
+	el.setAttribute('onClick','HapusAsterixnya('+par+');');
+  }else{
+  	//el = document.createElement('<input name="HapusAsterix" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){HapusAsterixnya('+par+');removeRowFromTable2(this);}" />');
+	el = document.createElement('<img name="HapusAsterix" onClick="HapusAsterixnya('+par+');" />');
+  }
+  //el.type = 'image';
+  el.src = '../icon/del.gif';
+  el.width = "16";
+  el.height = "16";
+  el.className = 'hapusasterix2';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";*/
+  
+//  cellRight.setAttribute('class', 'tdisi');
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  //document.forms[0].txtAsterix[iteration-3].focus();
+
+  // select cell
+/*  var cellRightSel = row.insertCell(2);
+  var sel = document.createElement('select');
+  sel.name = 'selRow';
+  sel.id = 'selRow'+iteration;
+  sel.options[0] = new Option('text zero', 'value0');
+  sel.options[1] = new Option('text one', 'value1');
+  cellRightSel.appendChild(sel);
+*/
+}
+
+function addRowToTable3(par)
+{
+//use browser sniffing to determine if IE or Opera (ugly, but required)
+	var isIE = false;
+	if(navigator.userAgent.indexOf('MSIE')>0){isIE = true;}
+//	alert(navigator.userAgent);
+//	alert(isIE);
+  var tbl = document.getElementById('tblJual');
+  var lastRow = tbl.rows.length;
+  // if there's no header row in the table, then iteration = lastRow + 1
+  //alert(lastRow);
+  var iteration = lastRow;
+  var row = tbl.insertRow(lastRow);
+  	//row.id = 'row'+(iteration-1);
+  	row.className = 'itemtable';
+	//row.setAttribute('class', 'itemtable');
+	row.onmouseover = function(){this.className='itemtableMOver';};
+	row.onmouseout = function(){this.className='itemtable';};
+	//row.setAttribute('onMouseOver', "this.className='itemtableMOver'");
+	//row.setAttribute('onMouseOut', "this.className='itemtable'");
+  
+  // left cell
+  var cellLeft = row.insertCell(0);
+  var textNode = document.createTextNode(iteration-2);
+  cellLeft.className = 'tdisikiri';
+  cellLeft.appendChild(textNode);
+  
+  // right cell
+  cellRight = row.insertCell(1);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtKodeAsterix';
+  	el.setAttribute('disabled', "true");
+  }else{
+  	el = document.createElement('<input name="txtKodeAsterix" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 10;
+  el.className = 'txtinput txtKodeAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  var cellRight = row.insertCell(2);
+  var el;
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'degger_id';
+  }else{
+  	el = document.createElement('<input name="degger_id"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'degger_id2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix_cdgn';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix_cdgn"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'kode_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="kode_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'kode_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtAsterix';
+	el.setAttribute('OnKeyUp', "suggest_Asterix(event,this);");
+	el.setAttribute('autocomplete', "off");
+  }else{
+  	el = document.createElement('<input name="txtAsterix" onkeyup="suggest_Asterix(event, this);" autocomplete="off" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtAsterix'+(iteration-1);
+  el.size = 50;
+  el.className = 'txtinput txtAsterix2';
+
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(3);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtCatatanAsterix';
+  	el.setAttribute('OnKeyUp', "AddRow(event,this);");
+	//el.setAttribute('readonly', "true");
+  }else{
+  	el = document.createElement('<input name="txtCatatanAsterix" onkeyup="AddRow(event,this);" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 43;
+  el.className = 'txtinput txtCatatanAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(4);
+  if(!isIE){
+  	el = document.createElement('img');
+  	el.setAttribute('onClick','HapusAsterixnya('+par+',this)');
+  }else{
+  	el = document.createElement('<img name="img" onClick="HapusAsterixnya('+par+',this)"/>');
+  }
+  el.src = '../icon/del.gif';
+  el.border = "0";
+  el.width = "16";
+  el.height = "16";
+  el.className = 'proses';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";
+  /*if(!isIE){
+  	el = document.createElement('img');
+  	//el.name = 'HapusAsterix';
+	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="HapusAsterix" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}" />');
+  }
+  //el.type = 'image';
+  el.src = '../icon/del.gif';
+  el.width = "16";
+  el.height = "16";
+  el.className = 'hapusasterix2';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";*/
+  
+//  cellRight.setAttribute('class', 'tdisi');
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  document.forms[0].txtAsterix[iteration-3].focus();
+
+  // select cell
+/*  var cellRightSel = row.insertCell(2);
+  var sel = document.createElement('select');
+  sel.name = 'selRow';
+  sel.id = 'selRow'+iteration;
+  sel.options[0] = new Option('text zero', 'value0');
+  sel.options[1] = new Option('text one', 'value1');
+  cellRightSel.appendChild(sel);
+*/
+}
+
+function addRowToTable5()
+{
+//use browser sniffing to determine if IE or Opera (ugly, but required)
+	var isIE = false;
+	if(navigator.userAgent.indexOf('MSIE')>0){isIE = true;}
+//	alert(navigator.userAgent);
+//	alert(isIE);
+  var tbl = document.getElementById('tblJual');
+  var lastRow = tbl.rows.length;
+  // if there's no header row in the table, then iteration = lastRow + 1
+  //alert(lastRow);
+  var iteration = lastRow;
+  var row = tbl.insertRow(lastRow);
+  	//row.id = 'row'+(iteration-1);
+  	row.className = 'itemtable';
+	//row.setAttribute('class', 'itemtable');
+	row.onmouseover = function(){this.className='itemtableMOver';};
+	row.onmouseout = function(){this.className='itemtable';};
+	//row.setAttribute('onMouseOver', "this.className='itemtableMOver'");
+	//row.setAttribute('onMouseOut', "this.className='itemtable'");
+  
+  // left cell
+  var cellLeft = row.insertCell(0);
+  var textNode = document.createTextNode(iteration-3);
+  cellLeft.className = 'tdisikiri';
+  cellLeft.appendChild(textNode);
+  
+  // right cell
+  cellRight = row.insertCell(1);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtKodeAsterix';
+  	el.setAttribute('disabled', "true");
+  }else{
+  	el = document.createElement('<input name="txtKodeAsterix" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 10;
+  el.className = 'txtinput txtKodeAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  var cellRight = row.insertCell(2);
+  var el;
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'degger_id';
+  }else{
+  	el = document.createElement('<input name="degger_id"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'degger_id2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix_cdgn';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix_cdgn"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'kode_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="kode_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'kode_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtAsterix';
+	el.setAttribute('OnKeyUp', "suggest_Asterix(event,this);");
+	el.setAttribute('autocomplete', "off");
+  }else{
+  	el = document.createElement('<input name="txtAsterix" onkeyup="suggest_Asterix(event, this);" autocomplete="off" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtAsterix'+(iteration-1);
+  el.size = 50;
+  el.className = 'txtinput txtAsterix2';
+
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(3);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtCatatanAsterix';
+  	el.setAttribute('OnKeyUp', "AddRow(event,this);");
+	//el.setAttribute('readonly', "true");
+  }else{
+  	el = document.createElement('<input name="txtCatatanAsterix" onkeyup="AddRow(event,this);" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 43;
+  el.className = 'txtinput txtCatatanAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(4);
+  if(!isIE){
+  	el = document.createElement('img');
+  	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="img" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}"/>');
+  }
+  el.src = '../icon/del.gif';
+  el.border = "0";
+  el.width = "16";
+  el.height = "16";
+  el.className = 'proses';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";
+  /*if(!isIE){
+  	el = document.createElement('img');
+  	//el.name = 'HapusAsterix';
+	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="HapusAsterix" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}" />');
+  }
+  //el.type = 'image';
+  el.src = '../icon/del.gif';
+  el.width = "16";
+  el.height = "16";
+  el.className = 'hapusasterix2';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";*/
+  
+//  cellRight.setAttribute('class', 'tdisi');
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  //document.forms[0].txtAsterix[iteration-3].focus();
+
+  // select cell
+/*  var cellRightSel = row.insertCell(2);
+  var sel = document.createElement('select');
+  sel.name = 'selRow';
+  sel.id = 'selRow'+iteration;
+  sel.options[0] = new Option('text zero', 'value0');
+  sel.options[1] = new Option('text one', 'value1');
+  cellRightSel.appendChild(sel);
+*/
+}
+
+function addRowToTable4()
+{
+//use browser sniffing to determine if IE or Opera (ugly, but required)
+	var isIE = false;
+	if(navigator.userAgent.indexOf('MSIE')>0){isIE = true;}
+//	alert(navigator.userAgent);
+//	alert(isIE);
+  var tbl = document.getElementById('tblJual');
+  var lastRow = tbl.rows.length;
+  // if there's no header row in the table, then iteration = lastRow + 1
+  //alert(lastRow);
+  var iteration = lastRow;
+  var row = tbl.insertRow(lastRow);
+  	//row.id = 'row'+(iteration-1);
+  	row.className = 'itemtable';
+	//row.setAttribute('class', 'itemtable');
+	row.onmouseover = function(){this.className='itemtableMOver';};
+	row.onmouseout = function(){this.className='itemtable';};
+	//row.setAttribute('onMouseOver', "this.className='itemtableMOver'");
+	//row.setAttribute('onMouseOut', "this.className='itemtable'");
+  
+  // left cell
+  var cellLeft = row.insertCell(0);
+  var textNode = document.createTextNode(iteration-2);
+  cellLeft.className = 'tdisikiri';
+  cellLeft.appendChild(textNode);
+  
+  // right cell
+  cellRight = row.insertCell(1);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtKodeAsterix';
+  	el.setAttribute('disabled', "true");
+  }else{
+  	el = document.createElement('<input name="txtKodeAsterix" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 10;
+  el.className = 'txtinput txtKodeAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  var cellRight = row.insertCell(2);
+  var el;
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'degger_id';
+  }else{
+  	el = document.createElement('<input name="degger_id"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'degger_id2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'ms_diagnosa_Asterix_cdgn';
+  }else{
+  	el = document.createElement('<input name="ms_diagnosa_Asterix_cdgn"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'ms_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'kode_diagnosa_Asterix';
+  }else{
+  	el = document.createElement('<input name="kode_diagnosa_Asterix"/>');
+  }
+  el.type = 'hidden';
+  el.value = '';
+  el.className = 'kode_diagnosa_Asterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtAsterix';
+	el.setAttribute('OnKeyUp', "suggest_Asterix(event,this);");
+	el.setAttribute('autocomplete', "off");
+  }else{
+  	el = document.createElement('<input name="txtAsterix" onkeyup="suggest_Asterix(event, this);" autocomplete="off" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtAsterix'+(iteration-1);
+  el.size = 50;
+  el.className = 'txtinput txtAsterix2';
+
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(3);
+  if(!isIE){
+  	el = document.createElement('input');
+  	el.name = 'txtCatatanAsterix';
+  	el.setAttribute('OnKeyUp', "AddRow(event,this);");
+	//el.setAttribute('readonly', "true");
+  }else{
+  	el = document.createElement('<input name="txtCatatanAsterix" onkeyup="AddRow(event,this);" />');
+  }
+  el.type = 'text';
+  //el.id = 'txtSubTot'+(iteration-1);
+  el.size = 43;
+  el.className = 'txtinput txtCatatanAsterix2';
+  
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  // right cell
+  cellRight = row.insertCell(4);
+  if(!isIE){
+  	el = document.createElement('img');
+  	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="img" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}"/>');
+  }
+  el.src = '../icon/del.gif';
+  el.border = "0";
+  el.width = "16";
+  el.height = "16";
+  el.className = 'proses';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";
+  /*if(!isIE){
+  	el = document.createElement('img');
+  	//el.name = 'HapusAsterix';
+	el.setAttribute('onClick','if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}');
+  }else{
+  	el = document.createElement('<img name="HapusAsterix" onClick="if (confirm(\'Yakin Ingin Menghapus Data?\')){removeRowFromTable(this);}" />');
+  }
+  //el.type = 'image';
+  el.src = '../icon/del.gif';
+  el.width = "16";
+  el.height = "16";
+  el.className = 'hapusasterix2';
+  el.align = "absmiddle";
+  el.title = "Klik Untuk Menghapus";*/
+  
+//  cellRight.setAttribute('class', 'tdisi');
+  cellRight.className = 'tdisi';
+  cellRight.appendChild(el);
+  
+  //document.forms[0].txtAsterix[iteration-3].focus();
+
+  // select cell
+/*  var cellRightSel = row.insertCell(2);
+  var sel = document.createElement('select');
+  sel.name = 'selRow';
+  sel.id = 'selRow'+iteration;
+  sel.options[0] = new Option('text zero', 'value0');
+  sel.options[1] = new Option('text one', 'value1');
+  cellRightSel.appendChild(sel);
+*/
+}
+
+function removeRowFromTable(cRow)
+{
+  var tbl = document.getElementById('tblJual');
+  var jmlRow = tbl.rows.length;
+  if (jmlRow > 4){
+  	var i=cRow.parentNode.parentNode.rowIndex;
+  //if (i>2){
+	  //alert(i);
+	  tbl.deleteRow(i);
+	  var lastRow = tbl.rows.length;
+	  for (var i=3;i<lastRow;i++){
+		var tds = tbl.rows[i].getElementsByTagName('td');
+		tds[0].innerHTML=i-2;
+	  }
+  }
+}
+
+function removeRowFromTable2(cRow)
+{
+  var tbl = document.getElementById('tblJual');
+  var jmlRow = tbl.rows.length;
+  if (jmlRow > 4){
+  	var i=cRow.parentNode.parentNode.rowIndex;
+  //if (i>2){
+	  //alert(i);
+	  tbl.deleteRow(i);
+	  var lastRow = tbl.rows.length;
+	  for (var i=3;i<lastRow;i++){
+		var tds = tbl.rows[i].getElementsByTagName('td');
+		tds[0].innerHTML=i-2;
+	  }
+  }else if(jmlRow = 4){
+	  var i=cRow.parentNode.parentNode.rowIndex;
+  //if (i>2){
+	  //alert(i);
+	  tbl.deleteRow(i);
+	  var lastRow = tbl.rows.length;
+	  for (var i=2;i<lastRow;i++){
+		var tds = tbl.rows[i].getElementsByTagName('td');
+		tds[0].innerHTML=i-1;
+	  }
+	addRowToTable4();
+  }
+}
+
+function degger(isi){
+	//alert(id);
+	//document.getElementById('deggernya').value=isi;
+	/*
+	new Popup('divICD10degger',null,{modal:true,position:'rm',duration:1});
+	//document.getElementById('divICD10').style.top='1000px';
+	document.getElementById('divICD10degger').popup.show();
+	//document.getElementById('txtICD10').focus();*/
+	//toltip();
+}
+
+setInterval('toltip()',10000);
+
+function toltip(){ 
+//alert();
+// Create the tooltips only when document ready
+jQuery(document).ready(function()
+{	
+//alert(cektoltip);
+
+var cek = document.getElementById('deggernya').value;
+if(cek!=''){
+	//alert(cek);
+for(var i=0;i<=cek;i++){
+	var sisip=b.getRowId(i+1).split("|");
+	jQuery('#Div'+i).qtip({
+		content: sisip[17],
+		position: {
+			target: 'mouse', // Track the mouse as the positioning target
+			adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+		}
+	});
+	
+	/*jQuery('#Div1').qtip({
+		content: "Mouse tracking2'sa!<br/>s",
+		position: {
+			target: 'mouse', // Track the mouse as the positioning target
+			adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+		}
+	});	*/
+}
+}
+});
+
+}
+</script>
+<script language="JavaScript1.2">mmLoadMenus();</script>

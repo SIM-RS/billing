@@ -1,0 +1,370 @@
+<style type="text/css">
+<!--
+body {
+	background-color: #FFFFFF;
+}
+-->
+</style><?php
+include("../../koneksi/konek.php");
+//====================================================================
+//Paging,Sorting dan Filter======
+	$id=$_REQUEST['id'];
+	$idPel=$_REQUEST['idPel'];
+	$idUsr=$_REQUEST['idUsr'];
+	$fentanyl=$_REQUEST['fentanyl'];
+	$ephedrine=$_REQUEST['ephedrine'];
+	$ephineprine=$_REQUEST['ephineprine'];
+	$adona=$_REQUEST['adona'];
+	$invomit=$_REQUEST['invomit'];
+	$gastridine=$_REQUEST['gastridine'];
+	$sa=$_REQUEST['sa'];
+	$dormicun=$_REQUEST['dormicun'];
+	$marcain=$_REQUEST['marcain'];
+	$propofol=$_REQUEST['propofol'];
+	$catapres=$_REQUEST['catapres'];
+	$ketrobat=$_REQUEST['ketrobat'];
+	$orasic=$_REQUEST['orasic'];
+	$farmadol=$_REQUEST['farmadol'];
+	$dynastat=$_REQUEST['dynastat'];
+	$profeenid=$_REQUEST['profeenid'];
+	$paracetamol=$_REQUEST['paracetamol'];
+	$stesolid=$_REQUEST['stesolid'];
+	$lasik=$_REQUEST['lasik'];
+	$roculax=$_REQUEST['roculax'];
+	$kalmetason=$_REQUEST['kalmetason'];
+	$syntonicon=$_REQUEST['syntonicon'];
+	$citotex=$_REQUEST['citotex'];
+	$alinamin=$_REQUEST['alinamin'];
+	$dopamin=$_REQUEST['dopamin'];
+	$nokoba=$_REQUEST['nokoba'];
+	$aminophilin=$_REQUEST['aminophilin'];
+	$sevo=$_REQUEST['sevo'];
+	$o2=$_REQUEST['o2'];
+	$iv=$_REQUEST['iv'];
+	$tegaderm=$_REQUEST['tegaderm'];
+	$trheeway=$_REQUEST['trheeway'];
+	$alkohol=$_REQUEST['alkohol'];
+	$infus=$_REQUEST['infus'];
+	$nasal=$_REQUEST['nasal'];
+	$simple=$_REQUEST['simple'];
+	$nrm=$_REQUEST['nrm'];
+	$elektroda=$_REQUEST['elektroda'];
+	$hansaplast=$_REQUEST['hansaplast'];
+	$spinocant=$_REQUEST['spinocant'];
+	$pencan=$_REQUEST['pencan'];
+	$gelofusal=$_REQUEST['gelofusal'];
+	$ring=$_REQUEST['ring'];
+	$nacl=$_REQUEST['nacl'];
+	$futrolit=$_REQUEST['futrolit'];
+	$haes=$_REQUEST['haes'];
+	$tridex=$_REQUEST['tridex'];
+	$emla=$_REQUEST['emla'];
+	$kateter=$_REQUEST['kateter'];
+	$extension=$_REQUEST['extension'];
+	$xylocain=$_REQUEST['xylocain'];
+	$ngt=$_REQUEST['ngt'];
+	$cath=$_REQUEST['cath'];
+	$urine=$_REQUEST['urine'];
+	$selang=$_REQUEST['selang'];
+	$catheter=$_REQUEST['catheter'];
+	$eetno=$_REQUEST['eetno'];
+	$ettnkk=$_REQUEST['ettnkk'];
+	$lma=$_REQUEST['lma'];
+	$guedel=$_REQUEST['guedel'];
+	$bacteri=$_REQUEST['bacteri'];
+	$brething=$_REQUEST['brething'];
+	$broadced=$_REQUEST['broadced'];
+	$flagyl=$_REQUEST['flagyl'];
+	$taxegram=$_REQUEST['taxegram'];
+	$te=$_REQUEST['te'];
+	$tr=$_REQUEST['tr'];
+	$ng=$_REQUEST['ng'];
+	$ca=$_REQUEST['ca'];
+	$cat=$_REQUEST['cat'];
+	$ee=$_REQUEST['ee'];
+	$eet=$_REQUEST['eet'];
+	$lm=$_REQUEST['lm'];
+	$gu=$_REQUEST['gu'];
+	$tgl=tglSQL($_REQUEST['tgl']);
+
+
+
+switch(strtolower($_REQUEST['act'])){
+	case 'tambah':
+$sql="INSERT INTO b_ms_pemakaian_alkes_oa (
+	    pelayanan_id,
+		fentanyl,
+		ephedrine,
+		ephineprine,
+		adona,
+		invomit,
+		gastridine,
+		sa,
+		dormicun,
+		marcain,
+		propofol,
+		catapres,
+		ketrobat,
+		orasic,
+		farmadol,
+		dynastat,
+		profeenid,
+		paracetamol,
+		stesolid,
+		lasik,
+		roculax,
+		kalmetason,
+		syntonicon,
+		citotex,
+		alinamin,
+		dopamin,
+		nokoba,
+		aminophilin,
+		sevo,
+		o2,
+		iv,
+		tegaderm,
+		trheeway,
+		alkohol,
+		infus,
+		nasal,
+		simple,
+		nrm,
+		elektroda,
+		hansaplast,
+		spinocant,
+		pencan,
+		gelofusal,
+		ring,
+		nacl,
+		futrolit,
+		haes,
+		tridex,
+		emla,
+		kateter,
+		extension,
+		xylocain,
+		ngt,
+		cath,
+		urine,
+		selang,
+		catheter,
+		eetno,
+		ettnkk,
+		lma,
+		guedel,
+		bacteri,
+		brething,
+		broadced,
+		flagyl,
+		taxegram,
+		te,
+		tr,
+		ng,
+		ca,
+		cat,
+		ee,
+		eet,
+		lm,
+		gu,
+    	tgl_act,
+    	user_act
+) 
+VALUES
+  (
+	'$idPel',
+	$fentanyl,
+	$ephedrine,
+	$ephineprine,
+	$adona,
+	$invomit,
+	$gastridine,
+	$sa,
+	$dormicun,
+	$marcain,
+	$propofol,
+	$catapres,
+	$ketrobat,
+	$orasic,
+	$farmadol,
+	$dynastat,
+	$profeenid,
+	$paracetamol,
+	$stesolid,
+	$lasik,
+	$roculax,
+	$kalmetason,
+	$syntonicon,
+	$citotex,
+	$alinamin,
+	$dopamin,
+	$nokoba,
+	$aminophilin,
+	$sevo,
+	$o2,
+	$iv,
+	$tegaderm,
+	$trheeway,
+	$alkohol,
+	$infus,
+	$nasal,
+	$simple,
+	$nrm,
+	$elektroda,
+	$hansaplast,
+	$spinocant,
+	$pencan,
+	$gelofusal,
+	$ring,
+	$nacl,
+	$futrolit,
+	$haes,
+	$tridex,
+	$emla,
+	$kateter,
+	$extension,
+	$xylocain,
+	$ngt,
+	$cath,
+	$urine,
+	$selang,
+	$catheter,
+	$eetno,
+	$ettnkk,
+	$lma,
+	$guedel,
+	$bacteri,
+	$brething,
+	$broadced,
+	$flagyl,
+	$taxegram,
+	'$te',
+	'$tr',
+	'$ng',
+	'$ca',
+	'$cat',
+	'$ee',
+	'$eet',
+	'$lm',
+	'$gu',
+  CURDATE(),
+  '$idUsr') ;";
+  echo $sql;
+  $ex=mysql_query($sql);
+		if($ex)
+		{
+			echo "Data berhasil disimpan !";
+		}
+		else
+		{
+			echo "Data gagal disimpan !";
+		}
+
+	break;
+	case 'edit':
+		$sql="UPDATE b_ms_pemakaian_alkes_oa SET pelayanan_id='$idPel', 
+			fentanyl='$fentanyl',
+			ephedrine='$ephedrine',
+			ephineprine='$ephineprine',
+			adona='$adona',
+			invomit='$invomit',
+			gastridine='$gastridine',
+			sa='$sa',
+			dormicun='$dormicun',
+			marcain='$marcain',
+			propofol='$propofol',
+			catapres='$catapres',
+			ketrobat='$ketrobat',
+			orasic='$orasic',
+			farmadol='$farmadol',
+			dynastat='$dynastat',
+			profeenid='$profeenid',
+			paracetamol='$paracetamol',
+			stesolid='$stesolid',
+			lasik='$lasik',
+			roculax='$roculax',
+			kalmetason='$kalmetason',
+			syntonicon='$syntonicon',
+			citotex='$citotex',
+			alinamin='$alinamin',
+			dopamin='$dopamin',
+			nokoba='$nokoba',
+			aminophilin='$aminophilin',
+			sevo='$sevo',
+			o2='$o2',
+			iv='$iv',
+			tegaderm='$tegaderm',
+			trheeway='$trheeway',
+			alkohol='$alkohol',
+			infus='$infus',
+			nasal='$nasal',
+			simple='$simple',
+			nrm='$nrm',
+			elektroda='$elektroda',
+			hansaplast='$hansaplast',
+			spinocant='$spinocant',
+			pencan='$pencan',
+			gelofusal='$gelofusal',
+			ring='$ring',
+			nacl='$nacl',
+			futrolit='$futrolit',
+			haes='$haes',
+			tridex='$tridex',
+			emla='$emla',
+			kateter='$kateter',
+			extension='$extension',
+			xylocain='$xylocain',
+			ngt='$ngt',
+			cath='$cath',
+			urine='$urine',
+			selang='$selang',
+			catheter='$catheter',
+			eetno='$eetno',
+			ettnkk='$ettnkk',
+			lma='$lma',
+			guedel='$guedel',
+			bacteri='$bacteri',
+			brething='$brething',
+			broadced='$broadced',
+			flagyl='$flagyl',
+			taxegram='$taxegram',
+			te='$te',
+			tr='$tr',
+			ng='$ng',
+			ca='$ca',
+			cat='$cat',
+			ee='$ee',
+			eet='$eet',
+			lm='$lm',
+			gu='$gu',
+
+		  tgl_act= CURDATE(),
+		  user_act='$idUsr'
+		  WHERE id='".$_REQUEST['id']."'";
+		echo $sql;
+		$ex=mysql_query($sql);
+		//echo $sql;
+		if($ex)
+		{
+			echo "Data berhasil diupdate !";
+		}
+		else
+		{
+			echo "Data gagal diupdate !";
+		}
+	break;
+	case 'hapus':
+		$sql="DELETE FROM b_ms_pemakaian_alkes_oa WHERE id='$id'";
+		$ex=mysql_query($sql);
+		if($ex)
+		{
+			echo "Data berhasil dihapus !";
+		}
+		else
+		{
+			echo "Data gagal dihapus !";
+		}
+	break;
+		
+}
+?>

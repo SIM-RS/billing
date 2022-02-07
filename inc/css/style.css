@@ -1,0 +1,152 @@
+body{
+	background-repeat:repeat-x;
+	background-color:#1D3980;
+	font: normal 12px Verdana, Arial, Helvetica, sans-serif;
+	background-image: url(../images/home.png);
+}
+a{
+	text-decoration: none;
+	display: inline;
+}
+a:hover{
+	color:#BFB8A6;
+}
+#wrapper{
+ width:1000px;
+ margin:0 auto;
+ padding:0;
+ position:relative;
+}
+
+#bghome{
+ background-image:url(../../inc/images/background.png);
+}
+
+#isi{
+ width: 100%;
+}
+
+input[type=submit] {
+ border:solid #333 1px;
+ background-color:#69A64D;
+ height:30px;
+ color:#FFF;
+ cursor:pointer;
+}
+
+input[type=reset] {
+ border:solid #333 1px;
+ background-color:#69A64D;
+ height:30px;
+ color:#FFF;
+ cursor:pointer;
+}
+
+input[type=text] {
+width: 150px;
+background-color: #E5E5E5;
+}
+
+input[type=password] {
+width: 150px;
+background-color: #E5E5E5;
+}
+
+#tblkonten{
+margin:0 auto;
+border:solid #FFF 2px;
+border-radius: 3px;
+background:#E5E5F0;
+}
+
+#tbllogin{
+ border:solid #006 2px;
+ background-color:#3B5998;
+ color:#FFF;
+ border-radius: 5px;
+}
+
+#tblmodul{
+margin-top:0;
+border:solid #FFF 1px;
+background-color: #A7C0E0;
+border-radius: 5px;
+}
+
+#apDiv1{
+	background-image:url(../../inc/images/logo.png);
+	background-repeat:no-repeat;
+	width:612px;
+	height:142px;
+	z-index:1;
+}
+
+#apDiv2 {
+}
+
+#apDiv3 {
+	background-image:url(../../inc/images/txtlogin.png);
+	background-repeat:no-repeat;
+	position:absolute;
+	left:810px;
+	top:233px;
+	width:192px;
+	height:43px;
+	z-index:3;
+}
+
+#apDiv4{
+	background-image:url(../../inc/images/logbut.png);
+	background-repeat:no-repeat;
+	position:absolute;
+	left:470px;
+	top:290px;
+	width:82px;
+	height:30px;
+}
+#apDiv5{
+	background-image:url(../../inc/images/batal.png);
+	background-repeat:no-repeat;
+	position:absolute;
+	left:470px;
+	top:290px;
+	width:82px;
+	height:30px;
+}
+#apotikdiv{
+	position:absolute;
+	margin:0 auto;
+	left: 971px;
+	top: 100px;
+}
+
+#Layer1 {
+	width:1000px;
+	height:120px;
+	margin:0 auto;
+}
+
+.bgKopegaHome {
+	background-image: url(../images/water.jpg);
+}
+
+#img_enter_app{
+	float:left;
+	margin:-50px 0 0 50px;
+}
+h3#enter_title{
+	clear:left;
+	float:left;
+	margin:0 0 0 80px;
+	font-weight:bold;
+	font-size:18px;
+	color:#333;
+	text-shadow:1px 1px #fff;
+}
+
+h1#home_title{
+	float:left;
+	margin:50px 0 0 0;
+	color:#fff;
+	text-shadow:3px 3px #333;
+}

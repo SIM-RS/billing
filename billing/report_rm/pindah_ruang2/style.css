@@ -1,0 +1,42 @@
+#serahterima input[type="radio"] + label{
+	cursor:pointer;
+}
+#serahterima input[type=checkbox] + label{
+	cursor:pointer;
+}
+#serahterima input[type="text"].catatan{
+	width:100%;
+}
+#serahterima input[type="text"]:disabled{
+	width:46px;
+	border:1px solid windowtext;
+	opacity:0.5;
+	background:#768593;
+}
+#serahterima input[type=checkbox].css-checkbox {
+	position: absolute; 
+	overflow: hidden; 
+	clip: rect(0 0 0 0); 
+	height:2px; 
+	width:3px; 
+	margin:-1px; 
+	padding:0;
+	border:0;
+}				
+#serahterima input[type=checkbox].css-checkbox + label.css-label {
+	padding-left:20px;
+	height:17px; 
+	display:inline-block;
+	line-height:18px;
+	background-repeat:no-repeat;
+	background-position: 0 -17px;
+	vertical-align:middle;
+	cursor:pointer;
+}				
+#serahterima input[type=checkbox].css-checkbox:checked + label.css-label {
+	background-position: 0 -34px;
+}
+#serahterima input[type=checkbox].css-checkbox:disabled + label.css-label {
+	background-position: 0 0;
+}
+.lite-green-check{background-image:url(../../icon/lite-green-check.png);}

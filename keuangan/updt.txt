@@ -1,0 +1,153 @@
+====================21-02-2013==================
+transaksi/penerimaan_billing_kasir.php
+transaksi/utils.php
+
+====================07-03-2013==================
+ALTER TABLE `akuntansi`.`jurnal`     ADD COLUMN `CC_RV_ID` BIGINT DEFAULT '0' NULL AFTER `CC_RV_KSO_PBF_UMUM_ID`;
+ALTER TABLE `akuntansi`.`jurnal`     ADD COLUMN `NO_PASANGAN` BIGINT DEFAULT '0' NULL AFTER `NO_TRANS`;
+ALTER TABLE `akuntansi`.`jurnal` ADD INDEX `NO_PASANGAN` (`NO_PASANGAN`);
+UPDATE jurnal SET NO_PASANGAN=NO_TRANS;
+
+transaksi/tree_jTrans.php
+transaksi/pengeluaran.php
+transaksi/pengeluaran_utils.php
+
+====================28-03-2013==================
+transaksi/pengeluaran.php
+transaksi/tree_jTrans.php
+transaksi/baca_ma_dpa.php
+transaksi/penerimaan_penjualan_obat.php
+transaksi/utils.php
+
+====================24-04-2013==================
+transaksi/pengeluaran.php
+transaksi/pengeluaran_utils.php
+
+====================10-06-2013==================
+create index keuangan.k_transaksi (id_ma_dpa,id_ma_sak,tipe_trans,id_trans,tgl)
+create index $dbanggaran.ms_ma (ma_kode2)
+create index $dbanggaran.rba (ma_id,rba_tahun)
+ALTER TABLE `dbanggaran`.`rba`     CHANGE `rba_id` `rba_id` BIGINT NOT NULL AUTO_INCREMENT;
+
+laporan/Re_Ang.php
+laporan/Re_Ang_excell.php
+
+transaksi/pengeluaran.php
+transaksi/pengeluaran_utils.php
+transaksi/supplier.php
+
+====================01-08-2013==================
+ALTER TABLE `keuangan`.`k_transaksi`     ADD COLUMN `no_terima` TEXT NULL AFTER `no_faktur`;
+
+theme/js/mod.js
+
+transaksi/pengeluaran.php
+transaksi/pengeluaran_utils.php		--> utk transaksi 'edit' --> perlu perbaikan;
+transaksi/supplier.php
+
+laporen/BKU.php
+laporen/BKU_excell.php
+
+====================11-11-2013==================
+ALTER TABLE `dbaset`.`as_masuk`     ADD COLUMN `no_bukti_bayar` VARCHAR(30);
+ALTER TABLE `dbaset`.`as_masuk`     ADD COLUMN `bayar_id` BIGINT DEFAULT '0' NULL AFTER `idmsk_lama`,    CHANGE `idmsk_lama` `idmsk_lama` BIGINT(20) NULL ;
+
+transaksi/pengeluaran.php
+transaksi/pengeluaran_utils.php		--> utk transaksi 'edit' --> perlu perbaikan;
+
+====================06-04-2014==================
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi`     ADD COLUMN `no_terima` TEXT NULL AFTER `no_faktur`;
+
+masters/tree_mata_anggaran.php
+
+laporan/BKU.php
+laporen/BKU_excell.php
+
+====================22-04-2014==================
+transaksi/tree_jTrans.php
+transaksi/penerimaan_billing_kasir.php
+transaksi/kas_bank.php
+
+====================20-05-2014==================
+menu.php
+
+====================14-11-2014==================
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi`     ADD COLUMN `fk_id` BIGINT UNSIGNED DEFAULT '0' NULL AFTER `id`;
+ALTER TABLE `db_simrs_billing`.`b_bayar`     ADD COLUMN `posting` TINYINT(1) DEFAULT '0' NULL AFTER `tipe`;
+ALTER TABLE `db_simrs_billing`.`b_bayar_log`     ADD COLUMN `posting` TINYINT(1) DEFAULT '0' NULL AFTER `tipe`;
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi` ADD INDEX `fk_id` (`fk_id`);
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi` ADD INDEX `id_trans` (`id_trans`);
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi` ADD INDEX `verifikasi` (`verifikasi`);
+ALTER TABLE `db_simrs_keuangan`.`k_transaksi` ADD INDEX `posting` (`posting`);
+ALTER TABLE `db_simrs_billing`.`b_tindakan`     ADD COLUMN `posting` TINYINT(1) DEFAULT '0' NULL AFTER `is_edit`;
+ALTER TABLE `db_simrs_billing`.`b_tindakan`     ADD COLUMN `tgl_posting` DATE NULL AFTER `posting`,     ADD COLUMN `user_posting` BIGINT DEFAULT '0' NULL AFTER `tgl_posting`;
+ALTER TABLE `db_simrs_billing`.`b_tindakan_act`     ADD COLUMN `posting` TINYINT(1) DEFAULT '0' NULL AFTER `is_edit`,     ADD COLUMN `tgl_posting` DATE NULL AFTER `posting`,     ADD COLUMN `user_posting` BIGINT DEFAULT '0' NULL AFTER `tgl_posting`;
+ALTER TABLE `db_simrs_billing`.`b_tindakan_kamar`     ADD COLUMN `posting` TINYINT(1) DEFAULT '0' NULL AFTER `is_edit`,     ADD COLUMN `tgl_posting` DATE NULL AFTER `posting`,     ADD COLUMN `user_posting` BIGINT DEFAULT '0' NULL AFTER `tgl_posting`;
+ALTER TABLE `db_simrs_keuangan`.`k_piutang` ADD INDEX `fk_id` (`fk_id`);
+
+ALTER TRIGGER `db_simrs_billing`.`b_tindakan_AU` -->
+	INSERT INTO b_tindakan_act(...,is_edit,posting,tgl_posting,user_posting)
+	VALUES (...,OLD.is_edit,OLD.posting,OLD.tgl_posting,OLD.user_posting);
+ALTER TRIGGER `db_simrs_billing`.`b_tindakan_AD` -->
+	INSERT INTO b_tindakan_act(...,is_edit,posting,tgl_posting,user_posting)
+	VALUES (...,OLD.is_edit,OLD.posting,OLD.tgl_posting,OLD.user_posting);
+	
+ALTER TABLE `db_simrs_keuangan_joker`.`k_transaksi`     CHANGE `unit_id` `unit_id` BIGINT(20) UNSIGNED DEFAULT '0' NULL ;
+
+CREATE TABLE `db_simrs_keuangan`.`k_piutang`
+
+ALTER TABLE `db_simrs_billing`.`b_kunjungan` ADD INDEX `tgl_pulang` (`tgl_pulang`);
+
+di modul billing --> hapus pembayaran harus dicek dulu, jika b_bayar.posting>0 --> tdk boleh dihapus
+tindakan : debridement, amputasi gangren diabetikum --> di Bedah central
+			--> Px JPKMKT --> muncul iur --> tanyakan bener gak?
+b_tindakan.posting --> jika sdh diverifikasi/posting >0
+			--> tindakan yg masih blm lunas (piutang)
+			--> sudah di jurnal : Piutang (D) pada Pendapatan (K)
+			--> jd tdk boleh dibayarkan lewat pembayaran billing
+			--> harus lewat form lain --> karena jurnal-nya Kas (D) pada Piutang (K) --> Pelunasan/Pembayaran Piutang
+
+koneksi/konek.php		  --> $base_addr & $base_addr_billing
+billing/koneksi/konek.php --> $idKsoUmum=1; $idKsoBPJS=6;
+
+menu.php
+header.php
+footer.php
+footer_1.php
+secured_sess.php
+user_login.php
+
+combo_utils.php
+
+include/variable.inc.php
+
+transaksi/penerimaan_billing_kasir.php
+transaksi/penerimaan_billing_kasir_utils.php
+transaksi/penerimaan_penjualan_obat.php
+transaksi/penerimaan_penjualan_obat_utils.php
+transaksi/piutang_billing.php
+transaksi/piutang_billing_utils.php
+transaksi/piutang_farmasi.php
+transaksi/piutang_farmasi_utils.php
+
+transaksi/pasien_list.php
+transaksi/return_pelayanan.php
+
+table : k_piutang --> tipe --> 0=piutang billing, 1=piutang farmasi, 2=piutang billing+farmasi
+transaksi/piutang_billing.php --> u/ sementara data kso-nya berdasarkan b_kunjungan.kso_id
+							  --> jika dlm 1 rangkaian kunjungan ada 2 jenis kso, maka invalid
+							  --> yg benar b_tindakan.kso_id & b_tindakan_kamar.kso_id
+							  --> data tagihan pasien yg blm lunas, jika sdh diposting lewat piutang_billing
+							  --> jika mau dilunasi --> harus dibedakan dgn pembayaran tagihan pasien pd billing --> pembayaran kasir
+							  --> karena transaksi pembayaran kasir --> jurnal-nya : Kas (D) pd Pendapatan (K)
+							  --> kalo pembayaran u/ pelunasan piutang --> jurnal-nya : Kas (D) pd Piutang (K)
+							  --> boleh lewat pembayaran kasir di billing --> selama bisa membedakan bahwa pembayaran tersebut adalah
+							  --> pelunasan piutang bukan pembayaran pelayanan --> sehingga jika di jurnal tdk double pendapatan
+							  --> cara ke-2 --> pembayaran/pelunasan piutang itu dilakukan di modul keuangan
+							  --> jika yg digunakan lewat pembayaran kasir di modul billing --> bayar_utils.php di billing harus ditambahi
+							  --> u/ membedakan pelunasan piutang --> tabel : b_bayar --> tipe = 0 -> pembayaran,1=titipan,2=pelunasan
+							  --> di modul keuangan --> penerimaan kasir billing --> harus dibenahi u/ handle $dbbilling.b_bayar.tipe = 2
+							  --> = pelunasan
+
+on progress --> transaksi/piutang_farmasi.php
+			--> transaksi/piutang_farmasi_utils.php

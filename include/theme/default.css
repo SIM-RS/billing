@@ -1,0 +1,219 @@
+body,td 
+{
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+
+}
+
+.shadow {
+    /*filter: DropShadow(Color:#000000, OffX:1, OffY:1, Positive:1) ;*/
+}
+
+
+
+.HeaderBG 
+{
+    color:			#FFFFFF;
+    font-weight:	bold;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#072490, endColorstr=#7B8BC9);
+    background-color: #072490;
+
+}
+
+
+.SubHeaderBG 
+{
+    color: #FFFFFF;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#3F72C7, endColorstr=#A5B6FA);
+    background-color : #3F72C7;
+
+}
+
+
+.GreenBG 
+{
+    background-color : #CEFDCE;
+}
+
+.GrayBG 
+{
+    background-color : #999999;
+}
+
+.YellowBG 
+{
+    background-color : yellow;
+}
+.RedBG 
+{
+    background-color : #FF8C80;
+}
+
+.OrangeBG 
+{
+    background-color : #FDD0B5;
+}
+
+/*css for Sistem starts*/
+/*css for header*/
+.header{
+    background-color: #072490;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    height: 24px;
+    color: white;
+    border: 1px solid black;
+    text-align:center;
+    height:28px;
+}
+.footer{
+    background-color: #072490;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    height: 24px;
+    color: white;
+    border-right : 1px solid black;
+    border-left : 1px solid black;
+    border-bottom: 1px solid black;
+    text-align:center;
+    height:28px;
+}
+/*css for header2*/
+.header2{
+    background-color: #3f72c7;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    height: 24px;
+    color: white;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    height:28px;
+}
+/*css for label on the left side of table*/
+.label{
+    background-color: #edf1fe;
+    font-family:Arial, Helvetica, sans-serif;
+    height: 24px;
+    font-size: 12px;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    height:20px;
+}
+.sublabel{
+    background-color: #edf1fe;
+    font-family:Arial, Helvetica, sans-serif;
+    height: 24px;
+    font-size: 12px;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+/*css for content of table beside header (<td>*content*</td>)*/
+.content{
+    background-color: #fff;
+    font-size: 12px;
+    font-family:Arial, Helvetica, sans-serif;
+    height: 24px;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+/*css for textbox*/
+.txt{
+    font-size: 12px;
+    font-family:Arial, Helvetica, sans-serif;
+    border: 0;
+}
+.txt:focus{
+    border: 1px black solid;
+}
+.txtunedited{
+    background-color: #FAD;
+    font-size: 12px;
+    font-family:Arial, Helvetica, sans-serif;
+    border: 0;
+}
+.txtmustfilled{
+    background-color: #ADF;
+    font-size: 12px;
+    font-family:Arial, Helvetica, sans-serif;
+    border: 0;
+}
+/*css for Sistem finish*/
+
+/*css for Tabel start*/
+.trwhite{
+    background-color: #fff;
+}
+.trblue{
+    background-color: #edf1fe;
+}
+.subhdrkr{
+    background-color: #3f72c7;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    height: 24px;
+    color: white;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+.subhdrkn{
+    background-color: #3f72c7;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    height: 24px;
+    color: white;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+.contleft{
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    height: 24px;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+.contright{
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+/*css for Tabel finish*/
+
+/*css for popup*/
+.popup1{
+    z-index: 400;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+}
+.poppy{
+    position: absolute;
+    width: 400px;
+    right: 50%;
+    bottom: 40%;
+    z-index: 600;
+}
+.cover{
+    z-index: 500;
+    background-color: #FFF;
+    width: 100%;
+    height: 100%;
+   position: absolute;
+    filter:alpha(opacity:=60);
+   -moz-opacity: 0.6;
+   opacity: 0.6;
+   left: 0px;
+   top: 0px;
+}
+
+.tdlabelborderless{
+    font-family:Arial, Helvetica, sans-serif;
+    height: 24px;
+    font-size: 12px;
+}

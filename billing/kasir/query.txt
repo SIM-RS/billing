@@ -1,0 +1,4 @@
+select a.kunjungan_id,a.kasir_id,c.no_rm,c.nama,a.nobukti,a.tgl,a.tagihan,a.nilai from b_bayar a 
+inner join b_kunjungan b on b.id=a.kunjungan_id
+inner join b_ms_pasien c on b.pasien_id=c.id 
+WHERE a.user_act = '652' and kasir_id='1' AND a.tgl BETWEEN '2011-01-31' AND '2011-11-23' and a.disetor_tgl='0000-00-00';

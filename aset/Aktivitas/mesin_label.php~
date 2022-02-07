@@ -1,0 +1,45 @@
+<?php
+include '../koneksi/konek.php';
+$d = $_REQUEST["id"];
+$sql = "select a.kodeunit,b.kodebarang,s.thn_pengadaan,s.noseri
+			from as_seri2 s 
+			inner join as_ms_barang b on s.idbarang=b.idbarang
+			inner join as_ms_unit a on a.idunit=s.ms_idunit
+			where s.idseri = $d";
+			$c = mysql_query($sql);
+			$row = mysql_fetch_array($c);
+$qw = mysql_query("select kodedepartemen from as_setting");
+$rf = mysql_fetch_array($qw);
+$kode_lokasi = $rf["kodedepartemen"].".".$row["kodeunit"].".".substr($row["thn_pengadaan"],2,4);
+$brcode = $kode_lokasi."*".$row["kodebarang"]."-".str_pad($row["noseri"], 4, "0", STR_PAD_LEFT);
+?>
+<table width="450" align="center" border="1" cellpadding="0" cellspacing="0">
+ <tr><td style="font-size:12px;" align="center" rowspan="2">
+<img src="../images/logo_sda.jpg" border="0" width="80" height="70" style="margin-right:-15px;margin-left:-15px;margin-top:5px;margin-bottom:5px;"/> 
+ </td>
+ <td style="font-size:12px;" align="center"><b><?php echo $kode_lokasi; ?></b></td></tr>
+ <tr>
+ <td style="font-size:12px;" align="center"><b><?php echo $row["kodebarang"]."-".str_pad($row["noseri"], 4, "0", STR_PAD_LEFT); ?></b></td></tr>
+<tr>
+<?php
+echo '<td colspan="2">
+&nbsp;<img src="barcodeCreator.php?txt='.$brcode.'" width="700" height="100" >&nbsp;
+</td>
+
+</tr>';
+
+?>
+</table>
+
+<table align="center" >
+<tr><td>
+<input type="button" value="Print" onclick="cetak()" />
+</td><td></td></tr>
+</table>
+<script type="text/javascript" >
+
+function cetak(){
+		window.print();	
+	}
+
+</script>

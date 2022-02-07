@@ -1,0 +1,53 @@
+(1) Penerimaan Gudang dr PBF (a_penerimaan)
+   - tipe_trans = 0
+   - status = 1
+   - stok gudang bertambah --> qty_stok
+
+(2) Gudang return ke PBF (a_penerimaan_retur)
+   - status = 0 --> 1
+   - stok gudang berkurang--> qty
+
+(3) Gudang mutasi ke unit / Produksi mutasi ke Gudang (a_penerimaan)
+   - tipe_trans = 1
+   - status = 0
+   - Stok Gudang / Stok Produksi berkurang --> qty_stok
+
+(4) Unit terima Obat dr Gudang / Gudang terima dr Produksi (a_penerimaan)
+   - tipe_trans = 1
+   - status = 0 --> 1
+   - Stok Unit / Stok Gudang bertambah --> qty_stok
+
+(5) Unit Memberikan Pinjaman Obat (a_penerimaan)
+   - tipe_trans = 2
+   - status = 0
+   - Stok Unit (kp_id asal) berkurang --> qty_stok
+
+(6) Unit Menerima Pinjaman Obat (a_penerimaan) / Pindah Kepemilikan
+   - tipe_trans = 2
+   - status = 0 --> 1
+   - Stok Unit (kp_id) bertambah --> qty_stok
+
+(7) Unit Pinjam Obat ke unit sendiri / Gudang pinjam obat ke gudang / Pindah Kepemilikan (a_penerimaan)
+   - tipe_trans = 2
+   - status = 1
+   - Stok Unit (kp_id asal) berkurang --> qty_stok
+   - Stok Unit (kp_id) bertambah --> qty_stok
+
+
+8) Unit return penjualan (a_penjualan_retur)
+   - status = 1
+   - stok unit berkurang--> qty
+
+9) Stok Opname --> jika stok fisik lebih besar dr perhitungan (a_penerimaan)
+   - tipe_trans = 5
+   - status = 1
+   - stok unit bertambah --> qty_stok
+
+10) Stok Opname --> jika stok fisik kurang dr perhitungan (a_penerimaan)
+    - stok unit berkurang --> qty_stok input
+
+11) Unit Produksi --> produksi obat (a_penerimaan)
+   - tipe_trans = 4
+   - status = 1
+   - Stok Unit (obat lama/asal) berkurang --> qty input
+   - Stok Unit (kp_id) bertambah --> qty_stok

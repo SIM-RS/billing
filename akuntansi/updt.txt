@@ -1,0 +1,146 @@
+============== 21/02/2013 =======================
+unit/penerimaanBillingKasir2.php
+unit/utils2.php
+
+============== 07/03/2013 =======================
+unit/utils.php
+
+============== 27/03/2013 =======================
+ALTER TABLE `akuntansi`.`jenis_transaksi`     ADD COLUMN `ID_DPA` BIGINT DEFAULT '0' NULL AFTER `JTRANS_AKTIF`;
+
+theme/js/dropdown.js
+
+master/tree_mata_anggaran.php
+master/tree_trans_khusus.php
+master/tree_trans_khusus_dpa.php
+
+unit/penjualanObat.php
+unit/utils.php
+
+
+============== 27/03/2013 =======================
+
+UPDATE dbaset.as_ms_barang SET kd_ak='',kode_sak='' WHERE idbarang=13921;
+
+aset/utils.php
+
+============== 24/04/2013 =======================
+unit/utils.php
+
+============== 13/05/2013 =======================
+DELETE FROM akuntansi.jurnal WHERE NO_BUKTI LIKE 'GDM%' AND YEAR(TGL)=2013;
+DELETE FROM akuntansi.jurnal WHERE NO_KW LIKE 'GDM%' AND YEAR(TGL)=2013;
+DELETE FROM akuntansi.ak_posting WHERE no_terima LIKE 'GDM%' AND YEAR(tgl_trans)=2013;
+DELETE FROM akuntansi.jurnal WHERE NO_TRANS IN (59930,60155,60825,60826,60828,60829,64110,64574,64647,67711,67714,67715,67716,67726,67730,67745);
+
+UPDATE dbaset.as_masuk SET posted=0 WHERE YEAR(tgl_terima)=2013;
+
+UPDATE dbaset.as_ms_barang SET kode_sak='11402' WHERE kodebarang LIKE '02.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11403' WHERE kodebarang LIKE '03.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11404' WHERE kodebarang LIKE '04.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11405' WHERE kodebarang LIKE '05.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11406' WHERE kodebarang LIKE '06.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11407' WHERE kodebarang LIKE '07.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='11408' WHERE kodebarang LIKE '08.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140901' WHERE kodebarang LIKE '09.01%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140902' WHERE kodebarang LIKE '09.02%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140903' WHERE kodebarang LIKE '09.03%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140904' WHERE kodebarang LIKE '09.04%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140905' WHERE kodebarang LIKE '09.05%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140910' WHERE kodebarang LIKE '10.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140911' WHERE kodebarang LIKE '11.%' AND tipe=2;
+UPDATE dbaset.as_ms_barang SET kode_sak='1140912' WHERE kodebarang LIKE '12.%' AND tipe=2;
+
+copy table ma_sak, jenis_transaksi, detil_transaksi
+
+aset/penerimaanBrg.php
+aset/utils.php
+
+report/laporan.php
+report/arus_kas_detail.php
+report/arus_kas_detail_excell.php
+
+============== 27/03/2013 =======================
+aset/penerimaanBrg.php
+aset/utils.php
+
+============== 12/11/2013 =======================
+ALTER TABLE `akuntansi`.`ak_posting`     ADD COLUMN `no_po` VARCHAR(30) NULL AFTER `no_faktur`;
+aset/penerimaanBrg.php
+aset/utils.php
+
+============== 06/04/2014 =======================
+replace table ak_ms_unit
+
+unit/hapusObat.php
+unit/utils.php
+
+report/BKU.php
+report/BKU_excell.php
+
+============== 22/04/2014 =======================
+add table *_sap
+
+koneksi/konek.php		--> terbilang + kekata
+
+theme/js/dropdown.js
+
+logproces.php
+
+kwitansi/*
+
+unit/penerimaanBillingKasir2.php
+unit/penerimaanKlaim.php
+unit/penerimaanLain.php
+unit/pengeluaranLain.php
+unit/return_pelayanan.php
+unit/kas_bank.php
+unit/utils.php
+unit/utils2.php
+
+============== 18/05/2014 =======================
+table : lap_neraca_sap, lap_neraca_sak
+theme/js/dropdown.js
+
+report/laporan.php
+report/lap*sap.php
+
+copy table : jenis_transaksi
+
+============== 10/11/2014 =======================
+ALTER TABLE `db_simrs_akuntansi`.`lap_arus_kas`     CHANGE `id_lap_arus_kas` `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+Copy table : lap_lak_sap
+db_simrs_akuntansi.jenis_transaksi --> set JTRANS_AKTIF=0 --> JTRANS_KODE = '1402';
+db_simrs_akuntansi.jenis_transaksi --> set JTRANS_AKTIF=0 --> JTRANS_KODE = '1405402';
+db_simrs_akuntansi.jenis_transaksi --> set JTRANS_AKTIF=0 --> JTRANS_KODE = '1405403';
+db_simrs_akuntansi.jenis_transaksi --> set JTRANS_AKTIF=0 --> JTRANS_KODE = '1405404';
+
+db_simrs_akuntansi.ma_sak --> DELETE --> MA_KODE = '5150103';
+db_simrs_akuntansi.ma_sak --> DELETE --> MA_KODE = '5150104';
+
+export lap ke excell ---> belum
+
+theme/js/dropdown.js
+
+master/lap_arus_kas.php
+master/lap_arus_kas_sap.php
+
+report/laporan.php
+report/arus_kas_detail.php
+report/arus_kas_excell.php
+report/arus_kas_detail_excell.php
+
+============== 14/11/2014 =======================
+copy table : db_simrs_akuntansi.jenis_transaksi, db_simrs_akuntansi.detil_transaksi
+ALTER TABLE `db_simrs_akuntansi`.`jurnal`     ADD COLUMN `FK_ID_POSTING` BIGINT UNSIGNED DEFAULT '0' NULL AFTER `TR_ID`;
+ALTER TABLE `db_simrs_akuntansi`.`jurnal` ADD INDEX `FK_ID_POSTING` (`FK_ID_POSTING`);
+
+ALTER TABLE `db_simrs_akuntansi_joker`.`jurnal`     CHANGE `NO_KW` `NO_KW` VARCHAR(35) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' NULL ;
+
+export lap ke excell ---> belum
+
+theme/js/dropdown.js
+
+unit/detail.php
+unit/penerimaan_Setoran_Kasir_Billing.php
+unit/penerimaan_Setoran_Kasir_Billing_Utils.php

@@ -1,0 +1,108 @@
+<?php
+include("../../koneksi/konek.php");
+//====================================================================
+//Paging,Sorting dan Filter======
+$page=$_REQUEST["page"];
+$defaultsort="tgl_act";
+$sorting=$_REQUEST["sorting"];
+$filter=$_REQUEST["filter"];
+$level = ($_REQUEST['level']=='')?1:$_REQUEST['level'];
+$kodeAk=$_REQUEST["kodeAk"];
+$nama = $_REQUEST['nama'];
+$nama = str_replace(chr(5),'&',$nama);
+if($_GET['ktgr'] == 4){
+    $cakupan = $_GET['cakupan'];
+}
+else{
+    $cakupan = 0;
+}
+//===============================
+$statusProses='';
+$alasan='';
+	$idPel=$_REQUEST['idPel'];
+	$idKunj=$_REQUEST['idKunj'];
+	$tind=$_REQUEST['txt_tind'];
+	$rad_thd=$_REQUEST['rad_thd'];
+	$txt_nama=$_REQUEST['txt_nama'];
+	$txt_umur=$_REQUEST['txt_umur'];
+	$rad_lp=$_REQUEST['rad_lp'];
+	$txt_alamat=$_REQUEST['txt_alamat'];
+	$txt_tlp=$_REQUEST['txt_tlp'];
+	$txt_ktp=$_REQUEST['txt_ktp'];
+	$txt_rawat=$_REQUEST['txt_rawat'];
+	$txt_rekam=$_REQUEST['txt_rekam'];
+	$txt_resiko=$_REQUEST['txt_resiko'];
+	$idUsr=$_REQUEST['idUsr'];
+	
+
+switch(strtolower($_REQUEST['act'])){
+	case 'tambah':
+				$sql="INSERT INTO b_fom_tolak_tind_medis(pelayanan_id,kunjungan_id,tindakan,terhadap,nama,umur,sex,alamat,no_tlp,no_ktp,dirawat,no_rm,resiko,tgl_act,user_act) VALUES('$idPel','$idKunj','$tind','$rad_thd','$txt_nama','$txt_umur','$rad_lp','$txt_alamat','$txt_tlp','$txt_ktp','$txt_rawat','$txt_rekam','$txt_resiko',CURDATE(),'$idUsr')";
+		$ex=mysql_query($sql);
+	break;
+	case 'edit':
+	break;
+	case 'hapus':
+	break;
+		
+}
+
+	if ($filter!=""){
+		$filter=explode("|",$filter);
+		$filter=" AND ".$filter[0]." like '%".$filter[1]."%'";
+	}
+	
+	if ($sorting==""){
+		$sorting=$defaultsort;
+	}
+	
+	$sql="SELECT b.*,bmp.nama,bmp.no_rm,pp.nama AS nama_usr FROM b_form_radiologi_1 b
+LEFT JOIN b_pelayanan bp ON bp.id=b.pelayanan_id
+LEFT JOIN b_ms_pasien bmp ON bmp.id=bp.pasien_id
+LEFT JOIN b_ms_pegawai pp ON pp.id=b.user_act
+WHERE b.pelayanan_id='$idPel' ".$filter." order by ".$sorting;
+	
+	//echo $sql."<br>";
+	$rs=mysql_query($sql);
+	$jmldata=mysql_num_rows($rs);
+	if ($page=="" || $page=="0") $page=1;
+	$tpage=($page-1)*$perpage;
+	if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+	if ($page>1) $bpage=$page-1; else $bpage=1;
+	if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+	$sql=$sql." limit $tpage,$perpage";
+	//echo $sql;
+	$thd=array(1=>'Sendiri',2=>'Suami',3=>'Istri',4=>'Ortu',5=>'Ayah',6=>'Ibu',7=>'Wali',8=>'Anak Saya');
+	$rs=mysql_query($sql);
+	$i=($page-1)*$perpage;
+	$dt=$totpage.chr(5);
+	
+	$isi='';
+		
+	while ($rows=mysql_fetch_array($rs)){
+		$i++;
+		$isi=explode(',',$rows['isi']);		
+
+		$chk=$isi[0].','.$isi[1].','.$isi[2].','.$isi[3].','.$isi[4].','.$isi[5].','.$isi[6].','.$isi[7].','.$isi[8].','.$isi[9].','.$isi[10].','.$isi[11].','.$isi[12].','.$isi[13].','.$isi[14].','.$isi[15].','.$isi[16].','.$isi[17].','.$isi[18].','.$isi[19].','.$isi[20].','.$isi[21].','.$isi[22].','.$isi[23].','.$isi[24].','.$isi[25].','.$isi[26].','.$isi[27].','.$isi[28].','.$isi[29].','.$isi[30].','.$isi[31].','.$isi[32].','.$isi[33].','.$isi[34].','.$isi[35].','.$isi[36].','.$isi[37].','.$isi[38].','.$isi[39].','.$isi[40].','.$isi[41].','.$isi[42].','.$isi[43].','.$isi[44].','.$isi[45].','.$isi[46].','.$isi[47].','.$isi[48].','.$isi[49].','.$isi[50].','.$isi[51].','.$isi[52].','.$isi[53].','.$isi[54].','.$isi[55].','.$isi[56].','.$isi[57].','.$isi[58].','.$isi[59].','.$isi[60].','.$isi[61].','.$isi[62].','.$isi[63].','.$isi[64].','.$isi[65].','.$isi[66].','.$isi[67].','.$isi[68].','.$isi[69].','.$isi[70].','.$isi[71].','.$isi[72].','.$isi[73].','.$isi[74].','.$isi[75].','.$isi[76].','.$isi[77].','.$isi[78].','.$isi[79].','.$isi[80].','.$isi[81].','.$isi[82].','.$isi[83].','.$isi[84].','.$isi[85].','.$isi[86].','.$isi[87].','.$isi[88].','.$isi[89].','.$isi[90].','.$isi[91].','.$isi[92].','.$isi[93].','.$isi[94].','.$isi[95].','.$isi[96].','.$isi[97].','.$isi[98].','.$isi[99].','.$isi[100].','.$isi[101].','.$isi[102].','.$isi[103].','.$isi[104].','.$isi[105].','.$isi[106].','.$isi[107].','.$isi[108].','.$isi[109].','.$isi[110].','.$isi[111].','.$isi[112].','.$isi[113].','.$isi[114].','.$isi[115].','.$isi[116].','.$isi[117].','.$isi[118].','.$isi[119].','.$isi[120].','.$isi[121].','.$isi[122].','.$isi[123].','.$isi[124].','.$isi[125].','.$isi[126].','.$isi[127].','.$isi[128].','.$isi[129].','.$isi[130].','.$isi[131].','.$isi[132].','.$isi[133].','.$isi[134].','.$isi[135].','.$isi[136].','.$isi[137].','.$isi[138].','.$isi[139].','.$isi[140].','.$isi[141].','.$isi[142].','.$isi[143].','.$isi[144].','.$isi[145].','.$isi[146].','.$isi[147].','.$isi[148].','.$isi[149].','.$isi[160].','.$isi[161].','.$isi[162].','.$isi[163].','.$isi[164].','.$isi[165].','.$isi[166].','.$isi[167].','.$isi[168].','.$isi[169].','.$isi[170].','.$isi[171].','.$isi[172].','.$isi[173].','.$isi[174].','.$isi[175].','.$isi[176].','.$isi[177].','.$isi[178].','.$isi[179].','.$isi[180].','.$isi[181].','.$isi[182].','.$isi[183].','.$isi[184].','.$isi[185].','.$isi[186].','.$isi[187].','.$isi[188].','.$isi[189].','.$isi[190].','.$isi[191].','.$isi[192].','.$isi[193].','.$isi[194].','.$isi[195].','.$isi[196].','.$isi[197].','.$isi[198].','.$isi[199].','.$isi[200].','.$isi[201].','.$isi[202].','.$isi[203].','.$isi[204].','.$isi[205].','.$isi[206].','.$isi[207].','.$isi[208].','.$isi[209].','.$isi[210].','.$isi[211].','.$isi[212].','.$isi[213].','.$isi[214].','.$isi[215].','.$isi[216].','.$isi[217].','.$isi[218].','.$isi[219].','.$isi[220].','.$isi[221].','.$isi[222].','.$isi[223].','.$isi[224].','.$isi[225].','.$isi[226].','.$isi[227].','.$isi[228].','.$isi[229].','.$isi[230].','.$isi[231].','.$isi[232].','.$isi[233].','.$isi[234].','.$isi[235].','.$isi[236].','.$isi[237].','.$isi[238].','.$isi[239].','.$isi[240].','.$isi[241].','.$isi[242].','.$isi[243].','.$isi[244].','.$isi[245].','.$isi[246].','.$isi[247].','.$isi[248].','.$isi[249].','.$isi[250].','.$isi[251].','.$isi[252].','.$isi[253].','.$isi[254].','.$isi[255].','.$isi[256].','.$isi[257].','.$isi[258].','.$isi[259].','.$isi[260].','.$isi[261].','.$isi[262].','.$isi[263].','.$isi[264].','.$isi[265].','.$isi[266].','.$isi[267].','.$isi[268].','.$isi[269].','.$isi[270].','.$isi[271].','.$isi[272].','.$isi[273].','.$isi[274].','.$isi[275].','.$isi[276].','.$isi[277].','.$isi[278].','.$isi[279].','.$isi[280].','.$isi[281].','.$isi[282].','.$isi[283].','.$isi[284].','.$isi[285].','.$isi[286].','.$isi[287].','.$isi[288].','.$isi[289].','.$isi[290].','.$isi[291].','.$isi[292].','.$isi[293].','.$isi[294].','.$isi[295].','.$isi[296].','.$isi[297].','.$isi[298].','.$isi[299].','.$isi[300].','.$isi[301].','.$isi[302].','.$isi[303].','.$isi[304].','.$isi[305].','.$isi[306].','.$isi[307].','.$isi[308].','.$isi[309].','.$isi[310].','.$isi[311].','.$isi[312].','.$isi[313].','.$isi[314].','.$isi[315].','.$isi[316].','.$isi[317].','.$isi[318].','.$isi[319].','.$isi[320].','.$isi[321].','.$isi[322].','.$isi[323].','.$isi[324].','.$isi[325].','.$isi[326].','.$isi[327].','.$isi[328].','.$isi[329].','.$isi[330].','.$isi[331].','.$isi[332].','.$isi[333].','.$isi[334].','.$isi[335].','.$isi[336].','.$isi[337].','.$isi[338].','.$isi[339].','.$isi[340].','.$isi[341].','.$isi[342].','.$isi[343].','.$isi[344].','.$isi[345].','.$isi[346].','.$isi[347].','.$isi[348].','.$isi[349].','.$isi[350].','.$isi[351].','.$isi[352].','.$isi[353].','.$isi[354].','.$isi[355].','.$isi[356].','.$isi[357].','.$isi[358].','.$isi[359].','.$isi[360].','.$isi[361].','.$isi[362].','.$isi[363].','.$isi[364].','.$isi[365].','.$isi[366].','.$isi[367].','.$isi[368].','.$isi[369].','.$isi[370].','.$isi[371].','.$isi[372].','.$isi[373].','.$isi[374].','.$isi[375].','.$isi[376].','.$isi[377].','.$isi[378].','.$isi[379].','.$isi[380].','.$isi[381].','.$isi[382].','.$isi[383].','.$isi[384].','.$isi[385].','.$isi[386].','.$isi[387].','.$isi[388].','.$isi[389].','.$isi[390].','.$isi[391].','.$isi[392].','.$isi[393].','.$isi[394].','.$isi[395].','.$isi[396].','.$isi[397].','.$isi[398].','.$isi[399].','.$isi[400].','.$isi[401].','.$isi[402].','.$isi[403].','.$isi[404].','.$isi[405].','.$isi[406].','.$isi[407].','.$isi[408].','.$isi[409].','.$isi[410].','.$isi[411].','.$isi[412].','.$isi[413].','.$isi[414].','.$isi[415].','.$isi[416].','.$isi[417].','.$isi[418].','.$isi[419].','.$isi[420].','.$isi[421].','.$isi[422].','.$isi[423].','.$isi[424].','.$isi[425].','.$isi[426].','.$isi[427].','.$isi[428].','.$isi[429].','.$isi[430].','.$isi[431].','.$isi[432].','.$isi[433].','.$isi[434].','.$isi[435].','.$isi[436].','.$isi[437].','.$isi[438].','.$isi[439].','.$isi[440].','.$isi[441].','.$isi[442].','.$isi[443].','.$isi[444].','.$isi[445].','.$isi[446].','.$isi[447];
+		
+		$sisanya= $rows['tahun'];
+		
+		$dt.=$rows["id"].'|'.$sisanya.'|'.$chk.chr(3).number_format($i,0,",","").chr(3).$rows["no_rm"].chr(3).$rows["no_formulir"].chr(3).tglSQL($rows["tgl_act"]).chr(3).$rows["nama_usr"].chr(6);
+	}
+	
+	if ($dt!=$totpage.chr(5)){
+		$dt=substr($dt,0,strlen($dt)-1).chr(5).strtolower($_REQUEST['act']);
+		$dt=str_replace('"','\"',$dt);
+	}
+	mysql_free_result($rs);
+
+mysql_close($konek);
+header("Cache-Control: no-cache, must-revalidate" );
+header("Pragma: no-cache" );
+if (stristr($_SERVER["HTTP_ACCEPT"],"application/xhtml+xml")){
+	header("Content-type: application/xhtml+xml");
+}else{
+	header("Content-type: text/xml");
+}
+echo $dt;
+?>

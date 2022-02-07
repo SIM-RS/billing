@@ -1,0 +1,1 @@
+http://localhost/apotek/report/kwi_dosis.php?no_penjualan=undefined&idpel=690258&no_resep=00001&sunit=4&no_pasien=1478802&tgl=18-10-2012

@@ -1,0 +1,94 @@
+<?php 
+include '../sesi.php';
+include '../koneksi/konek.php'; 
+$id=$_REQUEST['id'];
+$tgl=$_POST['tglhps'];
+$tgl=explode('-',$tgl);
+$tgl=$tgl[2]."-".$tgl[1]."-".$tgl[0];
+$alasan=$_POST['alasan'];
+if($_POST['act']=='hapus'){
+		$id = explode("|",$_POST["id"]);
+        $t_updatetime = date("Y-m-d H:i:s");
+        $t_ipaddress = $_SERVER['REMOTE_ADDR'];
+        $t_userid = $_SESSION['userid'];
+		$sqlIns="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update KIB Aset Tetap Lainnya','update as_seri2 set isaktif = 0, tgl_hapus = $tgl, t_userid = $t_userid
+                        , t_updatetime = $t_updatetime, ket_hapus=$alasan
+                        where idseri = $id[1]','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns);
+		$sql_del = "update as_seri2 set isaktif = 0, tgl_hapus = '$tgl', t_userid = '$t_userid'
+                        , t_updatetime = '$t_updatetime', ket_hapus='$alasan'
+                        where idseri = ".$id[1];
+                $rs = mysql_query($sql_del);
+                $res = mysql_affected_rows();
+				if($res>0){
+				echo "<script>alert('data berhasil dihapus');window.close();window.opener.grid.loadURL('utils_seri.php?pilihan=aset','','GET');</script>";
+				}else{
+				echo "<script>alert('data gagal dihapus');</script>";
+				}
+                
+}
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link type="text/css" rel="stylesheet" href="../default.css"/>
+<link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>.: Hapus Data  :.</title>
+</head>
+<iframe height="193" width="168" name="gToday:normal:agenda.js"
+	id="gToday:normal:agenda.js"
+	src="../theme/popcjs.php" scrolling="no"
+	frameborder="1"
+	style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+</iframe>
+<script language="javascript">
+   var arrRange=depRange=[];
+</script>
+<body>
+<form action="" method="post" id="form1">
+<table align="center" width="650" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+<tr>
+<td align="center">
+	<table width="500" align="center" cellpadding="0" cellspacing="0" class="login">
+	<tr>
+		<td colspan="2" class="header">.: Form Penghapusan Aset Tetap Lainya :.</td>
+	</tr>
+	<tr>
+		<td colspan="2" class="label">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="210" class="label">Tgl Hapus</td>
+		<td width="288" class="content"><input type="text" id="tglhps" name="tglhps" class="txt" size="20" value="<?php echo date("d-m-Y"); ?>">
+		<img alt="calender" style="cursor:pointer" border=0 src="../images/cal.gif" align="absbottom" onClick="gfPop.fPopCalendar(document.getElementById('tglhps'),depRange);" />	
+		<font color="#666666"><em>(dd-mm-yyyy)</em></font> </td>
+	</tr>
+	<tr>
+		<td class="label">Alasan Hapus</td>
+		<td class="content"><textarea rows="2" cols="40" id="alasan" name="alasan"></textarea></td>
+	</tr>
+	<tr>
+		<td colspan="2" align="center" class="label">
+		<input type="hidden" id="act" name="act" />
+		<input type="hidden" id="id" name="id" value="<?=$id;?>" />
+		<input type="submit" id="hapus" name="hapus" onclick="document.getElementById('act').value = 'hapus';" value="Hapus" />&nbsp;&nbsp;&nbsp;<input type="button" id="batal" name="batal" value="Batal" onclick="window.close()"/></td>
+	</tr>
+	</table>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr>
+	<td><div><img src="../images/foot.gif" width="650" height="45"></div></td>
+</tr>
+</table>
+</form>
+</body>
+</html>

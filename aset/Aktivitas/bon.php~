@@ -1,0 +1,171 @@
+<?php
+include '../koneksi/konek.php'; 
+session_start();
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='/simrs/aset/';
+                        </script>";
+}
+date_default_timezone_set("Asia/Jakarta");
+$tgl=gmdate('d-m-Y',mktime(date('H')+7));
+$th=explode("-",$tgl);
+$bulan=$_REQUEST['bulan'];
+if ($bulan=="") $bulan=(substr($th[1],0,1)=="0")?substr($th[1],1,1):$th[1];
+$ta=$_REQUEST['ta'];
+if ($ta=="") $ta=$th[2];
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <script type="text/javascript" language="JavaScript" src="../theme/js/dsgrid.js"></script>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <title>.: BON :.</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <iframe height="72" width="130" name="sort"
+                    id="sort"
+                    src="../theme/dsgrid_sort.php" scrolling="no"
+                    frameborder="0"
+                    style="border: medium ridge; position: absolute; z-index: 65535; left: 100px; top: 250px; visibility: hidden">
+            </iframe>
+            <?php
+include("../header.php");
+?>
+            <div>
+                <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <table width="850" border="0" cellspacing="0" cellpadding="0" align="center" class="tabel">
+                                <tr>
+                                    <td height="30" valign="bottom" align="right">
+                                        <div style="float:left; width:250px; margin-left:-25px;">
+                                            <form action="">
+                                                <select name="bulan" id="bulan" class="txtinput" onChange="goFilterAndSort('gridbox')">
+                                                    <option value="01" class="txtinput"<?php if ($bulan=="1") echo "selected";?>>Januari</option>
+                                                    <option value="02" class="txtinput"<?php if ($bulan=="2") echo "selected";?>>Pebruari</option>
+                                                    <option value="03" class="txtinput"<?php if ($bulan=="3") echo "selected";?>>Maret</option>
+                                                    <option value="04" class="txtinput"<?php if ($bulan=="4") echo "selected";?>>April</option>
+                                                    <option value="05" class="txtinput"<?php if ($bulan=="5") echo "selected";?>>Mei</option>
+                                                    <option value="06" class="txtinput"<?php if ($bulan=="6") echo "selected";?>>Juni</option>
+                                                    <option value="07" class="txtinput"<?php if ($bulan=="7") echo "selected";?>>Juli</option>
+                                                    <option value="08" class="txtinput"<?php if ($bulan=="8") echo "selected";?>>Agustus</option>
+                                                    <option value="9" class="txtinput"<?php if ($bulan=="9") echo "selected";?>>September</option>
+                                                    <option value="10" class="txtinput"<?php if ($bulan=="10") echo "selected";?>>Oktober</option>
+                                                    <option value="11" class="txtinput"<?php if ($bulan=="11") echo "selected";?>>Nopember</option>
+                                                    <option value="12" class="txtinput"<?php if ($bulan=="12") echo "selected";?>>Desember</option>
+                                                </select>
+									 Tahun : 
+                                                <select name="ta" id="ta" class="txtinput" onChange="goFilterAndSort('gridbox')">
+                                                    <?php for ($i=($th[2]-5);$i<($th[2]+1);$i++) { ?>
+                                                    <option value="<?php echo $i; ?>" class="txtinput"<?php if ($i==$ta) echo "selected";?>>
+                                                        <?php echo $i;?>
+                                                    </option>
+                                                    <?php } ?>
+                                                </select>
+                                            </form>
+                                        </div>
+					<button type="button" onClick="reportBon();" style="cursor: pointer">
+                            <img alt="add" src="../icon/add.gif" border="0" width="16" height="16" ALIGN="absmiddle" />
+                            Print & Preview
+                        </button>
+                                        <input type="hidden" id="txtId" name="txtId" />
+                                        <input type="hidden" id="no_bon" name="no_bon" />
+                                        <input type="hidden" id="tgl_bon" name="tgl_bon" />
+										<input type="hidden" id="tipe" name="tipe"/>
+                                        <img alt="tambah" src="../images/tambah.png" style="cursor: pointer" onClick="location='bon_detil.php?act=add'" />&nbsp;&nbsp;
+                                        <img alt="edit" src="../images/edit.gif" style="cursor: pointer" onClick="if(document.getElementById('txtId').value == '' || document.getElementById('txtId').value == null)
+					{alert('Pilih dulu BON yang akan diedit.');return;}edit();" />&nbsp;&nbsp;
+                                        <img alt="hapus" src="../images/hapus.gif" style="cursor: pointer" id="btnHapusPO" name="btnHapus" onClick="hapus();" />&nbsp;
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <div id="gridbox" style="width:950px; height:300px; background-color:white; overflow:hidden;"></div>
+                                        <div id="paging" style="width:950px;"></div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div><img alt="" src="../images/foot.gif" width="1000" height="45" /></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript" language="javascript">
+	function reportBon(){	    
+	    var no_bon=document.getElementById('no_bon').value;
+		var sNo=no_bon.split('/');
+		var noBarkode=sNo[1]+sNo[2];
+	    var tgl_bon=document.getElementById('tgl_bon').value;
+	    if(no_bon=='' || tgl_bon==''){
+		alert("Silakan pilih data terlebih dahulu!");
+	    }else{
+		window.open('bon_cetak.php?code='+noBarkode+'&no_bon='+no_bon+'&tgl_bon='+tgl_bon,'report_bon');
+	    }
+	}
+        function ambilData()
+        {
+            var p="txtId*-*"+(rek.getRowId(rek.getSelRow()))+"*|*no_bon*-*"+rek.cellsGetValue(rek.getSelRow(),3)+"*|*tgl_bon*-*"+balikTgl(rek.cellsGetValue(rek.getSelRow(),2));
+            fSetValue(window,p);
+        }
+
+        function edit(){
+			var sisipan=rek.getRowId(rek.getSelRow()).split("|");
+			var tipe=document.getElementById('tipe').value=sisipan[1];
+            window.location='bon_detil.php?act=edit&no_bon='+document.getElementById('no_bon').value+'&tgl_bon='+document.getElementById('tgl_bon').value+'&tipe='+tipe;
+        }
+
+        function hapus()
+        {
+            var bln_bon = document.getElementById("bulan").value;
+	    var thn_bon = document.getElementById("ta").value;
+	    var kode=rek.cellsGetValue(rek.getSelRow(),3);
+            if(confirm("Anda yakin menghapus Bon No: '"+kode+"'")){
+		//alert("bon_util.php?act=hapus&kode="+kode);
+                
+		rek.loadURL("bon_util.php?act=hapus&kode="+kode+"&bln="+bln_bon+"&ta="+thn_bon,"","GET");
+            }
+        }
+	
+	function balikTgl(tgl){
+            var part = tgl.split("-");
+            var temp=part[2]+"-"+part[1]+"-"+part[0];
+            return temp;
+        }
+
+        function goFilterAndSort(pilihan){
+            if (pilihan=="gridbox")
+            {
+      //rek.loadURL("utils.php?pilihan=bon&filter="+rek.getFilter()+"&sorting="+rek.getSorting()+"&page="+rek.getPage()+"&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value,"","GET");
+		rek.loadURL("bon_util.php?pilihan=tampil&filter="+rek.getFilter()+"&sorting="+rek.getSorting()+"&page="+rek.getPage()+"&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value,"","GET");
+            }
+            //alert("utils.php?pilihan=bon&filter="+rek.getFilter()+"&sorting="+rek.getSorting()+"&page="+rek.getPage()+"&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value);
+            //alert("bon_util.php?pilihan=tampil&filter="+rek.getFilter()+"&sorting="+rek.getSorting()+"&page="+rek.getPage()+"&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value);
+        }
+
+        var rek=new DSGridObject("gridbox");
+        rek.setHeader(".: Data BON :.");
+        rek.setColHeader("No,Tgl Bon,No.Bon,Unit,Petugas RTP,Petugas Unit,Status");
+        rek.setIDColHeader(",tgl_transaksi,kode_transaksi,namaunit,petugas_rtp,petugas_unit,stt");
+        rek.setColWidth("35,100,100,250,100,100,50");
+        rek.setCellAlign("center,center,center,left,center,center,center");
+        rek.setCellHeight(20);
+        rek.setImgPath("../icon");
+        rek.setIDPaging("paging");
+        rek.attachEvent("onRowClick","ambilData");
+        //rek.baseURL("utils.php?pilihan=bon&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value);
+	rek.baseURL("bon_util.php?pilihan=tampil&bln="+document.getElementById('bulan').value+"&ta="+document.getElementById('ta').value);
+        rek.Init();
+    </script>
+</html>

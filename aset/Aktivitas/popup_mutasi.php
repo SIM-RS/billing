@@ -1,0 +1,182 @@
+<?
+include '../sesi.php';
+?>
+<?php
+$unit_opener="par=idunit*kodeunit*namaunit*idlokasi*kodelokasi";
+?>
+<div id="div_popup" align="center" class="popup">
+    <div id="div_popup1" align="center" class="poppy">
+        <form id="form1" name="form1" action="" method="post">
+            <table width="600" border="0" class="" cellpadding="0" cellspacing="0" style="margin-top: 50%; margin-left: 50%">
+                <tr>
+                    <td colspan="2" class="header" align="center">
+                        .: Form Mutasi Barang :.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label" width="150">&nbsp;
+                        Unit Lama
+                        <input type="hidden" id="idunit_lama" />
+                    </td>
+                    <td class="content" width="250">&nbsp;
+                        <span id="span_kodeunit"></span>
+                        &nbsp;-&nbsp;
+                        <span id="span_namaunit"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label" width="150">&nbsp;
+                        Ruangan Lama
+                        <input type="hidden" id="idruang_lama" />
+                    </td>
+                    <td class="content" width="250">&nbsp;
+                        <span id="span_koderuang"></span>
+                        &nbsp;-&nbsp;
+                        <span id="span_namaruang"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">&nbsp; Kode Unit
+                        <input type="hidden" id="idunit" name="idunit" />
+                        <input type="hidden" id="idlokasi" name="idlokasi" />
+                    </td>
+                    <td class="content">&nbsp;
+                        <input name="kodeunit" type="text" class="txtunedited" readonly id="kodeunit" tabindex="2" size="10" maxlength="15" />
+                        
+                       
+                    </td>
+                </tr>
+				<tr>
+					<td class="label">&nbsp; Nama Unit</td>
+					<td class="content">&nbsp;
+						<input type="text" name="namaunit" id="namaunit" readonly class="txtunedited" />
+						<input type="hidden" id="namaunit" name="namaunit" />
+                        <img alt="tree" title='daftar unit kerja'  style="cursor:pointer" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('unit_tree.php?<?php echo $unit_opener; ?>',800,500,'Tree Unit',true)" /></td>
+				</tr>
+				<tr>
+					<td class="label">&nbsp; Kode Lokasi</td>
+					<td class="content">&nbsp; <input name="kodelokasi" type="text" class="txtunedited" readonly id="kodelokasi" tabindex="3" size="10" maxlength="10" />
+                        </td>
+				</tr>
+				<tr>
+					<td class="label">&nbsp; Nama Lokasi</td>
+					<td class="content">&nbsp; <input type="text" id="namalokasi" name="namalokasi" size="35" readonly class="txtunedited" />&nbsp;<img alt="search" title='daftar ruangan' style="cursor:pointer" border=0 src="../images/lookup.gif" align="absbottom" onClick="OpenWnd('lv_ruang.php?idunit='+document.getElementById('idunit').value+'&namaunit='+document.getElementById('namaunit').value,410,300,'Daftar Ruangan',true)" /></td>
+				</tr>
+                <tr>
+                    <td colspan="2" class="header2">PENAGGUNG JAWAB</td>
+                </tr>
+                <tr>
+                    <td valign="top" class="label">&nbsp;
+                        Nama
+                    </td>
+                    <td class="content">&nbsp;
+                        <input name="namapetugas" type="text" class="txt" id="namapetugas" size="30" maxlength="50" />
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top" class="label">&nbsp;
+                        Jabatan
+                    </td>
+                    <td class="content">&nbsp;
+                        <input name="jabatanpetugas" type="text" class="txt" id="jabatanpetugas" size="30" maxlength="50" />
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top" class="label">&nbsp;
+                        Catatan
+                    </td>
+                    <td class="content">&nbsp;
+                        <textarea name="catpetugas" cols="30" class="txt" rows="3" id="catpetugas"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">&nbsp;
+                        Tanggal Mutasi
+                    </td>
+                    <td class="content">&nbsp;
+                        <input name="tglmutasi" readonly type="text" class="txt" id="tglmutasi" size="20" maxlength="15" />
+                        <img alt="calender" style="cursor:pointer" border=0 src="../images/cal.gif" align="absbottom" onClick="gfPop.fPopCalendar(document.getElementById('tglmutasi'),depRange);" />
+                        <font color="#666666"><em>(dd-mm-yyyy)</em></font>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="footer" align="right" colspan="2">
+                        <input type="hidden" id="destination" name="destination" />
+                        <input type="button" value="Confirm" onclick="todo('conf_mutasi','div_popup',document.getElementById('destination').value)" /> &nbsp;
+                        <input type="button" value="Cancel" onclick="todo('cancel','div_popup',document.getElementById('destination').value)" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div id="div_cover" class="cover" align="center">
+    </div>
+</div>
+<iframe height="193" width="168" name="gToday:normal:agenda.js"
+        id="gToday:normal:agenda.js"
+        src="../theme/popcjs.php" scrolling="no"
+        frameborder="1"
+        style="border:1px solid medium ridge; position: absolute; z-index: 65535; left: 100px; top: 50px; visibility: hidden">
+</iframe>
+
+<script type="text/JavaScript" language="JavaScript">
+    var arrRange=depRange=[];
+    function todo(act,form,dest)
+    {
+        var rowid = document.getElementById("txtId").value;
+
+        switch(act){
+            case 'hapus':
+                if(confirm("Anda yakin menghapus KIB "+dest+" "+grid.cellsGetValue(grid.getSelRow(),4))){
+                    grid.loadURL("utils_seri.php?pilihan="+dest+"&act=hapus_"+dest+"&rowid="+rowid,"","GET");
+                }
+                break;
+            case 'mutasi':
+			//alert(tmp);
+                document.getElementById('span_kodeunit').innerHTML = grid.cellsGetValue(grid.getSelRow(),1);
+                document.getElementById('idunit_lama').value = tmp[1];
+                document.getElementById('span_namaunit').innerHTML = tmp[2];
+                document.getElementById('idruang_lama').value = tmp[3];
+                document.getElementById('span_koderuang').innerHTML = tmp[4];
+                document.getElementById('span_namaruang').innerHTML = tmp[5];
+                document.getElementById('destination').value = dest;
+                document.getElementById(form).style.display = 'block';
+                break;
+            case 'conf_mutasi':
+                var idunit = document.getElementById('idunit').value;
+                var idlokasi = document.getElementById('idlokasi').value;
+                if(idunit == '' || idunit == null || idlokasi == '' || idlokasi == null){
+                    alert("Unit harus diisi.");
+                    return;
+                }
+                var idunit_old = document.getElementById('idunit_lama').value;
+                var idlokasi_old = document.getElementById('idruang_lama').value;
+                if(idunit_old == idunit){
+                    alert("Unit Tidak Boleh Kosong.");
+                    return;
+                }
+                var namapetugas = document.getElementById('namapetugas').value;
+                var jabatanpetugas = document.getElementById('jabatanpetugas').value;
+                var catpetugas = document.getElementById('catpetugas').value;
+                var tglmutasi = document.getElementById('tglmutasi').value;
+                alert("utils_seri.php?pilihan="+dest+"&act=mutasi_"+dest+"&rowid="+rowid+"&idunit="+idunit+"&idlokasi="+idlokasi+"&namapetugas="+namapetugas+"&jabatanpetugas="+jabatanpetugas+"&catpetugas="+catpetugas+"&tglmutasi="+tglmutasi);
+                //grid.loadURL("utils_seri.php?pilihan="+dest+"&act=mutasi_"+dest+"&rowid="+rowid+"&idunit="+idunit+"&idlokasi="+idlokasi+"&namapetugas="+namapetugas+"&jabatanpetugas="+jabatanpetugas+"&catpetugas="+catpetugas+"&tglmutasi="+tglmutasi,"","GET");
+                todo('cancel',form,dest);
+                break;
+            case 'cancel':
+                document.getElementById(form).style.display = 'none';
+                document.getElementById('idunit_lama').value = '';
+                document.getElementById('idruang_lama').value = '';
+                document.getElementById('kodeunit').value = '';
+                document.getElementById('namaunit').value = '';
+                document.getElementById('idunit').value = '';
+                document.getElementById('idlokasi').value = '';
+                document.getElementById('kodelokasi').value = '';
+                document.getElementById('namapetugas').value = '';
+                document.getElementById('jabatanpetugas').value = '';
+                document.getElementById('catpetugas').value = '';
+                document.getElementById('tglmutasi').value = '';
+                break;
+        }
+    }
+</script>

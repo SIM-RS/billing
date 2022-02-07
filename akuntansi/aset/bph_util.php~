@@ -1,0 +1,187 @@
+<?php
+session_start();
+$user = $_SESSION['akun_iduser'];
+include("../koneksi/konek.php");
+$kode = $_REQUEST["kode"];
+//======================================================================
+$page=$_REQUEST["page"];
+$defaultsort="tgl_gd,no_gd,kodebarang";
+$sort=$_REQUEST["sorting"];
+$saring='';
+$filter=$_REQUEST["filter"];
+$data = $_REQUEST["data"];
+//============================================================================
+switch(strtolower($_REQUEST['act'])) {
+	case 'posting':
+	$data = explode("*", $data);
+	$x = count($data)-1;
+	for($v=0;$v<$x;$v++){
+					$d = explode("|",$data[$v]);
+					//echo "SELECT * FROM ak_posting WHERE tipe=12 AND no_faktur='".$d[2]."' AND no_bukti='".$d[3]."' AND id_cc_rv='".$d[0]."' AND biayaRS_DPP_PPN='".$d[4]."' ";
+					$d1= mysql_query("SELECT * FROM ak_posting WHERE tipe=12 AND no_faktur='".$d[2]."' AND no_bukti='".$d[3]."' AND id_cc_rv='".$d[0]."' AND biayaRS_DPP_PPN='".$d[4]."' ");
+					$ro = mysql_num_rows($d1);
+					if($ro==0){
+					//echo "update dbaset.as_keluar k inner join dbaset.as_ms_barang b on k.barang_id=b.idbarang set posted='1' where left(b.kodebarang,2)='".$d[3]."'";
+				  // $d1=mysql_query("update dbaset.as_keluar k inner join dbaset.as_ms_barang b on k.barang_id=b.idbarang set posted='1' where left(b.kodebarang,2)='".$d[3]."'");
+					$sql="INSERT INTO akuntansi.ak_posting (tgl_trans,no_faktur,no_bukti,id_cc_rv,biayaRS_DPP_PPN,tgl_act,tipe) VALUES ('".$d[1]."','".$d[2]."','".$d[3]."','".$d[0]."','".$d[4]."',sysdate(),'12')";
+					$r = mysql_query($sql);
+					$pil = substr($d[3],0,2);
+							switch($pil){
+									case '01':
+									$pil = 282;
+									break;
+									case '02':
+									$pil = 288;
+									break;
+									case '03':
+									$pil = 294;
+									break;
+									case '04':
+									$pil = 300;
+									break;
+									case '05':
+									$pil = 53;
+									break;
+									case '06':
+									$pil = 35;
+									break;
+									case '07':
+									$pil = 47;
+									break;
+									case '08':
+									$pil = 41;									
+									break;								
+								}
+								$no = mysql_query("select NO_TRANS from akuntansi.jurnal order by NO_TRANS DESC limit 1");
+								$data_no = mysql_fetch_array($no);
+								$notrans = $data_no["NO_TRANS"]+1;
+								$uraian = $d[3]."-".$d[8];
+								$inj1 = "INSERT INTO akuntansi.jurnal (NO_TRANS,FK_SAK,TGL,URAIAN,DEBIT,TGL_ACT,FK_IDUSER,
+D_K,JENIS,FK_TRANS,FK_LAST_TRANS,NO_BUKTI,CC_RV_KSO_PBF_UMUM_ID) 
+VALUES ('$notrans','$d[7]','$d[1]','$uraian','$d[4]',sysdate(),'$iduser','D','0','81','81','','$d[0]')";
+								mysql_query($inj1);								
+								$inj2 = "INSERT INTO akuntansi.jurnal (NO_TRANS,FK_SAK,TGL,URAIAN,KREDIT,TGL_ACT,FK_IDUSER,
+D_K,JENIS,FK_TRANS,FK_LAST_TRANS,NO_BUKTI,CC_RV_KSO_PBF_UMUM_ID) 
+VALUES ('$notrans','$d[6]','$d[1]','$uraian','$d[4]',sysdate(),'$iduser','K','0','81','81','','$d[0]')";							
+								mysql_query($inj2);
+					if(!$r){
+								$dt="0".chr(5).chr(4).chr(5).$_REQUEST['act'];					
+						}
+						}else {
+							$d1=mysql_query("update dbaset.as_keluar k inner join dbaset.as_ms_barang b on k.barang_id=b.idbarang set posted='1' where left(b.kodebarang,2)='".$d[3]."'");
+								$dt="0".chr(5).chr(4).chr(5).$_REQUEST['act'];
+							}
+		}
+	//echo "hh";
+	break;
+}
+//$sql="INSERT INTO ak_posting (tgl_trans,no_faktur,no_bukti,id_cc_rv,biayaRS_DPP_PPN,tgl_act,tipe) VALUES ('','','','','','','')";
+//============================================================================
+$tgl1=$_REQUEST['tgl1'];
+$tglp=explode('-',$tgl1);
+$tanggal1=$tglp['2'].'-'.$tglp['1'].'-'.$tglp['0'];
+$tgl2=$_REQUEST['tgl2'];
+$tgll=explode('-',$tgl2);
+$tanggal2=$tgll['2'].'-'.$tgll['1'].'-'.$tgll['0'];
+$posting=$_REQUEST['posting'];
+//============================================================================
+if ($filter != ''){
+	$filter = explode('|',$filter);
+	$filter=" and ".$filter[0]." like '%".$filter[1]."%'";
+}
+
+	if ($sort == ''){
+	$sort = $defaultsort;
+	}
+if ($kode == "true"){
+	if($posting==0){
+		$sqll="SELECT T2.unit_id,mu.namaunit,tgl_gd,no_gd,
+  MB.kode_sak,
+  MB.akunpemakaian, MB.kodebarang,mb.namabarang,T2.NL,T2.klr_id,MB.idbarang FROM dbaset.as_ms_barang MB INNER JOIN
+		(SELECT T1.unit_id,tgl_gd,no_gd,LEFT(M.kodebarang,2) kdbrg,SUM(T1.nilai) NL,T1.klr_id FROM dbaset.as_ms_barang M INNER JOIN
+		(SELECT unit_id,tgl_gd,no_gd,barang_id,nilai, K.klr_id FROM dbaset.as_keluar K WHERE posted=0 AND DATE(k.tgl_gd) BETWEEN '$tanggal1' AND '$tanggal2') AS T1
+		ON M.idbarang=T1.barang_id GROUP BY kdbrg) AS T2
+		ON MB.kodebarang=T2.kdbrg 
+		INNER JOIN dbaset.as_ms_unit mu ON mu.idunit=T2.unit_id WHERE mb.tipe=2 $filter
+		ORDER BY $sort";
+	}else{
+		$sqll="SELECT
+  tgl_trans          tgl_gd,
+  no_bukti           kodebarang,
+  no_faktur          no_gd,
+  id_cc_rv,
+  u.namaunit,
+  b.kode_sak,
+  b.akunpemakaian,
+  b.namabarang,
+  biayaRS_DPP_PPN    NL,
+  tgl_act
+FROM akuntansi.ak_posting p
+  INNER JOIN dbaset.as_ms_unit u
+    ON p.id_cc_rv = u.idunit
+  INNER JOIN dbaset.as_ms_barang b
+    ON p.no_bukti = b.kodebarang where b.tipe=2 and date (tgl_trans) between '$tanggal1' and '$tanggal2' $filter"; 
+	
+/*$sqll="SELECT T2.unit_id,mu.namaunit,tgl_gd,no_gd, MB.kodebarang,mb.namabarang,T2.NL,T2.klr_id,MB.idbarang,1 FROM dbaset.as_ms_barang MB INNER JOIN
+		(SELECT T1.unit_id,tgl_gd,no_gd,LEFT(M.kodebarang,2) kdbrg,SUM(T1.nilai) NL,T1.klr_id FROM dbaset.as_ms_barang M INNER JOIN
+		(SELECT unit_id,tgl_gd,no_gd,barang_id,nilai, K.klr_id FROM dbaset.as_keluar K WHERE posted=1 AND DATE(k.tgl_gd) BETWEEN '$tanggal1' AND '$tanggal2') AS T1
+		ON M.idbarang=T1.barang_id GROUP BY kdbrg) AS T2
+		ON MB.kodebarang=T2.kdbrg 
+		INNER JOIN dbaset.as_ms_unit mu ON mu.idunit=T2.unit_id WHERE mb.tipe=2 $filter
+		ORDER BY $sort";*/	
+	}
+}
+	//echo $sqll;
+	$perpage = 100;
+	$query=mysql_query($sqll);
+    $jmldata=mysql_num_rows($query);
+    if ($page=="" || $page=="0") $page=1;
+    $tpage=($page-1)*$perpage;
+    if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+	if ($page>1) $bpage=$page-1; else $bpage=1;
+    if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+    $sql=$sql." limit $tpage,$perpage";
+	$i=($page-1)*$perpage;
+    $data=$totpage.chr(5);
+    
+	if ($kode == "true"){
+	while ($rows=mysql_fetch_array($query)){
+		$i++;
+		$k = mysql_query("select ma_sak.ma_id from akuntansi.ma_sak where ma_sak.ma_kode = '".$rows['kode_sak']."'");
+		$dta = mysql_fetch_array($k);
+		$id=$rows['unit_id']."|".$rows['tgl_gd']."|".$rows['no_gd']."|".$rows['kodebarang']."|".$rows['NL']."|".$rows['idbarang']."|".$dta['ma_id']."|".$rows['akunpemakai']."|".$rows['namabarang']; 
+		
+		$data.=$id.chr(3).$i.chr(3).$rows['tgl_gd'].chr(3).$rows['no_gd'].chr(3).$rows['namaunit'].chr(3).$rows['kodebarang'].chr(3).$rows['namabarang'].chr(3).$rows['NL'].chr(3).$posting.chr(6);
+	/**
+ * if($posting==0){
+ * 	 $sqlll="SELECT * FROM ak_posting WHERE tipe=12 AND no_faktur='".$rows['no_gd']."' AND no_bukti='".$rows['kodebarang']."' AND id_cc_rv='".$rows['unit_id']."' AND biayaRS_DPP_PPN='".$rows['NL']."'";
+ * 	$d1= mysql_query($sqlll);
+ * 		$ro = mysql_num_rows($d1);
+ * 		if($ro>=0){
+ * 		$id=$rows['unit_id']."|".$rows['tgl_gd']."|".$rows['no_gd']."|".$rows['kodebarang']."|".$rows['NL']; 
+ * 		$i++;
+ * 		$data.=$id.chr(3).$i.chr(3).$rows['tgl_gd'].chr(3).$rows['no_gd'].chr(3).$rows['namaunit'].chr(3).$rows['kodebarang'].chr(3).$rows['namabarang'].chr(3).$rows['NL'].chr(3)."0".chr(6);
+ * 		}
+ * 	}else{
+ * 		$i++;
+ * 		echo $data.=$id.chr(3).$i.chr(3).$rows['tgl_gd'].chr(3).$rows['no_gd'].chr(3).$rows['namaunit'].chr(3).$rows['kodebarang'].chr(3).$rows['namabarang'].chr(3).$rows['NL'].chr(3)."1".chr(6);
+ * 		}
+ */
+	} 
+}
+
+    if ($data!=$totpage.chr(5)) {
+        $data=substr($data,0,strlen($data)-1).chr(5);
+        $data=str_replace('"','\"',$data);
+    }
+	mysql_free_result($query);
+mysql_close($konek);
+header("Cache-Control: no-cache, must-revalidate" );
+header("Pragma: no-cache" );
+if (stristr($_SERVER["HTTP_ACCEPT"],"application/xhtml+xml")) {
+    header("Content-type: application/xhtml+xml");
+}else {
+    header("Content-type: text/xml");
+} 
+echo $data;
+?>

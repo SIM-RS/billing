@@ -1,0 +1,221 @@
+<?
+include '../sesi.php';
+?>
+<?php
+include("../koneksi/konek.php");
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$type = $_SESSION["usertype"];
+$id = $_GET['idlokasi'];
+$back_addr = "lokasi.php";
+if(isset($_GET['origin']) && $_GET['origin'] != '') {
+    $back_addr = "lokasi_tree.php";
+}
+
+if(isset($_POST['act']) && $_POST['act'] != '') {
+    $act = $_POST['act'];
+    $kodelokasi=$_POST["kodelokasi"];
+    $namalokasi=$_POST["namalokasi"];
+    $status=$_POST["status"];
+    $parentkode=$_POST["induklokasi"];
+    $id = $_POST["id"];
+    if($act == "add") {
+    	$que = mysql_query("select * from as_lokasi where kodelokasi = '$kodelokasi'");
+    	$f = mysql_num_rows($que);
+    	if($f==0){
+		$sqlIns="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Insert Master Lokasi','insert into as_lokasi values('','',$kodelokasi,$namalokasi,1,$status)','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns);
+       $query = "insert into as_lokasi values('','','$kodelokasi','$namalokasi','1','$status')";
+        $qw = mysql_query("update as_lokasi set islast = 0 where kodelokasi = '$parentkode'");
+   }else{
+			$res = -1;
+			$kesalahan = 'Ada data yang sama';    	
+    	} 
+    }
+    else if($act == 'edit') {
+    	$sqlIns2="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update Master Lokasi','update as_lokasi set kodelokasi=$kodelokasi,namalokasi=$namalokasi,statuslokasi=$status where idlokasi=$id','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns2);
+       $query = "update as_lokasi set kodelokasi='$kodelokasi',namalokasi='$namalokasi',statuslokasi='$status' where idlokasi=$id";
+		$qw = mysql_query("update as_lokasi set islast = 0 where kodelokasi = '$parentkode'");    
+		
+    }
+    if($f==0){
+    $rs = mysql_query($query);
+    $res = mysql_affected_rows();
+    }
+    if($act == 'edit') {
+        if($res > 0) {
+            echo "<script>
+                alert('Data berhasil diubah.');
+                window.location = '$back_addr';
+                </script>";
+        }
+        else if($res == 0) {
+            echo "<script>alert('Data tidak ada yang berubah.');</script>";
+        }
+        else {
+            echo "<script>alert('Terdapat kesalahan pada input anda. $kesalahan');</script>";
+        }
+    }
+    else if($act == 'add') {
+        if($res > 0) {
+            echo "<script>
+                alert('Data Telah Berhasil Tersimpan..');
+                window.location = '$back_addr';
+                </script>";
+        }
+        else if($res == 0) {
+            echo "<script>alert('Data gagal dimasukan.');</script>";
+        }
+        else {
+            echo "<script>alert('Terdapat kesalahan pada input anda. $kesalahan');</script>";
+        }
+    }
+}
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <title>.: Data Lokasi:.</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <?php
+            include("../header.php");
+            $act = $_GET['act'];
+            $par = "act=$act";
+            if($act == 'edit') {
+               $query="select * from as_lokasi where idlokasi = $id";
+                $rs = mysql_query($query);
+                $rows = mysql_fetch_array($rs);
+                $h =$rows["kodelokasi"];
+                $jml = strlen($rows["kodelokasi"]);
+                for($r=$jml;0<=$r;$r--){
+							if($h[$r]=='.'){
+								$jml = $r;
+									break;								
+								}                	
+                	}
+               $parent = substr($rows["kodelokasi"],0,$jml);
+                if($rows["statuslokasi"]==1){
+								$dd = "selected";
+								$da = '';                	
+                	}else{
+								$da = "selected";
+								$dd='';                		
+                		}
+            }
+            ?>
+            <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <table width="680"  border="0" cellspacing="0" cellpadding="2" align="center">
+                            <tr>
+                                <td height="30" colspan="2" valign="bottom" align="right">
+                                    <button class="Enabledbutton" id="backbutton" onClick="location='<?php echo $back_addr;?>'" title="Back" style="cursor:pointer">
+                                        <img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Back to List
+                                    </button>
+                                    <button type="button" class="Enabledbutton" id="btnSimpan" name="btnSimpan" onClick="save()" title="Save" 
+									style="cursor:pointer;visibility:<? if($type=="G") echo "hidden"; else echo "visible"; ?>">
+                                        <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Save Record
+                                    </button>
+                                    <button class="Disabledbutton" id="undobutton" onClick="location='<?php echo $_SERVER['REQUEST_URI'];?>'" title="Cancel / Refresh" style="cursor:pointer">
+                                        <img alt="undo/refresh" src="../images/undosmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Undo/Refresh
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" height="28" class="header">.: Data Lokasi :.</td>
+                            </tr>
+                            <form action="" method="post" id="form1" name="form1">
+                                <tr>
+                                    <td width="20%" height="20" class="label">&nbsp;Induk Lokasi</td>
+                                    <td width="80%" class="content">&nbsp;
+                                    <input type="hidden" name="act" id="act" value="<?php echo $act; ?>" />
+                                    <input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />
+                                        <input type="text" id="induklokasi" name="induklokasi" class="txtunedited" readonly="readonly" value="<?php echo $parent; ?>" size="20" maxlength="30" />
+													<img alt="tree" title='Struktur tree kode barang' style="cursor:pointer;visibility:<? if($type=="G") echo "hidden"; else echo "visible"; ?>" border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('tree_lokasi.php?<?php echo 'par=induklokasi*kodelokasi'; ?>',800,500,'msma',true)">                                    
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Kode Lokasi</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="kodelokasi" name="kodelokasi" class="txtmustfilled" value="<?php echo $rows['kodelokasi']; ?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Nama Lokasi</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="namalokasi" name="namalokasi" class="txt" value="<?php echo $rows['namalokasi']; ?>" size="75" maxlength="75" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Status</td>
+                                    <td class="content">&nbsp;
+                                    <select name="status" id="status">
+                                    <option value="1" <?php echo $dd;?> >Aktif</option>
+                                    <option value="0" <?php echo $da;?> >Tidak Aktif</option>
+                                    </select>
+                                    </td>
+                                </tr>
+                             	
+                            </form>
+                            <tr>
+                                <td colspan="2" class="header2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                  
+                                </td>
+                            </tr>
+                        </table>
+                        <?php
+include '../footer.php';
+?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script type="text/JavaScript" language="JavaScript">
+	
+function save()
+{
+	if((document.form1.kodelokasi.value)==(document.form1.induklokasi.value+'.'))
+	{
+				alert("Kode tidak boleh sama dengan induk !!");  
+				return;      		
+	}
+	if(document.form1.kodelokasi.value == '')
+	{
+				alert("Isi Kode Lokasi");
+				document.getElementById('kodelokasi').focus();
+				return;           	
+	}
+	if(document.form1.namalokasi.value == '')
+	{
+				alert("Isi Nama Lokasi");
+				document.getElementById('namalokasi').focus();
+				return;           	
+	}
+	document.getElementById('form1').submit();
+}
+  
+    </script>
+</html>

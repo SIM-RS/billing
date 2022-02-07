@@ -1,0 +1,193 @@
+<?
+include '../sesi.php';
+?>
+<?php
+include("../koneksi/konek.php");
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+//if (isset($_SESSION["PATH_MS_MA"]))
+//	$PATH_INFO=$_SESSION["PATH_MS_MA"];
+//else{
+$PATH_INFO="?".$_SERVER['QUERY_STRING'];
+$_SESSION["PATH_MS_MA"]=$PATH_INFO;
+//}
+$type = $_SESSION["usertype"];
+?>
+<html>
+    <title>Tree Barang</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+    <link rel="stylesheet" href="../theme/mod.css" type="text/css" />
+    <link rel="stylesheet" href="../default.css" type="text/css" />
+   
+    <body style="border-width:0px;" bgcolor="#CCCCCC" onLoad="javascript:if (window.focus) window.focus();">
+        <div align="center">
+            <?php
+            include '../header.php';
+            ?>
+            <table border=1 cellspacing=0 width="1000">
+                
+                <tr>
+                    <td class=header align=center>
+                        <font size=1><b>
+                                .: Data Barang :.
+                            </b></font>
+                    </td>
+                </tr>
+                <tr bgcolor="whitesmoke">
+                    <td style="padding: 10px">
+                    <table width="100%">
+<tr><td> <select id="tipe" name="tipe" class="txt" onChange="filter(this.value)">
+                            <option value="1" <?php if($_GET['tipe'] == 1 || !isset($_GET['tipe']) || $_GET['tipe'] == '') echo 'selected';?>>Aset Tetap</option>
+                            <option value="2" <?php if($_GET['tipe'] == 2) echo 'selected';?>>Aset Lancar</option>
+                        </select></td><td align="right">
+						<div id="pa" style="display:<? if($type=="G") echo "none"; else echo "block"; ?>">
+						<button value="Tambah data" onClick="location='detailBrg.php?origin=pindah&act=add&tipe='+document.getElementById('tipe').value"> Tambah Data <img alt="tambah" style="cursor: pointer" src="../images/tambah.png" />&nbsp;
+                   </button>
+				   </div>
+				   </td></tr>
+</table>
+                       
+                    </td>
+                </tr>
+                <form action="detailBrg.php" method="get" id="form1" name="form1">
+                    <tr bgcolor="whitesmoke">
+                        <td nowrap>
+                            <input type="hidden" name="act" id="act" value="edit" />
+                            <input type="hidden" name="idbarang" id="idbarang" />
+                            <input type="hidden" name="origin" id="origin" value="treeBarang" />
+                            
+                            <?php
+                            // Detail Data Parameters
+                            if (isset($_REQUEST["p"])) {
+                                $_SESSION['itemtree.filter'] = $_REQUEST["p"];
+                                $p = $_SESSION['itemtree.filter'];
+                            }
+                            else {
+                                if ($_SESSION['itemtree.filter'])
+                                    $p = $_SESSION['itemtree.filter'];
+                            }
+
+                            /*********************************************/
+                            /*  Read text file with tree structure       */
+                            /*********************************************/
+
+                            /*********************************************/
+                            /* read file to $tree array                  */
+                            /* tree[x][0] -> tree level                  */
+                            /* tree[x][1] -> item text                   */
+                            /* tree[x][2] -> item link                   */
+                            /* tree[x][3] -> link target                 */
+                            /* tree[x][4] -> last item in subtree        */
+                            /*********************************************/
+                            //$tree=array();
+                            $canRead = true;
+                            $maxlevel=0;
+                            $cnt=0;
+                            /*if(isset($_GET['idunit']) && $_GET['idunit'] != ''){
+                            $strSQL = "select b.* from as_ms_barang b left join
+                                    (select * from as_transaksi t left join as_seri s on t.idtransaksi = s.idtransaksi
+                                    inner join as_kib k on k.idtransaksi = t.idtransaksi and b.
+                                    where idunit = 6) t on b.idbarang = t.idbarang";
+                            "select b.*
+                                    from as_transaksi t right join as_ms_barang b on t.idbarang = b.idbarang
+                                    left join as_seri s on t.idtransaksi = s.idtransaksi
+                                    inner join as_kib k on t.idtransaksi = k.idtransaksi
+                                    where idunit = '".$_GET['idunit']."'";
+                            $rs = mysql_query($strSQL);
+                            while ($rows=mysql_fetch_array($rs)) {
+                                $c_level = $rows["level"];
+                                $mpkode=trim($rows['kodebarang']);
+                                $tree[$cnt][0]= $c_level;
+                                $tree[$cnt][1]= $rows["kodebarang"]." - ".($mpkode==""?"":$mpkode." - ").$rows["namabarang"];
+                                if ($c_level>0)
+                                    $tree[$cnt][2]= "javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['idbarang']."*|*".$par[1]."*-*".$rows['kodebarang']."*|*".$par[2]."*-*".$rows['namabarang']."');window.close();";
+                                //."*|*".$par[3]."*-*".($rows['level']+1)
+                                else
+                                    $tree[$cnt][2] = null;
+
+                                $tree[$cnt][3]= "";
+                                $tree[$cnt][4]= 0;
+                                if ($tree[$cnt][0] > $maxlevel)
+                                    $maxlevel=$tree[$cnt][0];
+                                $cnt++;
+                            }
+                        }
+                        else{*/
+                            $tipe = 1;
+                            $filter = "where tipe = 1 ";
+                            if(isset($_GET['tipe']) && $_GET['tipe'] == 2){
+                                $filter = "where tipe = 2 ";
+                                $tipe = 2;
+                            }
+                            $strSQL = "select idbarang,kodebarang,namabarang,level,tipe from as_ms_barang $filter order by kodebarang";
+                            $rs = mysql_query($strSQL);
+                            while ($rows=mysql_fetch_array($rs)) {
+                                $c_level = $rows["level"];
+                                $mpkode=trim($rows['kodebarang']);
+                                $tree[$cnt][0]= $c_level;
+                                $tree[$cnt][1]= ($mpkode==""?"":$mpkode." - ").$rows["namabarang"];
+                                //$rows["kodebarang"]." - ".
+                                if ($c_level>0)
+                                    $tree[$cnt][2]= "javascript:setValue36('idbarang-|-'+".$rows['idbarang']."+'|-|tipe-|-'+".$rows['tipe'].");";
+                                ////"javascript:fSetValue(window.opener,'".$par[0]."*-*".$rows['idbarang']."*|*".$par[1]."*-*".$rows['kodebarang']."*|*".$par[2]."*-*".$rows['namabarang']."');window.close();";
+                                //."*|*".$par[3]."*-*".($rows['level']+1)
+                                else
+                                    $tree[$cnt][2] = null;
+
+                                $tree[$cnt][3]= "";
+                                $tree[$cnt][4]= 0;
+                                if ($tree[$cnt][0] > $maxlevel)
+                                    $maxlevel=$tree[$cnt][0];
+                                $cnt++;
+                            }
+                            //}
+                            mysql_free_result($rs);
+
+                            $tree_img_path="../images";
+                            include("../theme/treemenu.inc.php");
+                            ?>
+                            <input type="hidden" name="tipe" id="tipe" value="<?php echo $tipe;?>" />
+                        </td>
+                    </tr>
+                </form>
+                <tr>
+				<tr>
+					<td align="center" bgcolor="#FFFFFF">
+					<button class="Enabledbutton" id="backbutton" onClick="location='kode_brg.php?e=<?php echo $_REQUEST['tipe'] ?>'" title="Back" style="cursor:pointer">
+					<img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+					Back to List
+                    </button></td>
+				</tr>
+                    <td class="footer">
+                        <?php
+                        include '../footer.php';
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script type="text/javascript" language="javascript">
+        function filter(value){
+            window.location = "treeBarang.php?tipe="+value;
+        }
+
+        function setValue36(par){
+            if(par != '' && par != null){
+                var send = par.split('|-|');
+                for(var i=0; i<send.length; i++){
+                    var kirim = send[i].split('-|-');
+                    document.getElementById(kirim[0]).value = kirim[1];
+                }
+                document.getElementById('form1').submit();
+            }
+        }
+    </script>
+</html>
+<?php
+mysql_close($konek);
+?>

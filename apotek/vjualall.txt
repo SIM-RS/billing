@@ -1,0 +1,7 @@
+DELIMITER $$;
+
+DROP VIEW IF EXISTS `dbapotik`.`vjualall`$$
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vjualall` AS (select `a_penjualan`.`JENIS_PASIEN_ID` AS `KEPEMILIKAN_ID`,sum(if((`a_penjualan`.`UNIT_ID` = 1),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit1`,sum(if((`a_penjualan`.`UNIT_ID` = 2),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit2`,sum(if((`a_penjualan`.`UNIT_ID` = 3),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit3`,sum(if((`a_penjualan`.`UNIT_ID` = 4),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit4`,sum(if((`a_penjualan`.`UNIT_ID` = 5),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit5`,sum(if((`a_penjualan`.`UNIT_ID` = 6),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit6`,sum(if((`a_penjualan`.`UNIT_ID` = 7),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit7`,sum(if((`a_penjualan`.`UNIT_ID` = 8),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit8`,sum(if((`a_penjualan`.`UNIT_ID` = 9),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit9`,sum(if((`a_penjualan`.`UNIT_ID` = 10),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit10`,sum(if((`a_penjualan`.`UNIT_ID` = 11),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit11`,sum(if((`a_penjualan`.`UNIT_ID` = 12),`a_penjualan`.`SUM_SUB_TOTAL`,0)) AS `unit12` from `a_penjualan` where (`a_penjualan`.`STATUS` = 1) group by `a_penjualan`.`JENIS_PASIEN_ID`)$$
+
+DELIMITER ;$$

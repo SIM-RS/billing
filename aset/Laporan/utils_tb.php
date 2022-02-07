@@ -1,0 +1,133 @@
+<?php
+session_start();
+include("../koneksi/konek.php");
+//====================================================================
+//Paging,Sorting dan Filter======
+$page=$_REQUEST["page"];
+$sorting=$_REQUEST["sorting"];
+$filter=$_REQUEST["filter"];
+$tipe = $_REQUEST["tipe"];
+$kode = $_REQUEST["kode"];
+$level = $_REQUEST["level"];
+$bln=gmdate('m',mktime(date('H')+7));
+$thn=gmdate('Y',mktime(date('H')+7));
+function rupiah($angka)
+{
+$rupiah="";
+$rp=strlen($angka);
+while ($rp>3)
+{
+$rupiah = ".". substr($angka,-3). $rupiah;
+$s=strlen($angka) - 3;
+$angka=substr($angka,0,$s);
+$rp=strlen($angka);
+}
+$rupiah = "" . $angka . $rupiah . "";
+return $rupiah;
+}
+if($_GET['bln'] and $_GET['thn']<>'')$filter2=" where t.bln='".$_GET['bln']."' AND t.thn='".$_GET['thn']."'"; 
+else $filter2=" where t.bln='$bln' AND t.thn='$thn'";
+$defaultsort = ' t.close_id';
+$tgl=gmdate('d-m-Y',mktime(date('H')+7));
+$th=explode("-",$tgl);
+$bln=$_REQUEST['bln'];
+if ($bln=="")
+    $bln=(substr($th[1],0,1)=="0")?substr($th[1],1,1):$th[1];
+$thn=$_REQUEST['thn'];
+if ($thn=="")
+    $thn=$th[2];
+
+//===============================
+
+if ($filter!="") {
+    $filter=explode("|",$filter);
+    $filter=" AND ".$filter[0]." like '%".$filter[1]."%'";
+}
+
+if ($sorting=="") {
+    $sorting=$defaultsort;
+}
+if($kode==''){
+	$kode = 0; 
+}
+if($level==''){
+	$level = 1; 
+}
+
+//$sql = "select * from tutup_buku t inner join as_ms_barang b on b.idbarang=t.barang_id $filter2 order by $sorting";
+$sql = "select * from as_ms_barang b where level='$level' and tipe='$tipe' and kodebarang like '$kode%' order by kodebarang";
+$rs=mysql_query($sql);
+$jmldata=mysql_num_rows($rs);
+if ($page=="" || $page=="0") $page=1;
+$tpage=($page-1)*$perpage;
+if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+if ($page>1) $bpage=$page-1; else $bpage=1;
+if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+$sql=$sql." limit $tpage,$perpage";
+
+$rs=mysql_query($sql);
+$i=($page-1)*$perpage;
+$dt=$totpage.chr(5);
+
+	$bln1 = $bln = $_GET['bln'];
+	$thn1 = $thn = $_GET['thn'];
+	$qw = mysql_query("select close_id from tutup_buku where bln = '$bln1' AND thn = '$thn1' ");
+	$dr4 = mysql_num_rows($qw);
+while($rows = mysql_fetch_array($rs)) {
+    $i++;
+    $ttl=0;
+	$bln1 = $bln = $_GET['bln'];
+	$thn1 = $thn = $_GET['thn'];
+	$bln = $bln-1;
+	if($bln==0)
+	{
+	$bln = 12;
+	$thn = $thn-1;
+	}
+	
+	if($dr4 > 0){
+	$dr = "select sum(awal_jml) AS awal_jml,sum(awal_nilai) AS awal_nilai from tutup_buku where bln='$bln1' and thn='$thn1' AND barang_id in (select idbarang from as_ms_barang where kodebarang like '".$rows['kodebarang']."%' and tipe='$tipe')";
+	//echo "1";
+	$drt = "select sum(masuk_jml) AS masuk_jml,sum(keluar_jml) AS keluar_jml,sum(masuk_nilai) AS masuk_nilai,sum(keluar_nilai) AS keluar_nilai from tutup_buku where bln='$bln1' and thn='$thn1' AND barang_id in (select idbarang from as_ms_barang where kodebarang like '".$rows['kodebarang']."%' and tipe='$tipe')";
+	$dr1 = mysql_query($dr);
+	$dr2 = mysql_fetch_array($dr1);
+	$dr1t = mysql_query($drt);
+	$dr2t = mysql_fetch_array($dr1t);
+	}else{
+	/*$dr = "select sum(jml_sisa) AS awal_jml,sum(nilai_sisa) AS awal_nilai from as_kstok where YEAR(waktu)='$thn' AND MONTH(waktu)='$bln' AND barang_id in (select idbarang from as_ms_barang where kodebarang like '".$rows['kodebarang']."%' and level !=1 and tipe='$tipe')";
+	$drt = "select sum(jml_masuk) AS masuk_jml,sum(jml_keluar) AS keluar_jml,sum(nilai_masuk) AS masuk_nilai,sum(nilai_keluar) AS keluar_nilai from as_kstok where YEAR(waktu)='$thn1' AND MONTH(waktu)='$bln1' AND barang_id in (select idbarang from as_ms_barang where kodebarang like '".$rows['kodebarang']."%' and level !=1 and tipe = '$tipe')";
+	$dr1 = mysql_query($dr);
+	$dr2 = mysql_fetch_array($dr1);
+	$dr1t = mysql_query($drt);
+	$dr2t = mysql_fetch_array($dr1t);*/
+	}
+	
+    
+	if($dr2['awal_jml']=='') $dr2['awal_jml']=0;
+	if($dr2['awal_nilai']=='') $dr2['awal_nilai']=0;
+	
+	
+	
+	if($dr2t['masuk_jml']=='') $dr2t['masuk_jml']=0;
+	if($dr2t['masuk_nilai']=='') $dr2t['masuk_nilai']=0;
+	if($dr2t['keluar_jml']=='') $dr2t['keluar_jml']=0;
+	if($dr2t['keluar_nilai']=='') $dr2t['keluar_nilai']=0;
+	
+	$jml_saldo = $dr2['awal_jml']+$dr2t['masuk_jml']-$dr2t['keluar_jml'];
+	$nilai_saldo = $dr2['awal_nilai']+$dr2t['masuk_nilai']-$dr2t['keluar_nilai'];
+			$wr='blue';	
+	if($rows['islast']==1){
+			$wr = 'black';		
+		}
+    $dt.=$rows['kodebarang'].'|'.$rows['level'].'|'.$rows['islast'].chr(3).$i.chr(3).$rows['kodebarang'].chr(3).'&nbsp;<span style=color:'.$wr.'><b>'.$rows['namabarang'].'</b></span>'.chr(3).$rows['idsatuan'].chr(3).$dr2['awal_jml'].chr(3).rupiah($dr2['awal_nilai']).'&nbsp;'.chr(3).$dr2t['masuk_jml'].chr(3).rupiah($dr2t['masuk_nilai']).'&nbsp;'.chr(3).$dr2t['keluar_jml'].chr(3).rupiah($dr2t['keluar_nilai']).'&nbsp;'.chr(3).$jml_saldo.chr(3).rupiah($nilai_saldo).chr(6);
+}
+
+if ($dt!=$totpage.chr(5)) {
+    $dt=substr($dt,0,strlen($dt)-1);
+    $dt=str_replace('"','\"',$dt);
+}
+mysql_free_result($rs);
+mysql_close($konek);
+
+echo $dt;
+?>

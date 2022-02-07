@@ -1,0 +1,56 @@
+body,td {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 8pt;
+}
+.shadow {
+    filter: DropShadow(Color=#000000, OffX=1, OffY=1, Positive=1) ;
+}
+.HeaderBG {
+    color:			#FFFFFF;
+    font-weight:	bold;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#005f2d, endColorstr=#018867);
+    background-color: #005f2d;
+}
+.SubHeaderBG {
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#207f63, endColorstr=#38b389);
+    background-color : #38b389;
+    color:			#FFFFFF;
+}
+.HeaderBW {
+    color:			#000000;
+    font-weight:	bold;
+}
+.SubHeaderBW {
+    color:			#666666;
+}
+.GridStyle {
+    border:1px solid black;
+    border-collapse: collapse;
+}
+.HeaderBGGreen {
+    color:	#FFFFFF;
+    font-weight:   bold;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#006600, endColorstr=#339900);
+    background-color: #006600;
+}
+.SubHeaderBGGreen {
+    color:			#FFFFFF;
+    font-weight:	bold;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#229955, endColorstr=#97E8AB);
+    background-color :#229955;
+}
+.GreenBG {
+    background-color : #CEFDCE;
+}
+.GrayBG {
+    background-color : #999999;
+}
+.YellowBG {
+    background-color : yellow;
+}
+.RedBG {
+    background-color : #FF8C80;
+}
+.OrangeBG {
+    background-color : #FDD0B5;
+}

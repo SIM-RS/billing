@@ -1,0 +1,135 @@
+<?php include '../koneksi/konek.php'; ?>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>.: Cetak PO :.</title>
+<link rel="stylesheet" type="text/css" href="../theme/print.css" />
+</head>
+
+<body>
+<table width="1049" cellpadding="0" cellspacing="0" align="center">
+<tr>
+	<td colspan="4">&nbsp;</td>
+</tr>
+<tr>
+	<td colspan="4" align="center" style="font-family:Geneva, Arial, Helvetica, sans-serif; font-size:18px">PURCHASE ORDER</td>
+</tr>
+<tr>
+	<td colspan="4" align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td width="253">Jenis Surat</td>
+	<td width="21">:</td>
+	<td width="315"> <?php echo $_REQUEST['jns'];?></td>
+	<td width="559" rowspan="4">
+		<table width="500" align="right" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="399" rowspan="5" align="center"> <img src="barcodeCreator.php?txt=<?php echo $_REQUEST['nomor'];?>">&nbsp;</td>
+		</tr>
+	</table></td>
+</tr>
+<tr>
+	<td>Tanggal</td>
+	<td>:</td>
+	<td> <?php echo $_REQUEST['tgl'];?></td>
+  </tr>
+<tr style="vertical-align:middle">
+	<td valign="top">Nomor</td>
+	<td valign="top">:</td>
+	<td valign="top"><?php echo $_REQUEST['nomor'];?>	</td>
+  </tr>
+<tr>
+	<td>Supplier</td>
+	<td>:</td>
+	<?php
+		$id_sup=$_REQUEST['supplier'];
+	  	$query = "select idrekanan, namarekanan from as_ms_rekanan where idrekanan=$id_sup";
+		$rs = mysql_query($query);
+		//echo mysql_error();
+		$rowss=mysql_fetch_array($rs);
+		?>
+	<td><?php echo $rowss['namarekanan'] ;?></td>
+  </tr>
+<tr>
+	<td>Jatuh Tempo Pengiriman</td>
+	<td>:</td>
+	<td colspan="2"> <?php echo $_REQUEST['tgl_kirim'];?></td>
+</tr>
+<tr>
+	<td valign="top">Judul PO</td>
+	<td valign="top">:</td>
+	<td colspan="2"> <?php echo $_REQUEST['jdl'];?></td>
+</tr>
+
+<tr>
+	<td colspan="4" align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td colspan="4" align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td colspan="4" align="center">&nbsp;</td>
+</tr>
+<tr id="trCetak">
+	<td colspan="4" align="right">  
+	<input type="button" value="CETAK" onClick="cetak()"/>
+	<input type="button" value="TUTUP" onClick="window.close()"/>	</td>
+</tr>
+<tr>
+	<td colspan="4">
+		<table width="1049" cellpadding="0" cellspacing="0" align="center">
+		
+			<tr class="headtable">
+				<td width="42" align="center" class="tblheaderkiri">No</td>
+				<td width="95" align="center" class="tblheader">Kode Barang</td>
+				<td width="199" align="center" class="tblheader">Nama Barang</td>
+				<td width="137" align="center" class="tblheader">Uraian</td>
+				<td width="34" align="center" class="tblheader">Jml</td>
+				<td width="61" align="center" class="tblheader">Satuan</td>
+				<td width="107" align="center" class="tblheader">Harga Satuan</td>
+				<td width="103" align="center" class="tblheader">Total</td>
+			</tr>
+			<?php
+           
+				
+			$no_po=$_REQUEST['no_po'];
+   $sql = "select id,ms_barang_id,uraian,kodebarang,namabarang,vendor_id,namarekanan,no_po,date_format(tgl_po,'%d-%m-%Y') as tgl,satuan,qty_satuan,lain2,harga_satuan,unit_id,ab.idsatuan,au.namaunit
+from as_po ap inner join as_ms_barang ab on ap.ms_barang_id = ab.idbarang left join as_ms_rekanan ar on ap.vendor_id = ar.idrekanan  left JOIN as_ms_unit au ON au.idunit=ap.unit_id
+where no_po = '$no_po' order by id asc";
+$rs1 = mysql_query($sql);
+$i = 1;
+while($rows1 = mysql_fetch_array($rs1)) {
+$ttl=$rows1['qty_satuan']*$rows1['harga_satuan'];
+$ttlttl+=$ttl
+?>
+			<tr>
+				<td class="tdisikiri" align="center"><?php echo $i; ?></td>
+				<td class="tdisi" align="center"><?php echo $rows1['kodebarang'];?></td>
+				<td class="tdisi" align="left"><?php echo $rows1['namabarang'];?></td>
+				<td class="tdisi"><?php echo $rows1['uraian'];?>&nbsp;</td>
+				<td class="tdisi" align="center"><?php echo $rows1['qty_satuan'];?></td>
+				<td class="tdisi" align="left"><?php echo $rows1['idsatuan']; ?>&nbsp;</td>
+				<td class="tdisi" align="right"><?php echo number_format($rows1['harga_satuan'],0,',','.');?></td>
+				<td class="tdisi" align="right"><?php echo number_format($ttl,0,',','.');?></td>
+			</tr>
+			<?php 
+			$i++;
+			}
+			?>
+			<tr>
+				<td colspan="7" align="right" class="tdisikiri">Total&nbsp;:&nbsp;</td>
+				<td align="right" class="tdisi" colspan="1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo number_format($ttlttl,0,',','.'); ?></td>
+				<td class="tdisi">&nbsp;</td>
+			</tr>
+	  </table></td>
+</tr>
+</table>
+</body>
+<script>
+	    function cetak(){		
+		document.getElementById('trCetak').style.visibility='hidden';
+		window.print();
+		window.close();				
+	    }
+	</script>
+</html>

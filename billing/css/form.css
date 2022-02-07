@@ -1,0 +1,118 @@
+body{ font-size:12px; font-family:Tahoma, Geneva, sans-serif;}
+
+.div_form{
+border-radius:5px;
+margin:auto;
+padding-bottom:30px;
+}
+.judul_form{
+font:bold 14px tahoma;
+text-align:center;
+color:#FFFFFF;
+background:#005386;
+padding:8px 0px;
+border-radius:5px 5px 0px 0px;
+
+}
+.isi_form{
+background:#DDD;
+border-radius:0px 0px 5px 5px;
+border:1px solid #003366; 
+}
+
+/*==================================*/
+table{
+font:12px Arial, Helvetica, sans-serif;
+}
+#error_login{
+display:none;
+background: #FFCC00;
+text-align:center;
+font:11px tahoma;
+padding:3px 5px;
+border:1px solid #FF6600;
+}
+.table_label{
+background: #6699CC;
+padding:5px;
+}
+.table_text{
+background: #B0CEE3;
+padding:5px;
+}
+input[type=text],[type=password],[type=file] {
+font:12px tahoma;
+padding:5px;
+border:1px solid #999;
+border-radius:3px;
+}
+input[type=text]:disabled,[type=password]:disabled {
+background:#CCC;
+}
+textarea{
+font:12px tahoma;
+padding:5px;
+border:1px solid #999;
+border-radius:3px;
+}
+select{
+padding:5px;
+border:1px solid #006699;
+font:12px tahoma;
+background:#FFFF99;
+border-radius:5px;
+cursor:pointer;
+}
+button{
+padding:3px 5px;
+cursor:pointer;
+background:#003366;
+font:bold 12px tahoma;
+color:#FFFFFF;
+border:1px solid #333333;
+border-radius:3px;
+}
+button:hover{
+background:#0066CC;
+}
+
+.sCenter{ text-align:center;}
+.sLeft{ text-align:left;}
+.sRight{ text-align:right;}
+
+div.DTTT_container {
+	float:left;
+}
+.ui-buttonset .ui-button {
+    margin-left: 0;
+    margin-right: 0.1em;
+}
+.dataTables_length {
+    width: 40%;
+    float: left;
+    clear: both;
+}
+.dataTables_filter {
+    width: 25%;
+	float:right;
+}
+.dataTables_processing {
+    background: none repeat scroll 0 0 #DDDDDD;
+    border: 1px solid #000000;
+    color: #000000;
+    font-size: 12px;
+    top: 50%;
+    width: 250px;
+}
+.dataTables_scrollBody{
+	min-height:200px;
+}
+.ui-datepicker-trigger{
+	margin-left:5px;
+	vertical-align:middle;
+}
+
+/* .ui-autocomplete-menu{
+	z-index:10;
+	top: 0px;
+} */

@@ -1,0 +1,113 @@
+/* CSS Document */
+body{
+margin:0;
+background:#F0F0F0;
+}
+#atas{
+padding:10px 40px;
+height:80px;
+/*background: #CC0000;*/
+background: url(inc/images/atas.jpg) repeat-x;
+margin:auto;
+color:#FFFFFF;
+border-bottom:3px solid #FF0000;
+}
+#kiri{
+float:left;
+width:300px;
+height:70px;
+padding:5px;
+/*background:rgba(30,30,30,0.5);*/
+border-radius:5px;
+}
+#kanan{
+float:right;
+width:230px;
+height:80px;
+}
+.kanan1{
+font:bold 20px Arial, Helvetica, sans-serif;
+}
+.kanan2{
+font:bold 12px Arial, Helvetica, sans-serif;
+}
+#judul_aplikasi{
+width:1000px;
+min-height:20px;
+margin:auto;
+margin-top:20px;
+border:0px solid #336699;
+font:bold 20px Arial, Helvetica, sans-serif;
+color: #336600;
+text-align:center;
+}
+
+#kotak{
+width:1000px;
+min-height:500px;
+margin:auto;
+margin-top:20px;
+border:1px solid #FF1111;
+background: #CC0000;
+/*background: url(inc/images/kotak1.png) repeat fixed;
+
+background: url(inc/images/kotak1.png) repeat fixed;*/
+
+/*background-size: cover;*/
+border-radius:5px;
+padding:20px;
+}
+/*
+
+background: url(images/bg.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+*/
+
+#judul{
+height:20px;
+padding:5px 10px;
+background: url(inc/images/judul.png) repeat-x;
+font:bold 14px Arial, Helvetica, sans-serif;
+color:#666;
+border-radius:3px 3px 0px 0px;
+border-bottom:1px solid #FF0000;
+}
+#konten{
+height:160px;
+padding:10px 20px;
+background:#FFF;
+font:bold 12px Arial, Helvetica, sans-serif;
+border-radius:0px 0px 3px 3px;
+margin-bottom:20px;
+}
+#konten a{
+color:#000000;
+text-decoration:none;
+}
+#kotak_icon{
+float:left;
+width:110px;
+height:140px;
+padding:5px;
+}
+#kotak_icon:hover{
+-moz-box-shadow: 0 0 5px #888;
+-webkit-box-shadow: 0 0 5px#888;
+box-shadow: 0 0 5px #888;
+cursor:pointer;
+}
+#gambar_icon{
+width:100px;
+height:100px;
+padding:5px;
+}
+#nama_icon{
+width:100px;
+height:20px;
+padding:5px;
+text-align:center;
+font:bold 12px Arial, Helvetica, sans-serif;
+}

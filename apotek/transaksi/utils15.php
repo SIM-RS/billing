@@ -1,0 +1,363 @@
+<?php
+//include("../sesi.php");
+include("../koneksi/konek.php");
+$grd = $_REQUEST["grd"];
+$grdDet = $_REQUEST['grdDet'];
+$idunit = $_REQUEST['idunit'];
+$idunitRujuk = $_REQUEST['idunitRujuk'];
+$newIdCarabayar = $_REQUEST['newIdCarabayar'];
+$iduser = $_REQUEST['iduser'];
+$shft = $_REQUEST['shift'];
+$val="";
+$th=explode("-",$_REQUEST['tanggal']);
+$tgl2="$th[2]-$th[1]-$th[0]";
+
+//====================================================================
+//Paging,Sorting dan Filter======
+$page=$_REQUEST["page"];
+$defaultsort=" gab.id";
+$sorting=$_REQUEST["sorting"];
+$filter=$_REQUEST["filter"];
+//$res;
+//===============================
+
+switch(strtolower($_REQUEST['act']))
+{
+  case 'tambah':
+	$res="";
+	$sqlTambah = "UPDATE $dbbilling.b_resep SET status = '1' WHERE id = '".$_REQUEST['idRes']."'";
+	//echo $sqlTambah."<br>";
+	$rs=mysqli_query($konek,$sqlTambah);
+	if (mysqli_errno($konek)>0){
+		$res="gagal";
+	}
+	echo $res;
+	return;
+  break;
+  case 'editobat':
+  	$fdata = explode("|",$_REQUEST['fdata']);
+	$sql = "SELECT *,CURDATE() tgltrans,NOW() tgl_act FROM $dbbilling.b_resep WHERE id = '".$fdata[0]."'";
+	//echo $sql."<br>";
+	$rs=mysqli_query($konek,$sql);
+	$rw=mysqli_fetch_array($rs);
+	$no_penjualan=$rw["no_resep"];
+	$tqty=$rw["qty"];
+	$tgltrans=$rw["tgltrans"];
+	$tglact=$rw["tgl_act"];
+	if ($rw["kepemilikan_id"]!=$fdata[2]){
+		$sql="call gd_mutasi($idunit,$idunit,0,'$no_penjualan',$fdata[1],$fdata[2],".$rw["kepemilikan_id"].",$tqty,2,$iduser,1,'$tgltrans','$tglact')";
+		//echo $sql."<br>";
+		$rs1=mysqli_query($konek,$sql);
+	}
+	$sql = "UPDATE $dbbilling.b_resep SET obat_id=$fdata[1],harga_netto=$fdata[3],harga_satuan=$fdata[4] WHERE id = '".$fdata[0]."'";
+	//echo $sql."<br>";
+	$rs=mysqli_query($konek,$sql);
+  break;
+  case 'kirimunit':
+ 	$sql = "UPDATE $dbbilling.b_resep SET apotek_id=$idunitRujuk WHERE no_resep = '".$_REQUEST['no_resep']."' AND no_rm='".$_REQUEST['no_rm']."' AND id_pelayanan='".$_REQUEST['IdPel']."' AND status < '2'";
+	//echo $sql."<br>";
+	$rs=mysqli_query($konek,$sql);
+  break;
+  case 'ubahcarabayar':
+ 	$sql = "UPDATE $dbbilling.b_resep SET cara_bayar=$newIdCarabayar WHERE no_resep = '".$_REQUEST['no_resep']."' AND no_rm='".$_REQUEST['no_rm']."' AND id_pelayanan='".$_REQUEST['IdPel']."' AND status < '2'";
+	//echo $sql."<br>";
+	$rs=mysqli_query($konek,$sql);
+  break;
+  case 'simpan':
+  	$no_kunj = $_REQUEST['idPel'];
+	$NoRM = $_REQUEST['no_rm'];
+	$NoResep = $_REQUEST['no_resep'];
+	$subtotal = $_REQUEST['subtotal'];
+	$sql="SELECT DISTINCT r.no_resep,r.no_rm,IFNULL(m.IDMITRA,2) kso_id,r.cara_bayar,r.kepemilikan_id,r.dokter_nama,
+r.nama_pasien,r.alamat,u.unit_billing,IFNULL(u.UNIT_ID,0) UNIT_ID,CURDATE() tgl,NOW() tgl_act 
+FROM $dbbilling.b_resep r INNER JOIN $dbbilling.b_pelayanan p ON r.id_pelayanan=p.id
+LEFT JOIN $dbapotek.a_unit u ON p.unit_id=u.unit_billing
+LEFT JOIN $dbapotek.a_mitra m ON r.kso_id=m.kso_id_billing 
+WHERE r.apotek_id=$idunit AND r.id_pelayanan=$no_kunj AND r.no_rm='$NoRM' 
+AND r.no_resep='$NoResep' AND r.tgl='$tgl2' AND u.UNIT_ISAKTIF=1";
+	//echo $sql."<br>";
+	$rs1=mysqli_query($konek,$sql);
+	$rw1=mysqli_fetch_array($rs1);
+	$kso_id=$rw1["kso_id"];
+	$kso=1;
+	//if ($kso_id<>2) $kso=1;
+	$kp_id=$rw1["kepemilikan_id"];
+	$tgltrans=$rw1["tgl"];
+	$tgl_act=$rw1["tgl_act"];
+	$artgl_act=explode("-",$tgltrans);
+	$cara_bayar=$rw1["cara_bayar"];
+	$nm_pasien=str_replace("'","''",$rw1["nama_pasien"]);
+	$nm_pasien=str_replace('"','""',$nm_pasien);
+	$txtalamat=str_replace("'","''",$rw1["alamat"]);
+	$txtalamat=str_replace('"','""',$txtalamat);
+	$ruangan=$rw1["UNIT_ID"];
+	$dokter=str_replace("'","''",$rw1["dokter_nama"]);
+	$dokter=str_replace('"','""',$dokter);
+	
+	$embalage=0;
+	$jasa_resep=0;
+	$tot_harga=$subtotal+$embalage+$jasa_resep;
+	$nutang=0;
+	$biaya_retur=0;
+			
+	//$sql="select MAX(NO_PENJUALAN) AS NO_PENJUALAN from a_penjualan where UNIT_ID=$idunit and YEAR(TGL)=$thtr";
+	$sql="select NO_PENJUALAN from a_penjualan where UNIT_ID=$idunit and YEAR(TGL)=$artgl_act[0] ORDER BY ID DESC LIMIT 1";
+	//echo $sql."<br>";
+	$rs=mysqli_query($konek,$sql);
+	$nokw="000001";
+	//$no_kunj="0";
+	//$shft=1;
+	if ($rows=mysqli_fetch_array($rs)){
+		//$shft=$rows["SHIFT"];
+		$nokw=(int)$rows["NO_PENJUALAN"]+1;
+		$nokwstr=(string)$nokw;
+		if (strlen($nokwstr)<6){
+			for ($i=0;$i<(6-strlen($nokwstr));$i++) $nokw="0".$nokw;
+		}else{
+			$nokw=$nokwstr;
+		}
+	}
+	$no_penjualan=$nokw;
+	$nokwPrint=$no_penjualan;
+	//echo "no_kw=".$no_penjualan."<br>";
+
+	$val=$no_penjualan."|".$NoRM."|".$tgltrans;
+
+	$fdata = $_REQUEST['fdata'];
+	$arfdata=explode("*|*",$fdata);
+	for ($j=0;$j<count($arfdata);$j++){
+		$data=explode("|",$arfdata[$j]);
+		/*$sqlTambah = "UPDATE $dbbilling.b_resep SET status = '2' WHERE id = '".$data[0]."'";
+		//echo $sqlTambah."<br>";
+		$rs=mysqli_query($konek,$sqlTambah);
+		if (mysqli_errno($konek)==0){*/
+			$hSatuan=$data[1];
+			$hNetto=$data[2];
+			$qty=$data[3];
+			$obat_id=$data[5];
+			$isRacikan=$data[6];
+			
+			$sql="select * from $dbbilling.b_resep WHERE id = '".$data[0]."'";
+			//echo $sql."<br>";
+			$rs=mysqli_query($konek,$sql);
+			$rw=mysqli_fetch_array($rs);
+			$ketDosis=str_replace("'","''",$rw["ket_dosis"]);
+			$ketDosis=str_replace('"','""',$ketDosis);
+			
+			if ($kp_id!=$data[4]){
+				$sql="call gd_mutasi($idunit,$idunit,0,'$no_penjualan',$obat_id,$data[4],$kp_id,$qty,2,$iduser,1,'$tgltrans','$tgl_act')";
+				//echo $sql."<br>";
+				$rs=mysqli_query($konek,$sql);
+			}
+
+			$sql="select SQL_NO_CACHE * from a_penerimaan ap where OBAT_ID=".$obat_id." and UNIT_ID_TERIMA=$idunit and KEPEMILIKAN_ID=".$kp_id." and QTY_STOK>0 and ap.STATUS=1 order by TANGGAL,ID";
+			//echo $sql."<br>";
+			$rs=mysqli_query($konek,$sql);
+			$done="false";
+			$jml=$qty;
+			$success=1;
+			$cid=0;
+			while (($rows=mysqli_fetch_array($rs))&&($done=="false"))
+			{
+				$cstok=$rows['QTY_STOK'];
+				$cid=$rows['ID'];
+				if ($cstok>=$jml)
+				{
+					$done="true";
+					$sql="update $dbapotek.a_penerimaan set QTY_STOK=QTY_STOK-$jml where ID=$cid";
+					//echo $sql."<br>";
+					$rs1=mysqli_query($konek,$sql);
+					$sql="insert into $dbapotek.a_penjualan(PENERIMAAN_ID,UNIT_ID,USER_ID,JENIS_PASIEN_ID,KSO,KSO_ID,TGL,TGL_ACT,NO_PENJUALAN,NO_KUNJUNGAN,NO_PASIEN,NO_RESEP,DOKTER,RUANGAN,SHIFT,CARA_BAYAR,QTY_JUAL,QTY,BIAYA_RETUR,HARGA_NETTO,HARGA_SATUAN,SUB_TOTAL,SUM_SUB_TOTAL,EMBALAGE,JASA_RESEP,HARGA_TOTAL,KET_DOSIS,STATUS,NAMA_PASIEN,ALAMAT,UTANG,RACIKAN) values($cid,$idunit,$iduser,$kp_id,$kso,$kso_id,'$tgltrans',NOW(),'$no_penjualan','$no_kunj','$NoRM','$NoResep','$dokter','$ruangan',$shft,$cara_bayar,$jml,$jml,$biaya_retur,$hNetto,$hSatuan,$jml*$hSatuan,$subtotal,$embalage,$jasa_resep,$tot_harga,'$ketDosis',1,'$nm_pasien','$txtalamat',$nutang,$isRacikan)";
+					//echo $sql."<br>";
+					$rs1=mysqli_query($konek,$sql);
+					if (mysqli_errno($konek)>0){
+						$success=0;
+						$sql="update $dbapotek.a_penerimaan set QTY_STOK=QTY_STOK+$jml where ID=$cid";
+						//echo $sql."<br>";
+						$rs1=mysqli_query($konek,$sql);
+					}
+				}else{
+					$jml=$jml-$cstok;
+					$sql="update $dbapotek.a_penerimaan set QTY_STOK=0 where ID=$cid";
+					//echo $sql."<br>";
+					$rs1=mysqli_query($konek,$sql);
+					$sql="insert into $dbapotek.a_penjualan(PENERIMAAN_ID,UNIT_ID,USER_ID,JENIS_PASIEN_ID,KSO,KSO_ID,TGL,TGL_ACT,NO_PENJUALAN,NO_KUNJUNGAN,NO_PASIEN,NO_RESEP,DOKTER,RUANGAN,SHIFT,CARA_BAYAR,QTY_JUAL,QTY,BIAYA_RETUR,HARGA_NETTO,HARGA_SATUAN,SUB_TOTAL,SUM_SUB_TOTAL,EMBALAGE,JASA_RESEP,HARGA_TOTAL,KET_DOSIS,STATUS,NAMA_PASIEN,ALAMAT,UTANG,RACIKAN) values($cid,$idunit,$iduser,$kepemilikan_id,$kso,$kso_id,'$tgltrans',NOW(),'$no_penjualan','$no_kunj','$NoRM','$NoResep','$dokter','$ruangan',$shft,$cara_bayar,$cstok,$cstok,$biaya_retur,$hNetto,$hSatuan,$cstok*$hSatuan,$subtotal,$embalage,$jasa_resep,$tot_harga,'$ketDosis',1,'$nm_pasien','$txtalamat',$nutang,$isRacikan)";
+					//echo $sql."<br>";
+					$rs1=mysqli_query($konek,$sql);
+					if (mysqli_errno($konek)>0){
+						$success=0;
+						$sql="update $dbapotek.a_penerimaan set QTY_STOK=QTY_STOK+$cstok where ID=$cid";
+						//echo $sql."<br>";
+						$rs1=mysqli_query($konek,$sql);
+					}
+				}
+			}
+			
+			if ($success==1){
+				$sqlTambah = "SELECT ID FROM $dbapotek.a_penjualan WHERE USER_ID=$iduser AND UNIT_ID=$idunit AND PENERIMAAN_ID=$cid";
+				//echo $sqlTambah."<br>";
+				$rs1=mysqli_query($konek,$sqlTambah);
+				$rw1=mysqli_fetch_array($rs1);
+				$IdPenjualan=$rw1['ID'];
+				$sqlTambah = "UPDATE $dbbilling.b_resep SET status = '2', penjualan_id='$IdPenjualan' WHERE id = '".$data[0]."'";
+				//echo $sqlTambah."<br>";
+				$rs1=mysqli_query($konek,$sqlTambah);
+			}
+		//}
+	}
+  break;
+  case 'hapus':
+  $sqlHapus="UPDATE $dbbilling.b_resep SET status = '0' WHERE id = '".$_REQUEST['idRes']."'";
+  $rs=mysqli_query($konek,$sqlHapus);
+  if (mysqli_errno($konek)>0){
+  	$res="gagal";
+  }
+	echo $res;
+	return;
+  break;   
+}
+
+if ($filter!=""){
+	$filter=explode("|",$filter);
+	$filter=" WHERE ".$filter[0]." like '%".$filter[1]."%'";
+}
+
+if ($sorting==""){
+	$sorting=$defaultsort;
+}
+
+$fSta = "AND $dbbilling.b_resep.status = '2'";
+$qpenj=",IFNULL((SELECT NO_PENJUALAN FROM $dbapotek.a_penjualan ap WHERE ap.NO_KUNJUNGAN=$dbbilling.b_resep.id_pelayanan 
+AND ap.UNIT_ID='$idunit' AND ap.NO_PASIEN=$dbbilling.b_resep.no_rm AND ap.NO_RESEP=$dbbilling.b_resep.no_resep LIMIT 1),0) n_penj,
+(SELECT TGL FROM $dbapotek.a_penjualan ap WHERE ap.NO_KUNJUNGAN=$dbbilling.b_resep.id_pelayanan 
+AND ap.UNIT_ID='$idunit' AND ap.NO_PASIEN=$dbbilling.b_resep.no_rm AND ap.NO_RESEP=$dbbilling.b_resep.no_resep LIMIT 1) tgltrans";
+
+$dis=" disabled='disabled'";
+if($_REQUEST['status'] == "0"){
+	$fSta = "AND $dbbilling.b_resep.status < '2'";
+	$qpenj=",0 n_penj,'' tgltrans";
+	$dis="";
+}
+
+if($grd == "true")
+{
+	$sql = "SELECT * FROM (SELECT $dbbilling.b_resep.id, $dbbilling.b_resep.id_pelayanan, $dbbilling.b_resep.no_resep, $dbbilling.b_resep.no_rm, $dbbilling.b_resep.nama_pasien,$dbbilling.b_ms_unit.nama AS unit, 
+$dbapotek.a_kepemilikan.NAMA AS kepemilikan, $dbbilling.b_ms_kso.nama AS kso, $dbapotek.a_cara_bayar.id cara_bayar_id, $dbapotek.a_cara_bayar.nama cara_bayar, $dbapotek.a_kepemilikan.ID AS kepemilikanId".$qpenj." FROM $dbbilling.b_resep
+INNER JOIN $dbapotek.a_kepemilikan ON $dbbilling.b_resep.kepemilikan_id=$dbapotek.a_kepemilikan.ID
+INNER JOIN $dbapotek.a_cara_bayar ON $dbbilling.b_resep.cara_bayar=$dbapotek.a_cara_bayar.id
+INNER JOIN $dbbilling.b_pelayanan ON $dbbilling.b_resep.id_pelayanan=$dbbilling.b_pelayanan.id
+INNER JOIN $dbbilling.b_ms_unit ON $dbbilling.b_ms_unit.id=$dbbilling.b_pelayanan.unit_id
+INNER JOIN $dbbilling.b_ms_kso ON $dbbilling.b_ms_kso.id=$dbbilling.b_resep.kso_id
+WHERE $dbbilling.b_resep.tgl='$tgl2' AND $dbbilling.b_resep.apotek_id='$idunit' ".$fSta." GROUP BY $dbbilling.b_resep.no_resep,$dbbilling.b_resep.no_rm,$dbbilling.b_resep.cara_bayar,$dbbilling.b_resep.id_pelayanan) AS gab $filter ORDER BY ".$sorting;
+}elseif($grdDet == "true"){
+	if($_REQUEST['status'] == "0"){
+		$sql="SELECT $dbbilling.b_resep.id,$dbapotek.a_obat.OBAT_ID, $dbapotek.a_obat.OBAT_KODE, $dbapotek.a_obat.OBAT_NAMA, IF($dbbilling.b_resep.racikan=0,'-',CONCAT('Racikan ',$dbbilling.b_resep.racikan,' (',$dbbilling.b_resep.qty,' @',$dbbilling.b_resep.qty_bahan,' ',$dbbilling.b_resep.satuan,')')) as racikan,$dbbilling.b_resep.racikan isRacikan,
+IF($dbbilling.b_resep.racikan=0,$dbbilling.b_resep.qty,0) qty,$dbbilling.b_resep.kepemilikan_id,$dbbilling.b_resep.status,$dbbilling.b_resep.id_pelayanan,$dbbilling.b_resep.no_rm,$dbbilling.b_resep.no_resep,$dbbilling.b_resep.ket_dosis 
+FROM $dbbilling.b_resep INNER JOIN $dbapotek.a_obat ON $dbapotek.a_obat.OBAT_ID=$dbbilling.b_resep.obat_id 
+WHERE $dbbilling.b_resep.tgl='$tgl2' AND $dbbilling.b_resep.apotek_id='$idunit' AND $dbbilling.b_resep.no_resep='".$_REQUEST['no_resep']."'".$fSta;
+	}else{
+		$sql="SELECT ap.ID id,p.OBAT_ID,o.OBAT_KODE,o.OBAT_NAMA,IF(ap.RACIKAN=0,'-','&radic;') AS racikan,
+ap.RACIKAN isRacikan,SUM(ap.QTY) qty,p.KEPEMILIKAN_ID kepemilikan_id,2 status,ap.NO_KUNJUNGAN id_pelayanan,
+ap.NO_PASIEN no_rm,ap.NO_RESEP no_resep,ap.KET_DOSIS ket_dosis,ap.HARGA_NETTO,ap.HARGA_SATUAN
+FROM $dbapotek.a_penjualan ap INNER JOIN $dbapotek.a_penerimaan p ON ap.PENERIMAAN_ID=p.ID
+INNER JOIN $dbapotek.a_obat o ON p.OBAT_ID=o.OBAT_ID INNER JOIN $dbapotek.a_kepemilikan k ON p.KEPEMILIKAN_ID=k.ID
+WHERE ap.NO_PENJUALAN='".$_REQUEST['no_penj']."' AND ap.UNIT_ID='$idunit' AND ap.NO_PASIEN='".$_REQUEST['no_rm']."' AND ap.TGL='".$_REQUEST['tgltrans']."' GROUP BY p.OBAT_ID,p.KEPEMILIKAN_ID";
+	}
+}
+
+//echo $sql."<br>";
+$perpage = 100;
+$rs=mysqli_query($konek,$sql);
+$jmldata=mysqli_num_rows($rs);
+if ($page=="" || $page=="0") $page=1;
+$tpage=($page-1)*$perpage;
+if (($jmldata%$perpage)>0) $totpage=floor($jmldata/$perpage)+1; else $totpage=floor($jmldata/$perpage);
+if ($page>1) $bpage=$page-1; else $bpage=1;
+if ($page<$totpage) $npage=$page+1; else $npage=$totpage;
+$sql=$sql." limit $tpage,$perpage";
+//echo $sql;
+
+$rs=mysqli_query($konek,$sql);
+$i=($page-1)*$perpage;
+$dt=$totpage.chr(5);
+$j=0;
+if($grd == "true")
+{
+	while ($rows=mysqli_fetch_array($rs))
+	{
+		$i++;
+		$j++;
+		
+		$cCaraBayar=$rows["cara_bayar"];
+		if ($_REQUEST['status'] == "0"){
+			$cCaraBayar="<span id='cBayar-$j' style='text-decoration:underline' title='Klik Untuk Mengubah Cara Bayar Pasien' onclick='UbahCaraBayar(this);'>".$rows["cara_bayar"]."</span>";
+		}
+		$sisip=$rows["id"].'|'.$rows["kepemilikanId"]."|".$rows["no_resep"]."|".$rows["no_rm"]."|".$rows["id_pelayanan"]."|".$rows["n_penj"]."|".$rows["tgltrans"]."|".$rows["cara_bayar_id"];
+		$dt.=$sisip.chr(3).number_format($i,0,",","").chr(3).$rows["no_resep"].chr(3).$rows["no_rm"].chr(3).$rows["nama_pasien"].chr(3).$rows["unit"].chr(3).$cCaraBayar.chr(3).$rows["kepemilikan"].chr(3).$rows["kso"].chr(6);
+	}
+}elseif($grdDet == "true")
+{
+	while ($rows=mysqli_fetch_array($rs))
+	{
+		$i++;
+		$j++;
+		if($_REQUEST['status'] == "0"){
+			$sqlHarga="SELECT FLOOR(HARGA_JUAL_SATUAN) HARGA_JUAL_SATUAN,FLOOR(HARGA_BELI_SATUAN) HARGA_BELI_SATUAN FROM a_harga WHERE OBAT_ID=".$rows["OBAT_ID"]." AND KEPEMILIKAN_ID=".$rows["kepemilikan_id"]." ORDER BY HARGA_JUAL_SATUAN DESC LIMIT 1";
+			$rsHarga=mysqli_query($konek,$sqlHarga);
+			$rwHarga=mysqli_fetch_array($rsHarga);
+			$hSatuan=$rwHarga["HARGA_JUAL_SATUAN"];
+			$hNetto=$rwHarga["HARGA_BELI_SATUAN"];
+		}else{
+			$hSatuan=$rows["HARGA_SATUAN"];
+			$hNetto=$rows["HARGA_NETTO"];
+		}
+	
+		$sqlHarga="SELECT IFNULL(SUM(qty_stok),0) stok FROM $dbapotek.a_stok WHERE unit_id=$idunit AND obat_id=".$rows["OBAT_ID"]." AND kepemilikan_id=".$rows["kepemilikan_id"];
+		$rsHarga=mysqli_query($konek,$sqlHarga);
+		$rwHarga=mysqli_fetch_array($rsHarga);
+		$hStok=$rwHarga["stok"];
+		
+		$cedit="";
+		if($rows["status"]!=0){
+			$ch = " checked='checked'";
+			if ($rows["status"]==1){
+				$cedit="&nbsp;|&nbsp;<img src='../icon/edit.gif' border='0' width='16' height='16' align='absmiddle' title='Klik Untuk Mengubah Resep' onclick=EditObat('".$rows["id"]."|".$rows["kepemilikan_id"]."|".$rows["qty"]."|".$i."') />";
+			}
+			
+			$cqtyRsp=$rows["qty"];
+		}else{
+			$ch = "";
+			$cedit="&nbsp;|&nbsp;<img src='../icon/edit.gif' border='0' width='16' height='16' align='absmiddle' title='Klik Untuk Mengubah Resep' onclick=EditObat('".$rows["id"]."|".$rows["kepemilikan_id"]."|".$rows["qty"]."|".$i."') />";
+			
+			$cqtyRsp="<span id='qtyRsp-$i' style='text-decoration:underline' title='Klik Untuk Mengubah Jumlah Obat Yg Diambil Pasien' onclick='UbahQtyRsp(this);'>".$rows["qty"]."</span>";
+		}
+		//$cqtyRsp="<span id='qtyRsp$i' title='Klik Untuk Mengubah Jumlah Obat Yg Diambil Pasien' onclick='tes();'>".$rows["qty"]."</span>";
+		$sisip=$rows["id"]."|".$hSatuan."|".$hNetto."|".$rows["qty"]."|".$rows["kepemilikan_id"]."|".$rows["OBAT_ID"]."|".$rows["isRacikan"];
+		$d="<input type='checkbox' id='ch".$rows["id"]."'".$dis.$ch." title='Centang Untuk Melayani Resep' onclick='CheckedObat($j);' />".$cedit;
+		
+		$dt.=$sisip.chr(3).number_format($i,0,",","").chr(3).$rows["OBAT_NAMA"].chr(3).$rows["ket_dosis"].chr(3).$rows["racikan"].chr(3).number_format($hStok,0,",",".").chr(3).number_format($hNetto,0,",",".").chr(3).$cqtyRsp.chr(3).number_format($hSatuan,0,",",".").chr(3).number_format(($hSatuan*$rows["qty"]),0,",",".").chr(3).$d.chr(6);
+	}
+}
+
+if ($dt!=$totpage.chr(5)){
+	$dt=substr($dt,0,strlen($dt)-1);
+	$dt=str_replace('"','\"',$dt);
+}
+
+if ($grd == "true"){
+	$dt.=chr(5).$val;
+}
+
+mysqli_free_result($rs);
+mysqli_close($konek);
+
+header("Cache-Control: no-cache, must-revalidate" );
+header("Pragma: no-cache" );
+if (stristr($_SERVER["HTTP_ACCEPT"],"application/xhtml+xml")){
+	header("Content-type: application/xhtml+xml");
+}else{
+	header("Content-type: text/xml");
+}
+
+echo $dt;
+?>

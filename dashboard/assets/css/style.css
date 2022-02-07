@@ -1,0 +1,26 @@
+.card-bg-height{
+    height: 300px !important;
+}
+.card-center{
+    transform:translate(100px,-180px) !important;
+}
+@media only screen and (max-width: 768px) {
+    .card-center{
+        transform:translate(0px,-180px) !important;
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    .card-center{
+        transform:translate(50px,-180px) !important;
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    .card-center{
+        transform:translate(100px,-180px) !important;
+    }
+    .card-center2{
+        transform:translate(100px,-250px) !important;
+    }
+}

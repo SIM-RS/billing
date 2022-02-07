@@ -1,0 +1,305 @@
+<?
+include '../sesi.php';
+?>
+<?php
+include("../koneksi/konek.php");
+if(!isset($_SESSION['userid']) || $_SESSION['userid'] == '') {
+    echo "<script>alert('Anda belum login atau session anda habis, silakan login ulang.');
+                        window.location='$def_loc';
+                        </script>";
+}
+$type = $_SESSION["usertype"];
+$id = $_GET['idunit'];
+$back_addr = "unit.php";
+if(isset($_GET['origin']) && $_GET['origin'] != '') {
+    $back_addr = "treeUnit.php";
+}
+if(isset($_POST['act']) && $_POST['act'] != '') {
+    $act = $_POST['act'];
+    $kodeunit = $_POST['kodeunit'];
+    $namaunit = $_POST['namasingkat'];
+    $namapanjang = $_POST['namapanjang'];
+    $parentunit = $_POST['induk'];
+    $level = $_POST['level'];
+    $kodeupb = $_POST['kodeupb'];
+    $nippetugas = $_POST['nip1'];
+    $namapetugas = $_POST['nama1'];
+    $jabatanpetugas = $_POST['jabatan1'];
+    $nippetugas2 = $_POST['nip2'];
+    $namapetugas2 = $_POST['nama2'];
+    $jabatanpetugas2 = $_POST['jabatan2'];
+	$unitaktif = $_POST['unitaktif'];
+    $t_userid = $_SESSION['userid'];
+    $t_ipaddress = $_SERVER['REMOTE_ADDR'];
+	
+	
+    if($act == "add") {
+	$sqlIns="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Insert Master Unit Kerja','INSERT INTO as_ms_unit (kodeunit,namaunit,namapanjang,parentunit,level,kodeupb,nippetugas,namapetugas,jabatanpetugas,nippetugas2,namapetugas2,jabatanpetugas2,t_userid,t_updatetime,t_ipaddress)
+                values ($kodeunit,$namaunit,$namapanjang,$parentunit,$level,$kodeupb,$nippetugas,$namapetugas,$jabatanpetugas,$nippetugas2,$namapetugas2,$jabatanpetugas2,$t_userid,$t_updatetime,$t_ipaddress)','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns);
+					
+        $query = "INSERT INTO as_ms_unit (kodeunit,namaunit,namapanjang,parentunit,level,kodeupb,nippetugas,namapetugas,jabatanpetugas,nippetugas2,namapetugas2,jabatanpetugas2,t_userid,t_updatetime,t_ipaddress,isunit_aktif)
+                values ('$kodeunit','$namaunit','$namapanjang','$parentunit','$level','$kodeupb','$nippetugas','$namapetugas','$jabatanpetugas','$nippetugas2','$namapetugas2','$jabatanpetugas2','$t_userid','$t_updatetime','$t_ipaddress','$unitaktif')";
+    }
+    else if($act == 'edit') {
+	$sqlIns2="insert into user_log (log_user,log_time,log_action,log_query,log_ip) values ('".$_SESSION['id_user']."',sysdate(),'Update Master Unit Kerja','update as_ms_unit set kodeunit = $kodeunit, namaunit = $namaunit, namapanjang = $namapanjang, parentunit = $parentunit, level = $level, kodeupb = $kodeupb, nippetugas = $nippetugas, namapetugas = $namapetugas, jabatanpetugas = $jabatanpetugas, nippetugas2 = $nippetugas2, namapetugas2 = $namapetugas2, jabatanpetugas2 = $jabatanpetugas2
+                where idunit = $id','".$_SERVER['REMOTE_ADDR']."')";
+					mysql_query($sqlIns2);
+					
+        $query = "update as_ms_unit set kodeunit = '$kodeunit', namaunit = '$namaunit', namapanjang = '$namapanjang', parentunit = '$parentunit', level = '$level', kodeupb = '$kodeupb', nippetugas = '$nippetugas', namapetugas = '$namapetugas', jabatanpetugas = '$jabatanpetugas', nippetugas2 = '$nippetugas2', namapetugas2 = '$namapetugas2', jabatanpetugas2 = '$jabatanpetugas2', isunit_aktif='$unitaktif' where idunit = $id";
+    }
+    //echo $query;
+	$rs = mysql_query($query);
+    $res = mysql_affected_rows();
+    if($act == 'edit') {
+        if($res > 0) {
+            echo "<script>
+                alert('Data berhasil diubah.');
+                window.location = '$back_addr';
+                </script>";
+        }
+        else if($res == 0) {
+            echo "<script>alert('Data tidak ada yang berubah.');</script>";
+        }
+        else {
+            echo "<script>alert('Terdapat kesalahan pada input anda.$res');</script>";
+        }
+    }
+    else if($act == 'add') {
+        if($res > 0) {
+            echo "<script>
+                alert('Data Telah Berhasil Tersimpan..');window.location = '$back_addr';
+                </script>";
+        }
+        else if($res == 0) {
+            echo "<script>alert('Data gagal dimasukan.');</script>";
+        }
+        else {
+            echo "<script>alert('Terdapat kesalahan pada input anda.$res');</script>";
+        }
+    }
+}
+?>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <script type="text/javascript" language="JavaScript" src="../theme/js/mod.js"></script>
+        <link type="text/css" rel="stylesheet" href="../default.css"/>
+        <link type="text/css" rel="stylesheet" href="../theme/mod.css"/>
+        <title>.: Unit Kerja :.</title>
+    </head>
+
+    <body>
+        <div align="center">
+            <?php
+            include("../header.php");
+            $act = $_GET['act'];
+            $par = "act=$act";
+            if($act == 'edit') {
+                $par .= "&idunit=$id";
+                $query = "SELECT idunit,kodeunit,namaunit,namapanjang,parentunit,level,kodeupb,nippetugas,namapetugas, jabatanpetugas,nippetugas2,namapetugas2,jabatanpetugas2,isunit_aktif
+                        FROM as_ms_unit
+                        WHERE idunit = '$id'";//echo $query;
+                $rs = mysql_query($query);
+                $rows = mysql_fetch_array($rs);
+                $query1 = "SELECT idunit,kodeunit,namaunit
+                        FROM as_ms_unit
+                        WHERE idunit = '".$rows["parentunit"]."'";
+                $rs1 = mysql_query($query1);
+                $rows1 = mysql_fetch_array($rs1);
+            }
+            ?>
+            <table align="center" bgcolor="#FFFBF0" width="1000" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <table width="680"  border="0" cellspacing="0" cellpadding="2" align="center">
+                        
+                            <tr>
+                                <td height="30" colspan="2" valign="bottom" align="right">
+                                    <button class="Enabledbutton" id="backbutton" onClick="location='<?php echo $back_addr;?>'" title="Back" style="cursor:pointer">
+                                        <img alt="back" src="../images/backsmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Back to List
+                                    </button>
+                                    <button type="button" style="visibility:<? if($type=="G") echo "hidden"; else echo "visible"; ?>;cursor:pointer" class="Enabledbutton" id="btnSimpan" name="btnSimpan" onClick="save()" title="Save">
+                                        <img alt="save" src="../images/savesmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Save Record
+                                    </button>
+                                    <button class="Disabledbutton" id="undobutton" onClick="location='<?php echo $_SERVER['REQUEST_URI'];?>'" title="Cancel / Refresh" style="cursor:pointer">
+                                        <img alt="undo/refresh" src="../images/undosmall.gif" width="22" height="22" border="0" align="absmiddle" />
+                                        Undo/Refresh
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" height="28" class="header">.: Data Unit / Satuan Kerja :.</td>
+                            </tr>
+                            <form action="" method="post" id="form1" name="form1" onSubmit="return ValidateForm('kodeunit,namasingkat','Ind');">
+											<tr>
+                                    <td height="20" class="label">&nbsp;Induk Unit</td>
+                                    <td class="content">&nbsp;
+                                       <input type="hidden" id="induk" name="induk" value="<?php echo $rows1['idunit']; ?>"/>
+                                       <input type="text" id="kodeunit1"  class="txtunedited" name="kodeunit1" value="<?php echo $rows1['kodeunit']; ?>" />
+                                       <input type="text" id="namaunit1" size="30" class="txtunedited" name="namaunit1" value="<?php echo $rows1['namaunit']; ?>" />
+													&nbsp;
+													 <img alt="tree" width="18" style="visibility:<? if($type=="G") echo "hidden"; else echo "visible"; ?>; cursor:pointer;" title='Struktur tree Unit' border=0 src="../images/view_tree.gif" align="absbottom" onClick="OpenWnd('tree_unit.php?act=<?=$act; ?>&par=induk*kodeunit1*namaunit1*level*kodeunit',800,500,'msma',true);">                                    
+                                    </td>
+                                </tr>                                
+                                <tr>
+                                    <td width="20%" height="20" class="label">&nbsp;Kode Unit / Sat Ker</td>
+                                    <td width="80%" class="content">&nbsp;
+                                        <input type="text" id="kodeunit" name="kodeunit" class="txtmustfilled" value="<?php echo $rows['kodeunit']; ?>" size="20" maxlength="30" onKeyUp="riz()"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Nama Singkat</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="namasingkat" name="namasingkat" class="txtmustfilled" value="<?php echo $rows['namaunit']; ?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Nama Panjang</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="namapanjang" name="namapanjang" class="txt" value="<?php echo $rows['namapanjang']; ?>" size="75" maxlength="75" />
+                                    </td>
+                                </tr>
+                                <?php /*
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Induk Unit</td>
+                                    <td class="content">&nbsp;
+                                        <select name="induk" id="induk" class="txt">
+                                            <option value="0"></option>
+                                            <?php
+                                            $sqlInduk=mysql_query("SELECT idunit,kodeunit,namaunit FROM as_ms_unit ORDER BY kodeunit");
+                                            while($showInduk=mysql_fetch_array($sqlInduk)) {
+                                                ?>
+                                            <option value="<?php echo $showInduk['idunit'];?>" <?php if($rows['parentunit'] == $showInduk['idunit']) {
+                                                    echo 'selected';
+                                                }?> ><?php echo $showInduk['kodeunit'].' - '.$showInduk['namaunit'];?></option>
+                                                <?php
+}
+?>
+                                        </select>
+                                    </td>
+                                </tr>*/ ?>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Level</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="level" name="level" class="txtmustfilled"  size="10"  />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Kode UPB / Lokasi</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="kodeupb" name="kodeupb" class="txt" value="<?php echo $rows['kodeupb']; ?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="28" colspan="2" class="header2">&nbsp;Petugas Pengesahan 1</td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;NIP</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="nip1" name="nip1" class="txt" value="<?php echo $rows['nippetugas']; ?>" size="30" maxlength="30" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Nama</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="nama1" name="nama1" class="txt" value="<?php echo $rows['namapetugas'];?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Jabatan</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="jabatan1" name="jabatan1" class="txt" value="<?php echo $rows['jabatanpetugas']; ?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="28" colspan="2" class="header2">&nbsp;Petugas Pengesahan 2</td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;NIP</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="nip2" name="nip2" class="txt" value="<?php echo $rows['nippetugas2']; ?>" size="30" maxlength="30" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Nama</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" name="nama2" id="nama2" class="txt" value="<?php echo $rows['namapetugas2'];?>" size="50" maxlength="50" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="20" class="label">&nbsp;Jabatan</td>
+                                    <td class="content">&nbsp;
+                                        <input type="text" id="jabatan2" name="jabatan2" class="txt" value="<?php echo $rows['jabatanpetugas2']; ?>" size="50" maxlength="50" />
+                                        <input type="hidden" id="act" name="act" value="<?php echo $act;?>"/>
+                                    </td>
+                                </tr>
+                            
+                            <tr>
+                                <td colspan="2" class="header2">Unit Aktif / Non Aktif </td>
+                            </tr>
+							<tr>
+                                <td height="20" class="label">Aktif</td>
+                                <td class="content">&nbsp;<input type="checkbox" name="unitaktif" id="unitaktif" <?php if($rows['isunit_aktif']==1){echo "checked value=1";}else if($rows['isunit_aktif']==0){echo "value=0";}?> onClick="cek_aktif(this.value)"></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr></form>
+                            <tr>
+                                <td colspan="2">
+                                    <fieldset style="background-color:#FFFFCC">
+                                        <b><u>Keterangan</u></b><br />
+                                        <b>Level</b>&nbsp;( 1 = Bidang | 2 = Unit Bidang | 3 = Sub Unit/Satuan Kerja )
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        </table>
+                        <?php
+include '../footer.php';
+?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+    <script type="text/JavaScript" language="JavaScript">
+	riz();
+        function save(){
+            if(ValidateForm('kodeunit,namasingkat','Ind') == true){
+                document.getElementById('form1').submit();
+            }
+        }
+		  function riz(){
+		//alert('aaaaaa');
+		var jml='';
+		if(document.getElementById('kodeunit').value!=''){
+			var cek=document.getElementById('kodeunit').value.split('.');
+			jml=cek.length;
+			if(document.getElementById('kodeunit').value=='')
+			jml='';
+			document.getElementById('level').value=jml;
+			}
+		}
+		
+		function cek_aktif(val)
+		{
+			if(val==0)
+			{
+				document.getElementById('unitaktif').value=1;//alert(document.getElementById('unitaktif').value);
+				 document.getElementById('unitaktif').checked=true;
+				 //alert(document.getElementById('unitaktif').value);
+			}
+			else if(val==1)
+			{
+				document.getElementById('unitaktif').value=0;//alert(document.getElementById('unitaktif').value);
+				 document.getElementById('unitaktif').checked=false;
+				 //alert(document.getElementById('unitaktif').value);
+			}
+		}
+    </script>
+</html>

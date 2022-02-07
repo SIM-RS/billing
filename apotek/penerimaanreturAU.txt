@@ -1,0 +1,23 @@
+DELIMITER $$;
+
+DROP TRIGGER `dbapotik`.`penerimaanreturAU`$$
+
+create trigger `penerimaanreturAU` AFTER UPDATE on `a_penerimaan_retur` 
+for each row BEGIN
+DECLARE done INT DEFAULT 0;   
+DECLARE vstok INT DEFAULT 0;  
+DECLARE Cur CURSOR FOR SELECT stok_after from a_kartustok where OBAT_ID=NEW.OBAT_ID and KEPEMILIKAN_ID=(select KEPEMILIKAN_ID from a_penerimaan where ID=new.PENERIMAAN_ID) and UNIT_ID=0 order by tgl_act desc limit 1;
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000'  SET done = 1; 
+IF  (NEW.STATUS=1) and (OLD.STATUS=0) then
+update a_penerimaan set qty_stok=qty_stok - new.QTY where ID=new.PENERIMAAN_ID;
+	OPEN Cur;   
+	WHILE Done <> 1  DO      
+	FETCH Cur INTO vstok;      
+	 END WHILE;
+	CLOSE Cur;
+INSERT INTO A_KARTUSTOK(OBAT_ID,KEPEMILIKAN_ID,UNIT_ID,TGL_TRANS,TGL_ACT,NO_BUKTI,STOK_BEFOR,DEBET,KREDIT,STOK_AFTER,KET,USER_ID) VALUES (NEW.OBAT_ID,(select KEPEMILIKAN_ID from a_penerimaan where ID=new.PENERIMAAN_ID),0,NEW.TGL,now(),NEW.NO_RETUR,vstok,-1*NEW.QTY,0,vstok-NEW.QTY,concat('retur',NEW.NO_RETUR),NEW.USER_ID);
+end if;
+END;
+$$
+
+DELIMITER ;$$

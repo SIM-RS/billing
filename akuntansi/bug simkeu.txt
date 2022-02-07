@@ -1,0 +1,41 @@
+Jurnal khusus
+	1 yg bisa di klik yg panjang jtrans_kode >=4
+	2 yg teksbox nilai (debet DAN kredit =0) tidak di insert ke jurnal
+	3
+
+no kode rek nama rek debet/kredit nilai
+Terjadinya transaksi pendapatan
+1 1131231 piutang pasien umum debet   ??
+2 13131312 poli...            kredit  ??
+3...
+Terjadinya pengurangan pendapatan
+4
+5
+Terjadinya...
+6
+7
+Pembayaran
+8
+9
+
+
+select * from jenis_transaksi where JTRANS_PARENT=13;
+while (){
+	$idjtr=$rows['JTRANS_ID'];
+	$nmjtr=$rows['JTRANS_NAMA'];
+?>
+ <tr>
+	<td colspan=4></td>
+</tr>
+<?php
+	$sql="selet * from detil_transaksi where fk_jenis_trans=$idjtr";
+	$rs1=mysql_que
+	while (){
+	   $id
+	?>
+	<tr>
+		<td>echo </td>
+	</tr>
+	<?php
+	}
+}

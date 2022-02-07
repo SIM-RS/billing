@@ -1,0 +1,7 @@
+transaksi/stok.php
+apotik/main.php
+produksi/main.php
+floorstok/main.php
+transaksi/obatlistjual.php
+transaksi/penjualan.php
+master/stokall.php
